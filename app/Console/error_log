@@ -1,0 +1,2 @@
+[27-Sep-2017 07:27:43 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Console\Kernel' not found in /home/mkungac1/public_html/pension/app/Console/Kernel.php on line 8
+[06-Oct-2017 03:47:02 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Console\Kernel' not found in /home/mkungac1/public_html/pension/app/Console/Kernel.php on line 8

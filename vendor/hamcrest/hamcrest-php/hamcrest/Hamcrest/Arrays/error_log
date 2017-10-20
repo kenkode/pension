@@ -1,0 +1,7 @@
+[27-Jun-2017 11:31:56 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArray.php on line 20
+[27-Jun-2017 11:31:57 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContaining.php on line 15
+[27-Jun-2017 11:31:59 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeDiagnosingMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingInAnyOrder.php on line 14
+[27-Jun-2017 11:32:01 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeDiagnosingMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingInOrder.php on line 14
+[27-Jun-2017 11:32:02 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingKey.php on line 15
+[27-Jun-2017 11:32:04 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingKeyValuePair.php on line 16
+[27-Jun-2017 11:32:06 UTC] PHP Fatal error:  Class 'Hamcrest\FeatureMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayWithSize.php on line 16

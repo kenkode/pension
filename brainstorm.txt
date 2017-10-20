@@ -1,0 +1,9 @@
+products
+
+product_id
+name
+cateogory
+price
+quantity
+
+categories

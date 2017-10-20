@@ -1,0 +1,68 @@
+[22-Jun-2017 15:10:12 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[23-Jun-2017 15:41:24 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[03-Jul-2017 04:26:59 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[11-Jul-2017 03:31:36 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[12-Jul-2017 02:53:14 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[13-Jul-2017 14:42:02 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[15-Jul-2017 21:28:53 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[21-Jul-2017 11:14:21 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[29-Jul-2017 02:14:39 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[03-Aug-2017 05:35:36 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[12-Aug-2017 10:20:59 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[19-Aug-2017 03:43:44 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[05-Sep-2017 16:09:05 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[20-Sep-2017 06:02:02 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[20-Sep-2017 18:20:49 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[27-Sep-2017 07:15:29 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14
+[06-Oct-2017 03:42:25 UTC] PHP Fatal error:  Uncaught Error: Class 'Illuminate\Foundation\Application' not found in /home/mkungac1/public_html/pension/bootstrap/app.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/bootstrap/app.php on line 14

@@ -1,0 +1,1 @@
+[06-Oct-2017 03:47:04 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Exceptions\Handler' not found in /home/mkungac1/public_html/pension/app/Exceptions/Handler.php on line 9

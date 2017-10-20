@@ -1,0 +1,9 @@
+[25-Sep-2017 15:26:10 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[26-Sep-2017 03:10:04 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[27-Sep-2017 05:11:27 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Http\Middleware\TrimStrings' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/TrimStrings.php on line 7
+[27-Sep-2017 05:12:40 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[27-Sep-2017 05:23:57 UTC] PHP Fatal error:  Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/EncryptCookies.php on line 7
+[06-Oct-2017 04:00:18 UTC] PHP Fatal error:  Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/EncryptCookies.php on line 7
+[06-Oct-2017 04:00:22 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Http\Middleware\TrimStrings' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/TrimStrings.php on line 7
+[06-Oct-2017 04:00:23 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/VerifyCsrfToken.php on line 7
+[13-Oct-2017 10:21:05 UTC] PHP Fatal error:  Class 'Illuminate\Cookie\Middleware\EncryptCookies' not found in /home/mkungac1/public_html/pension/app/Http/Middleware/EncryptCookies.php on line 7

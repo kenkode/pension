@@ -1,0 +1,10 @@
+[27-Jun-2017 11:33:10 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsArray.php on line 12
+[27-Jun-2017 11:33:12 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsBoolean.php on line 12
+[27-Jun-2017 11:33:14 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsCallable.php on line 12
+[27-Jun-2017 11:33:15 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsDouble.php on line 14
+[27-Jun-2017 11:33:17 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsInteger.php on line 12
+[27-Jun-2017 11:33:19 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsNumeric.php on line 12
+[27-Jun-2017 11:33:21 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsObject.php on line 12
+[27-Jun-2017 11:33:22 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsResource.php on line 12
+[27-Jun-2017 11:33:24 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsScalar.php on line 12
+[27-Jun-2017 11:33:26 UTC] PHP Fatal error:  Class 'Hamcrest\Core\IsTypeOf' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsString.php on line 12

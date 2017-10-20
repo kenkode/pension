@@ -1,0 +1,9 @@
+[27-Jun-2017 01:00:17 UTC] PHP Fatal error:  Interface 'Hamcrest\Description' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/BaseDescription.php on line 12
+[27-Jun-2017 01:00:17 UTC] PHP Fatal error:  Interface 'Hamcrest\Matcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/BaseMatcher.php on line 13
+[27-Jun-2017 01:01:24 UTC] PHP Fatal error:  Class 'Hamcrest\BaseMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/DiagnosingMatcher.php on line 11
+[27-Jun-2017 01:01:28 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeDiagnosingMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/FeatureMatcher.php on line 13
+[27-Jun-2017 01:01:38 UTC] PHP Fatal error:  Interface 'Hamcrest\SelfDescribing' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/Matcher.php on line 23
+[27-Jun-2017 01:01:52 UTC] PHP Fatal error:  Interface 'Hamcrest\Description' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/NullDescription.php on line 11
+[27-Jun-2017 01:02:00 UTC] PHP Fatal error:  Class 'Hamcrest\BaseDescription' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/StringDescription.php on line 11
+[27-Jun-2017 01:02:08 UTC] PHP Fatal error:  Class 'Hamcrest\TypeSafeMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/TypeSafeDiagnosingMatcher.php on line 9
+[27-Jun-2017 01:02:11 UTC] PHP Fatal error:  Class 'Hamcrest\BaseMatcher' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/hamcrest/Hamcrest/TypeSafeMatcher.php on line 13

@@ -1,0 +1,9 @@
+[24-Jun-2017 20:28:21 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[25-Jun-2017 22:33:35 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[12-Jul-2017 04:40:21 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[03-Aug-2017 07:20:15 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[04-Aug-2017 07:22:28 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[12-Aug-2017 12:30:47 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[26-Aug-2017 17:40:41 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[05-Sep-2017 17:44:48 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15
+[06-Oct-2017 05:21:03 UTC] PHP Fatal error:  Interface 'SebastianBergmann\GlobalState\Exception' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/src/RuntimeException.php on line 15

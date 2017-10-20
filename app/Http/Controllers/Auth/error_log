@@ -1,0 +1,7 @@
+[02-Oct-2017 02:57:56 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/LoginController.php on line 8
+[02-Oct-2017 12:25:55 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/RegisterController.php on line 10
+[03-Oct-2017 09:17:47 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/RegisterController.php on line 10
+[06-Oct-2017 05:08:26 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/ForgotPasswordController.php on line 8
+[06-Oct-2017 05:08:28 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/LoginController.php on line 8
+[06-Oct-2017 05:08:30 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/RegisterController.php on line 10
+[06-Oct-2017 05:08:32 UTC] PHP Fatal error:  Class 'App\Http\Controllers\Controller' not found in /home/mkungac1/public_html/pension/app/Http/Controllers/Auth/ResetPasswordController.php on line 8

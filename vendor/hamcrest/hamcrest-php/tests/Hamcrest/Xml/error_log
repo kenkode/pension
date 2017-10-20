@@ -1,0 +1,4 @@
+[27-Jun-2017 11:57:22 UTC] PHP Fatal error:  Class 'Hamcrest\AbstractMatcherTest' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/tests/Hamcrest/Xml/HasXPathTest.php on line 4
+[26-Aug-2017 01:46:35 UTC] PHP Fatal error:  Class 'Hamcrest\AbstractMatcherTest' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/tests/Hamcrest/Xml/HasXPathTest.php on line 4
+[03-Sep-2017 00:13:37 UTC] PHP Fatal error:  Class 'Hamcrest\AbstractMatcherTest' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/tests/Hamcrest/Xml/HasXPathTest.php on line 4
+[10-Sep-2017 16:42:41 UTC] PHP Fatal error:  Class 'Hamcrest\AbstractMatcherTest' not found in /home/mkungac1/public_html/pension/vendor/hamcrest/hamcrest-php/tests/Hamcrest/Xml/HasXPathTest.php on line 4

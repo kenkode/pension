@@ -1,0 +1,36 @@
+[04-Oct-2017 11:27:56 UTC] PHP Fatal error:  Uncaught Error: Class 'Auth' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php:45
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php on line 45
+[06-Oct-2017 02:52:14 UTC] PHP Fatal error:  Uncaught Error: Class 'Auth' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php:45
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php on line 45
+[06-Oct-2017 05:09:53 UTC] PHP Fatal error:  Uncaught Error: Class 'Auth' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php:45
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php on line 45
+[06-Oct-2017 05:09:58 UTC] PHP Fatal error:  Uncaught Error: Class 'App\Category' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php on line 7
+[07-Oct-2017 04:27:17 UTC] PHP Fatal error:  Uncaught Error: Class 'Auth' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php:45
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php on line 45
+[07-Oct-2017 04:27:22 UTC] PHP Fatal error:  Uncaught Error: Class 'App\Category' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php on line 7
+[08-Oct-2017 23:29:18 UTC] PHP Fatal error:  Uncaught Error: Class 'App\Category' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php on line 7
+[10-Oct-2017 10:03:47 UTC] PHP Fatal error:  Uncaught Error: Class 'App\Category' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/sidebar.blade.php on line 7
+[12-Oct-2017 10:59:28 UTC] PHP Fatal error:  Uncaught Error: Class 'Auth' not found in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php:45
+Stack trace:
+#0 {main}
+  thrown in /home/mkungac1/public_html/pension/resources/views/include/admin/footer.blade.php on line 45

@@ -1,0 +1,9 @@
+[27-Sep-2017 05:08:38 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Support\Providers\AuthServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/AuthServiceProvider.php on line 8
+[27-Sep-2017 05:12:28 UTC] PHP Fatal error:  Class 'Illuminate\Support\ServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/AppServiceProvider.php on line 8
+[27-Sep-2017 05:30:58 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Support\Providers\EventServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/EventServiceProvider.php on line 8
+[27-Sep-2017 07:01:45 UTC] PHP Fatal error:  Class 'Illuminate\Support\ServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/BroadcastServiceProvider.php on line 8
+[06-Oct-2017 03:47:11 UTC] PHP Fatal error:  Class 'Illuminate\Support\ServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/AppServiceProvider.php on line 8
+[06-Oct-2017 03:47:13 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Support\Providers\AuthServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/AuthServiceProvider.php on line 8
+[06-Oct-2017 03:47:15 UTC] PHP Fatal error:  Class 'Illuminate\Support\ServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/BroadcastServiceProvider.php on line 8
+[06-Oct-2017 03:47:16 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Support\Providers\EventServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/EventServiceProvider.php on line 8
+[06-Oct-2017 03:47:18 UTC] PHP Fatal error:  Class 'Illuminate\Foundation\Support\Providers\RouteServiceProvider' not found in /home/mkungac1/public_html/pension/app/Providers/RouteServiceProvider.php on line 8

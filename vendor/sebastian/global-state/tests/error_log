@@ -1,0 +1,16 @@
+[24-Jun-2017 20:28:28 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[24-Jun-2017 20:28:39 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[12-Jul-2017 04:40:25 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[12-Jul-2017 04:40:26 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[03-Aug-2017 07:20:18 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[03-Aug-2017 07:20:20 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[05-Aug-2017 05:06:37 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[05-Aug-2017 05:50:02 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[13-Aug-2017 02:00:53 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[13-Aug-2017 11:54:15 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[21-Aug-2017 04:55:11 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[21-Aug-2017 09:27:15 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[05-Sep-2017 17:44:51 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[05-Sep-2017 17:44:53 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19
+[06-Oct-2017 05:21:06 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/BlacklistTest.php on line 17
+[06-Oct-2017 05:21:08 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/sebastian/global-state/tests/SnapshotTest.php on line 19

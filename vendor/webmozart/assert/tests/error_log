@@ -1,0 +1,7 @@
+[25-Jun-2017 02:32:16 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28
+[25-Jun-2017 10:23:55 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28
+[12-Jul-2017 04:59:54 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28
+[26-Aug-2017 15:36:01 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28
+[03-Sep-2017 03:13:46 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28
+[04-Sep-2017 15:47:40 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28
+[06-Oct-2017 05:39:57 UTC] PHP Fatal error:  Class 'PHPUnit_Framework_TestCase' not found in /home/mkungac1/public_html/pension/vendor/webmozart/assert/tests/AssertTest.php on line 28

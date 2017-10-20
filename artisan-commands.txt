@@ -1,0 +1,40 @@
+composer create-project --prefer-dist laravel/laravel hasoft-demo
+ 8016  subl .
+ 8017  cd hasoft-demo/
+ 8018  subl .
+ 8019  git init
+ 8020  ls
+ 8021  cat readme.md
+ 8022  php artisan make:model help
+ 8023  php artisan help
+ 8024  php artisan make:mode -h
+ 8025  php artisan make:model -m -c Product
+ 8026  history
+ 8027  php artisan migrate
+ 8028  php artisan make:model -c categories
+ 8029  php artisan make:model -c Category
+ 8030  composer dump-autoload
+ 8031  route list
+ 8032  php artisan route:list
+ 8033  php artisan route list
+ 8034  php artisan route:list
+ 8035  composer dump-autoload
+ 8036  php artisan make:controller Categories --model="Category"
+ 8037  php artisan make:controller Products --model="Product"
+ 8038  php artisan route:list
+ 8039  composer require laravelcollective/html
+ 8040*
+ 8041  npm install
+ 8042  php artisan migrate:rollback
+ 8043  php artisan migrate
+ 8044  php artisan migrate:rollback
+ 8045  php artisan migrate
+ 8046  php artisan migrate:rollback
+ 8047  php artisan migrate
+ 8048  php artisan migrate:rollback
+ 8049  php artisan migrate
+ 8050  php artisan make:auth
+ 8051  clear
+
+
+npm run dev
