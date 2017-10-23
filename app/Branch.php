@@ -1,6 +1,9 @@
 <?php
+namespace App;
 
-class Branch extends \Eloquent {
+use Illuminate\Database\Eloquent\Model;
+
+class Branch extends Model {
 
 	// Add your validation rules here
 	public static $rules = [
@@ -11,20 +14,15 @@ class Branch extends \Eloquent {
 	protected $fillable = [];
 
 
-	public function members(){
-
-		return $this->hasMany('Member');
-	}
-
 	public function employee(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 
 	public function journals(){
 
-		return $this->hasMany('Journal');
+		return $this->hasMany('App\Journal');
 	}
 
 public static function getName($id){

@@ -8,7 +8,7 @@ use App\Employee;
 use App\Allowance;
 use App\Deduction;
 use App\Relief;
-use App\Payment;
+use App\Bank;
 use App\Tax;
 use App\ItemTracker;
 use App\Stock;
@@ -3070,7 +3070,7 @@ Route::post('import/banks', function(){
 Route::get('api/dropdown', function(){
     $id = Input::get('option');
     $bbranch = Bank::find($id)->bankbranch;
-    return $bbranch->lists('bank_branch_name', 'id');
+    return $bbranch->pluck('bank_branch_name', 'id');
 });
 
 Route::get('api/leavetypes', function(){

@@ -1,6 +1,20 @@
 <?php
 
-class BankBranchController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\BBranch;
+use App\Bank;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class BankBranchController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -11,7 +25,9 @@ class BankBranchController extends \BaseController {
 	{
 		$bbranches = BBranch::all();
 
-		return View::make('bank_branch.index', compact('bbranches'));
+		Audit::logaudit('Bank Branch', 'view', 'view bank branches');
+
+		return view('bank_branch.index', compact('bbranches'));
 	}
 
 	/**
@@ -21,7 +37,8 @@ class BankBranchController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('bank_branch.create');
+		$banks = Bank::all();
+		return view('bank_branch.create',compact('banks'));
 	}
 
 	/**
@@ -44,11 +61,15 @@ class BankBranchController extends \BaseController {
 
 		$bbranch->branch_code = Input::get('code');
 
+		$bbranch->bank_id = Input::get('bank_id');
+
         $bbranch->organization_id = '1';
 
 		$bbranch->save();
 
-		return Redirect::route('bank_branch.index');
+		Audit::logaudit('Bank Branch', 'create', 'created bank branch '.Input::get('code').' - '.Input::get('name')); 
+
+		return Redirect::route('bank_branch.index')->withFlashMessage('Bank Branch successfully created!');
 	}
 
 	/**
@@ -61,7 +82,7 @@ class BankBranchController extends \BaseController {
 	{
 		$bbranch = BBranch::findOrFail($id);
 
-		return View::make('bank_branch.show', compact('bbranch'));
+		return view('bank_branch.show', compact('bbranch'));
 	}
 
 	/**
@@ -73,8 +94,9 @@ class BankBranchController extends \BaseController {
 	public function edit($id)
 	{
 		$bbranch = BBranch::find($id);
+		$banks = Bank::all();
 
-		return View::make('bank_branch.edit', compact('bbranch'));
+		return view('bank_branch.edit', compact('bbranch','banks'));
 	}
 
 	/**
@@ -96,9 +118,12 @@ class BankBranchController extends \BaseController {
 
 		$bbranch->bank_branch_name = Input::get('name');
 		$bbranch->branch_code = Input::get('code');
+		$bbranch->bank_id = Input::get('bank_id');
 		$bbranch->update();
 
-		return Redirect::route('bank_branch.index');
+		Audit::logaudit('Bank Branch', 'update', 'update bank branch '.Input::get('code').' - '.Input::get('name')); 
+
+		return Redirect::route('bank_branch.index')->withFlashMessage('Bank Branch successfully updated!');
 	}
 
 	/**
@@ -109,9 +134,12 @@ class BankBranchController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$bbranch = BBranch::findOrFail($id);
 		BBranch::destroy($id);
 
-		return Redirect::route('bank_branch.index');
+		Audit::logaudit('Bank Branch', 'delete', 'deleted bank branch '.$bbranch->branch_code.' - '.$bbranch->bank_branch_name); 
+
+		return Redirect::route('bank_branch.index')->withDeleteMessage('Bank Branch successfully deleted!');
 	}
 
 }

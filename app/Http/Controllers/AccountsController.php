@@ -1,6 +1,19 @@
 <?php
 
-class AccountsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Account;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class AccountsController extends Controller {
 
 	/**
 	 * Display a listing of accounts
@@ -11,10 +24,12 @@ class AccountsController extends \BaseController {
 	{
 		$accounts = DB::table('accounts')->orderBy('code', 'asc')->get();
 
-		return View::make('accounts.index', compact('accounts'));
-
-
 		Audit::logaudit('Accounts', 'view', 'view chart of accounts');
+
+		return view('accounts.index', compact('accounts'));
+
+
+		
 	}
 
 	/**
@@ -24,7 +39,7 @@ class AccountsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('accounts.create');
+		return view('accounts.create');
 	}
 
 	/**
@@ -34,7 +49,7 @@ class AccountsController extends \BaseController {
 	 */
 	public function store()
 	{
-		$validator = Validator::make($data = Input::all(), Account::$rules);
+		$validator = Validator::make($data = Input::all(), Account::$rules, Account::$messages);
 
 		if ($validator->fails())
 		{
@@ -48,7 +63,7 @@ class AccountsController extends \BaseController {
 
 		if($code_exists >= 1){
 
-			return Redirect::back()->withErrors(array('error'=>'The GL code already exists'))->withInput();
+			return Redirect::back()->withErrors(array('error'=>'The Account code already exists'))->withInput();
 		}
 		else {
 
@@ -59,8 +74,8 @@ class AccountsController extends \BaseController {
 		$account->category = Input::get('category');
 		$account->name = Input::get('name');
 		$account->code = Input::get('code');
-		$account->balance = Input::get('balance');
-		$account->organization_id = Confide::user()->organization_id;
+		//$account->balance = Input::get('balance');
+		$account->organization_id = Auth::user()->organization_id;
 		if(Input::get('active')){
 			$account->active = TRUE;
 		}
@@ -73,7 +88,7 @@ class AccountsController extends \BaseController {
 
 		Audit::logaudit('Accounts', 'create', 'created: '.$account->name.' '.$account->code);
 
-		return Redirect::route('accounts.index');
+		return Redirect::route('accounts.index')->withFlashMessage('Account successfully created!');
 	}
 
 	/**
@@ -86,7 +101,7 @@ class AccountsController extends \BaseController {
 	{
 		$account = Account::findOrFail($id);
 
-		return View::make('accounts.show', compact('account'));
+		return view('accounts.show', compact('account'));
 	}
 
 	/**
@@ -101,7 +116,7 @@ class AccountsController extends \BaseController {
 
 
 
-		return View::make('accounts.edit', compact('account'));
+		return view('accounts.edit', compact('account'));
 	}
 
 	/**
@@ -122,49 +137,25 @@ class AccountsController extends \BaseController {
 		}
 
 		$code = Input::get('code');
-		$original_code = DB::table('accounts')->where('id', '=', $account->id)->pluck('code');
+		$original_code = DB::table('accounts')->where('id', '!=', $account->id)->where('code', $code)->count();
 
-		if($code != $original_code) {
+		if($original_code > 0) {
 
-			$code_exists = DB::table('accounts')->where('code', '=', $code)->count();
-
-		if($code_exists >= 1){
-
-			return Redirect::back()->withErrors(array('error'=>'The GL code already exists'))->withInput();
-		}
-
-
-		else {
-
-
-		
+			return Redirect::back()->withErrors(array('error'=>'The Account code already exists'))->withInput();
+		}else {
 
 		$account->category = Input::get('category');
 		$account->name = Input::get('name');
 		$account->code = Input::get('code');
-		$account->balance = Input::get('balance');
-		
-		$account->organization_id = Confide::user()->organization_id;
+		//$account->balance = Input::get('balance');
 		if(Input::get('active')){
 			$account->active = TRUE;
 		}
 		else {
 			$account->active = FALSE;
 		}
-		
-		$account->update();
 
-		}
-
-		} else {
-
-		$account->category = Input::get('category');
-		$account->name = Input::get('name');
-		$account->code = Input::get('code');
-		$account->balance = Input::get('balance');
-		$account->active = Input::get('active');
-
-		$account->organization_id = Confide::user()->organization_id;
+		$account->organization_id = Auth::user()->organization_id;
 		$account->update();
 
 		}
@@ -172,7 +163,7 @@ class AccountsController extends \BaseController {
 		Audit::logaudit('Accounts', 'update', 'updated: '.$account->name.' '.$account->code);
 
 
-		return Redirect::route('accounts.index');
+		return Redirect::route('accounts.index')->withFlashMessage('Account successfully updated!');
 	}
 
 	/**
@@ -192,7 +183,7 @@ class AccountsController extends \BaseController {
 		Audit::logaudit('Accounts', 'delete', 'deleted:'.$account->name.' '.$account->code);
 
 
-		return Redirect::route('accounts.index');
+		return Redirect::route('accounts.index')->withDeleteMessage('Account successfully deleted!');
 	}
 
 }

@@ -1,8 +1,13 @@
 <?php
 
-class Audit extends \Eloquent {
+namespace App;
 
-	use \Traits\Encryptable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+
+class Audit extends Model {
+
+	/*use \Traits\Encryptable;
 
 
 	protected $encryptable = [
@@ -11,7 +16,7 @@ class Audit extends \Eloquent {
 		'entity',
 		'action',
 		'user',
-	];
+	];*/
 
 	// Add your validation rules here
 	public static $rules = [
@@ -28,7 +33,7 @@ class Audit extends \Eloquent {
 
     $audit->date = date('Y-m-d');
     $audit->description = $description;
-    $audit->user = Confide::user()->username;
+    $audit->user = Auth::user()->username;
     $audit->entity = $entity;
     $audit->action = $action;
     $audit->save();

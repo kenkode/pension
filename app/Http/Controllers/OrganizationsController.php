@@ -1,6 +1,19 @@
 <?php
 
-class OrganizationsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Organization;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class OrganizationsController extends Controller {
 
 	/**
 	 * Display a listing of organizations
@@ -25,7 +38,9 @@ class OrganizationsController extends \BaseController {
 		->get();
 		$organization = DB::table('organizations')->where('id', '=', 1)->first();
 
-		return View::make('organizations.index', compact('organization','banks','bbranches','banks_db','bbranches_db'));
+		Audit::logaudit('Organization', 'view', 'viewed organization details');
+
+		return view('organizations.index', compact('organization','banks','bbranches','banks_db','bbranches_db'));
 	
 	}
 
@@ -36,7 +51,7 @@ class OrganizationsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('organizations.create');
+		return view('organizations.create');
 	}
 
 	/**
@@ -79,7 +94,7 @@ class OrganizationsController extends \BaseController {
 
 		$organization = Organization::findOrFail($id);
 
-		return View::make('organizations.show', compact('organization','banks','bbranches'));
+		return view('organizations.show', compact('organization','banks','bbranches'));
 	}
 
 	/**
@@ -92,7 +107,7 @@ class OrganizationsController extends \BaseController {
 	{
 		$organization = Organization::find($id);
 
-		return View::make('organizations.edit', compact('organization'));
+		return view('organizations.edit', compact('organization'));
 	}
 
 	/**
@@ -126,7 +141,9 @@ class OrganizationsController extends \BaseController {
 		$organization->swift_code = Input::get('code');
 		$organization->update();
 
-		return Redirect::route('organizations.index');
+		Audit::logaudit('Organization', 'update', 'updated organization details');
+
+		return Redirect::route('organizations.index')->withFlashMessage('Organization details successfully updated!');
 	}
 
 	/**
@@ -159,7 +176,7 @@ class OrganizationsController extends \BaseController {
 		$license_key = $organization->license_key_generator($license_code);
 
 
-		return View::make('admin.license_view', compact('license_key','org_name','license_code'));
+		return view('admin.license_view', compact('license_key','org_name','license_code'));
 
 
 	}
@@ -171,7 +188,7 @@ class OrganizationsController extends \BaseController {
 		$organization = Organization::findOrFail($id);
 
 
-		return View::make('activate', compact('organization'));
+		return view('activate', compact('organization'));
 	}
 
 
@@ -196,7 +213,7 @@ class OrganizationsController extends \BaseController {
 
 		} else {
 
-			return View::make('activate', compact('organization'))->withErrors('License activation failed. License Key not valid');
+			return view('activate', compact('organization'))->withErrors('License activation failed. License Key not valid');
 
 		}
 
@@ -227,7 +244,8 @@ if(Input::hasFile('photo')){
 			
 		}
 
-		return Redirect::to('organizations');
+        Audit::logaudit('Organization', 'logo', 'update organization logo');
+		return Redirect::to('organizations')->withFlashMessage('Organization logo successfully updated!');
 }
 
 

@@ -1,7 +1,11 @@
-@extends('layouts.accounting')
+@extends('layouts.app')
 @section('content')
 
-<div class="row">
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
+<div class="row" >
 	<div class="col-lg-12">
   <h4><font color='green'>Chart of Accounts</font></h4>
 
@@ -11,11 +15,11 @@
 
 
 <div class="row">
-	<div class="col-lg-5">
+	<div class="col-lg-6">
 
     
 		
-		 @if ($errors->has())
+		 @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -27,12 +31,12 @@
        
 
 		 <form method="POST" action="{{{ URL::to('accounts') }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
          <div class="form-group">
             <label for="username">Account Category</label>
-            <select class="form-control" name="category">
+            <select class="form-control select2" name="category">
                 <option value="">select category</option>
                 <option>--------------------------</option>
                 <option value="ASSET">Asset (1000)</option>
@@ -53,11 +57,11 @@
 
 
         <div class="form-group">
-            <label for="username">GL Code</label>
+            <label for="username">Account Code</label>
             <input class="form-control" placeholder="" type="text" name="code" id="code" value="{{{ Input::old('code') }}}">
         </div>
 
-        <div class="form-group">
+        <!-- <div class="form-group">
                 <label for = "username">Balance</label> 
                 
                     <div class="input-group">
@@ -65,7 +69,7 @@
                         <input type="text" class="form-control"  id="balance" name="balance" value="{{{ Input::old('balance') }}}">
                     
                          </div>                                                                          
-                </div>
+                </div> -->
         
 
         <div class="form-group">

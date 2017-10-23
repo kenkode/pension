@@ -1,6 +1,19 @@
 <?php
 
-class DepartmentsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Department;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class DepartmentsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,11 +22,11 @@ class DepartmentsController extends \BaseController {
 	 */
 	public function index()
 	{
-		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
 		Audit::logaudit('Departments', 'view', 'viewed departments');
 
-		return View::make('departments.index', compact('departments'));
+		return view('departments.index', compact('departments'));
 	}
 
 	/**
@@ -23,7 +36,7 @@ class DepartmentsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('departments.create');
+		return view('departments.create');
 	}
 
 	/**
@@ -46,7 +59,7 @@ class DepartmentsController extends \BaseController {
 
 		$department->department_name = Input::get('name');
 
-        $department->organization_id = Confide::user()->organization_id;
+        $department->organization_id = Auth::user()->organization_id;
 
 		$department->save();
        
@@ -65,7 +78,7 @@ class DepartmentsController extends \BaseController {
 	{
 		$department = Department::findOrFail($id);
 
-		return View::make('departments.show', compact('department'));
+		return view('departments.show', compact('department'));
 	}
 
 	/**
@@ -78,7 +91,7 @@ class DepartmentsController extends \BaseController {
 	{
 		$department = Department::find($id);
 
-		return View::make('departments.edit', compact('department'));
+		return view('departments.edit', compact('department'));
 	}
 
 	/**

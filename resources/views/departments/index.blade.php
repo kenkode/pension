@@ -1,5 +1,9 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use App\Department;
+?>
 
 <div class="row">
 	<div class="col-lg-12">
@@ -65,7 +69,7 @@
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('departments/edit/'.$department->id)}}">Update</a></li>
                    
-                    <li><a href="{{URL::to('departments/delete/'.$department->id)}}" onclick="return (confirm('Are you sure you want to delete this departments?'))">Delete</a></li>
+                    <li><a href="{{URL::to('departments/delete/'.$department->id)}}" onclick="return (confirm('Are you sure you want to delete this department?'))">Delete</a></li>
                     
                   </ul>
               </div>

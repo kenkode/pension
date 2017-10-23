@@ -1,6 +1,10 @@
 <?php
 
-class Account extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Account extends Model {
 
 	// Add your validation rules here
 	public static $rules = [
@@ -8,6 +12,12 @@ class Account extends \Eloquent {
 		'name' => 'required',
 		'category' => 'required',
 	];
+
+	public static $messages = array(
+		'code.required'=>'Please insert account code!',
+        'name.required'=>'Please insert account name!',
+        'category.required'=>'Please insert account category!',
+    );
 
 	// Don't forget to fill this array
 	protected $fillable = [];

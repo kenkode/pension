@@ -1,6 +1,10 @@
 <?php
 
-class Bank extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Bank extends Model {
 
 public static $rules = [
 		'name' => 'required',
@@ -18,12 +22,12 @@ public static $messages = array(
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 	public function bankbranch(){
 
-		return $this->hasMany('BBranch');
+		return $this->hasMany('App\BBranch');
 	}
 
 	public static function getName($id){

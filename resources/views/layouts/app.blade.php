@@ -6,7 +6,7 @@
 
 </head>
 
-<body>
+<body >
     <div id="wrapper">
     <nav class="navbar-default navbar-static-side" role="navigation">
         <div class="sidebar-collapse" >
@@ -30,16 +30,16 @@
         </div>
     </nav>
 
-        <div id="page-wrapper" class="gray-bg">
+        <div id="page-wrapper" class="gray-bg" style="background: white !important">
         <div class="row border-bottom">
         <nav class="navbar navbar-static-top white-bg" role="navigation" style="margin-bottom: 0">
         <div class="navbar-header">
             <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
-            <form role="search" class="navbar-form-custom" action="search_results.html">
+           <!--  <form role="search" class="navbar-form-custom" action="search_results.html">
                 <div class="form-group">
                     <input type="text" placeholder="Search for something..." class="form-control" name="top-search" id="top-search">
                 </div>
-            </form>
+            </form> -->
         </div>
             <ul class="nav navbar-top-links navbar-right">
                

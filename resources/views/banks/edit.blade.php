@@ -1,4 +1,4 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -15,7 +15,7 @@
 
     
 		
-		 @if ($errors->has())
+		 @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,9 +24,14 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('banks/update/'.$bank->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
+            <label for="username">Bank Code <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="" type="text" name="code" id="code" value="{{ $bank->bank_code}}">
+        </div>
+
+         <div class="form-group">
             <label for="username">Bank Name <span style="color:red">*</span></label>
             <input class="form-control" placeholder="" type="text" name="name" id="name" value="{{ $bank->bank_name}}">
         </div>

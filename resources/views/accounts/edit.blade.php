@@ -1,4 +1,4 @@
-@extends('layouts.accounting')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -15,7 +15,7 @@
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -27,12 +27,12 @@
        
 
 		 <form method="POST" action="{{{ URL::to('accounts/update/'.$account->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
          <div class="form-group">
             <label for="username">Account Category</label>
-            <select class="form-control" name="category">
+            <select class="form-control select2" name="category">
                 <option value="{{$account->category}}">{{$account->category}}</option>
                 <option>--------------------------</option>
                 <option value="ASSET">Asset</option>
@@ -53,14 +53,11 @@
 
 
         <div class="form-group">
-            <label for="username">GL Code</label>
+            <label for="username">Account Code</label>
             <input class="form-control" placeholder="" type="text" name="code" id="code" value="{{$account->code}}">
         </div>
 
-        <div class="form-group">
-            <label for="username">Account Balance</label>
-            <input class="form-control" placeholder="" type="text" name="balance" id="balance" value="{{$account->balance}}">
-        </div>
+        
         
 
         <div class="form-group">

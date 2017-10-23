@@ -4,6 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Support\Facades\Auth;
+
 class Organization extends Model {
 
 	/*
@@ -54,7 +56,7 @@ public function leaveapplications(){
 
 public static function getOrganizationName(){
 
-	$organization_id = Confide::user()->organization_id;
+	$organization_id = Auth::user()->organization_id;
 
 	$organization = Organization::find($organization_id);
 
@@ -65,7 +67,7 @@ public static function getOrganizationName(){
 
 public static function getUserOrganization(){
 
-	$organization_id = Confide::user()->organization_id;
+	$organization_id = Auth::user()->organization_id;
 
 	$organization = Organization::find($organization_id);
 

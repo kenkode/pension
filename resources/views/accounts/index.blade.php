@@ -1,4 +1,4 @@
-@extends('layouts.accounting')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -16,6 +16,20 @@ function asMoney($value) {
 <hr>
 </div>	
 </div>
+
+@if (Session::has('flash_message'))
+
+      <div class="alert alert-success">
+      {{ Session::get('flash_message') }}
+     </div>
+    @endif
+
+     @if (Session::has('delete_message'))
+
+      <div class="alert alert-danger">
+      {{ Session::get('delete_message') }}
+     </div>
+    @endif
 
 
 <div class="row">
@@ -37,7 +51,7 @@ function asMoney($value) {
          <th>Account Category</th>
         <th>Account Name</th>
          <th>Account Code</th>
-         <th>Balance</th>
+        <!--  <th>Balance</th> -->
           <th>Status </th>
         <th></th>
 
@@ -53,7 +67,6 @@ function asMoney($value) {
           <td>{{ $account->category }}</td>
           <td>{{ $account->name }}</td>
           <td>{{ $account->code }}</td>
-          <td>{{ asMoney($account->balance) }}</td>
           <td>
             @if($account->active)
 
@@ -76,8 +89,7 @@ function asMoney($value) {
           
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('accounts/edit/'.$account->id)}}">Update</a></li>                   
-                    <li><a href="{{URL::to('accounts/delete/'.$account->id)}}">Delete</a></li>
-                     <li><a href="{{URL::to('accounts/show/'.$account->id)}}">Show</a></li>
+                    <li><a href="{{URL::to('accounts/delete/'.$account->id)}}" onclick="return (confirm('Are you sure you want to delete this account?'))">Delete</a></li>
                     
                   </ul>
               </div>

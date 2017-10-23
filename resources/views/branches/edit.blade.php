@@ -1,4 +1,4 @@
-@extends('layouts.organization')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -15,7 +15,7 @@
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,27 +24,13 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('branches/update/'.$branch->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="username">Branch Name</label>
             <input class="form-control" placeholder="" type="text" name="name" id="name" value="{{ $branch->name}}">
         </div>
-        
-        
-        
 
-        
-
-
-
-
-
-
-
-        
-      
-        
         <div class="form-actions form-group">
         
           <button type="submit" class="btn btn-primary btn-sm">Update Branch</button>

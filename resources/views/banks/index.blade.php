@@ -1,4 +1,4 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -8,6 +8,20 @@
 <hr>
 </div>	
 </div>
+
+@if (Session::has('flash_message'))
+
+      <div class="alert alert-success">
+      {{ Session::get('flash_message') }}
+     </div>
+    @endif
+
+     @if (Session::has('delete_message'))
+
+      <div class="alert alert-danger">
+      {{ Session::get('delete_message') }}
+     </div>
+    @endif
 
 
 <div class="row">
@@ -26,6 +40,7 @@
       <thead>
 
         <th>#</th>
+        <th>Bank Code</th>
         <th>Bank Name</th>
         <th>Action</th>
 
@@ -38,6 +53,7 @@
         <tr>
 
           <td> {{ $i }}</td>
+          <td>{{ $bank->bank_code }}</td>
           <td>{{ $bank->bank_name }}</td>
           <td>
 
@@ -49,7 +65,7 @@
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('banks/edit/'.$bank->id)}}">Update</a></li>
                    
-                    <li><a href="{{URL::to('banks/delete/'.$bank->id)}}">Delete</a></li>
+                    <li><a href="{{URL::to('banks/delete/'.$bank->id)}}" onclick="return (confirm('Are you sure you want to delete this bank?'))">Delete</a></li>
                     
                   </ul>
               </div>

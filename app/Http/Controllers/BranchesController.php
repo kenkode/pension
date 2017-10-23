@@ -1,6 +1,19 @@
 <?php
 
-class BranchesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Branch;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class BranchesController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -11,7 +24,9 @@ class BranchesController extends \BaseController {
 	{
 		$branches = Branch::all();
 
-		return View::make('branches.index', compact('branches'));
+		Audit::logaudit('Branch', 'view', 'viewed branches');
+
+		return view('branches.index', compact('branches'));
 	}
 
 	/**
@@ -21,7 +36,7 @@ class BranchesController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('branches.create');
+		return view('branches.create');
 	}
 
 	/**
@@ -43,7 +58,9 @@ class BranchesController extends \BaseController {
 		$branch->name = Input::get('name');
 		$branch->save();
 
-		return Redirect::route('branches.index');
+		Audit::logaudit('Branch', 'create', 'created branch '.Input::get('name'));
+
+		return Redirect::route('branches.index')->withFlashMessage('Branch successfully created!');
 	}
 
 	/**
@@ -56,7 +73,7 @@ class BranchesController extends \BaseController {
 	{
 		$branch = Branch::findOrFail($id);
 
-		return View::make('branches.show', compact('branch'));
+		return view('branches.show', compact('branch'));
 	}
 
 	/**
@@ -69,7 +86,7 @@ class BranchesController extends \BaseController {
 	{
 		$branch = Branch::find($id);
 
-		return View::make('branches.edit', compact('branch'));
+		return view('branches.edit', compact('branch'));
 	}
 
 	/**
@@ -92,7 +109,8 @@ class BranchesController extends \BaseController {
 		$branch->name = Input::get('name');
 		$branch->update();
 
-		return Redirect::route('branches.index');
+        Audit::logaudit('Branch', 'update', 'updated branch '.Input::get('name'));
+		return Redirect::route('branches.index')->withFlashMessage('Branch successfully updated!');
 	}
 
 	/**
@@ -103,9 +121,12 @@ class BranchesController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$branch = Branch::findOrFail($id);
 		Branch::destroy($id);
 
-		return Redirect::route('branches.index');
+		Audit::logaudit('Branch', 'delete', 'deleted branch '.$branch->name);
+
+		return Redirect::route('branches.index')->withDeleteMessage('Branch successfully deleted!');
 	}
 
 }

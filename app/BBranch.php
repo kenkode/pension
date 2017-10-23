@@ -1,6 +1,10 @@
 <?php
 
-class BBranch extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class BBranch extends Model {
 
 public $table = "bank_branches";
 
@@ -22,11 +26,11 @@ public static $messages = array(
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 	public function bank(){
-         return $this->belongsTo('Bank');
+         return $this->belongsTo('App\Bank');
     }
 
     public static function getName($id){

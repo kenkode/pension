@@ -36,7 +36,7 @@
     <!-- Sparkline demo data  -->
     <script src="{{ asset('theme/js/demo/sparkline-demo.js') }}"></script>
 
-
+  {{Html::script('js/price_format.js') }}
 
     <?php 
 
@@ -307,6 +307,7 @@
 <script>
 
     $(document).ready(function() {
+       // $(".select2").select2();
 
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
@@ -454,7 +455,111 @@ $(function (){$('.daily').datepicker({
     });});
     
 </script>
+  <script src="{{ asset('select2/select2.full.min.js') }}"></script>
+  <script>
 
-
+    $(document).ready(function() {
+        $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+        $(".select2").select2({
+        width: '100%'
+        });
+        
+    });
+</script>
     
 
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        /* Animations */
+        //$("#side-menu li").velocity("transition.slideDownIn", {stagger: 100}, 2000);
+        //$('.panel').velocity("transition.slideDownBigIn", 2000);
+        //$('.row').velocity("transition.slideLeftIn", 2000)
+        //$("table").velocity("transition.slideDownIn", 2000);
+        //$("form").velocity("transition.slideDownIn", 2000);
+
+        $('#users').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'}) ;
+        $('table.users').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'}) ;
+        $('#mobile').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#rejected').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#app').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#disbursed').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#amended').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+
+    } );
+
+</script>
+
+<script type="text/javascript">
+
+$(function(){
+$('.datepicker').datepicker({
+    format: 'dd-M-yyyy',
+    startDate: '-60y',
+    endDate: '+0d',
+    autoclose: true
+});
+});
+
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker1').datepicker({
+    format: 'yyyy-mm-dd',
+    startDate: '-60y',
+    endDate: '-18y',
+    autoclose: true
+});
+
+$('.expiry').datepicker({
+    format: 'yyyy-mm-dd',
+    startDate: '0y',
+    autoclose: true
+});
+
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker2').datepicker({
+    format: "m-yyyy",
+    startView: "months", 
+    minViewMode: "months",
+    autoclose: true
+});
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker42').datepicker({
+    format: " yyyy",
+    startView: "years", 
+    minViewMode: "years",
+    autoclose: true
+});
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker21').datepicker({
+    format: "yyyy-mm-dd",
+   
+    autoclose: true
+});
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker28').datepicker({
+    format: "m-yyyy",
+    startView: "months", 
+    minViewMode: "months",
+    autoclose: true
+});
+});
+</script>
