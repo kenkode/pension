@@ -1,6 +1,21 @@
 <?php
 
-class AppraisalSettingsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Appraisalquestion;
+use App\Appraisalcategory;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+
+class AppraisalSettingsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,11 +24,11 @@ class AppraisalSettingsController extends \BaseController {
 	 */
 	public function index()
 	{
-		$appraisals = Appraisalquestion::where('organization_id',Confide::user()->organization_id)->get();
+		$appraisals = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
 
 		Audit::logaudit('Appraisal Settings', 'view', 'viewed appraisal settings');
 
-		return View::make('appraisalsettings.index', compact('appraisals'));
+		return view('appraisalsettings.index', compact('appraisals'));
 	}
 
 	/**
@@ -24,14 +39,14 @@ class AppraisalSettingsController extends \BaseController {
 	public function create()
 	{
 		$categories = Appraisalcategory::all();
-		return View::make('appraisalsettings.create',compact('categories'));
+		return view('appraisalsettings.create',compact('categories'));
 	}
 
 	public function createcategory()
 	{
       $postallowance = Input::all();
       $data = array('name' => $postallowance['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('appraisalcategories')->insertGetId( $data );
@@ -68,11 +83,11 @@ class AppraisalSettingsController extends \BaseController {
 
                 $appraisal->rate = Input::get('rate');
 
-                $appraisal->organization_id = Confide::user()->organization_id;
+                $appraisal->organization_id = Auth::user()->organization_id;
 
 		$appraisal->save();
 
-		Audit::logaudit('Appraisal Question', 'create', 'created: '.$appraisal->question);
+		Audit::logaudit('Appraisal Question', 'create', 'created appraisal question '.$appraisal->question);
 
 
 		return Redirect::route('AppraisalSettings.index')->withFlashMessage('Appraisal Settings successfully created!');
@@ -88,7 +103,7 @@ class AppraisalSettingsController extends \BaseController {
 	{
 		$appraisal = Appraisalquestion::findOrFail($id);
         $categories = Appraisalcategory::all();
-		return View::make('appraisalsettings.show', compact('categories'));
+		return view('appraisalsettings.show', compact('categories'));
 	}
 
 	/**
@@ -101,7 +116,7 @@ class AppraisalSettingsController extends \BaseController {
 	{
 		$appraisal = Appraisalquestion::find($id);
         $categories = Appraisalcategory::all();
-		return View::make('appraisalsettings.edit', compact('appraisal','categories'));
+		return view('appraisalsettings.edit', compact('appraisal','categories'));
 	}
 
 	/**
@@ -129,7 +144,7 @@ class AppraisalSettingsController extends \BaseController {
 
 		$appraisal->update();
 
-		Audit::logaudit('Appraisal Question', 'update', 'updated: '.$appraisal->question);
+		Audit::logaudit('Appraisal Question', 'update', 'updated appraisal question '.$appraisal->question);
 
 
 		return Redirect::route('AppraisalSettings.index')->withFlashMessage('Appraisal Settings successfully updated!');
@@ -145,14 +160,14 @@ class AppraisalSettingsController extends \BaseController {
 	{
 		$appraisal = Appraisalquestion::findOrFail($id);
 
-		$app  = DB::table('Appraisals')->where('Appraisalquestion_id',$id)->count();
+		$app  = DB::table('appraisals')->where('appraisalquestion_id',$id)->count();
 		if($app>0){
 			return Redirect::route('AppraisalSettings.index')->withDeleteMessage('Cannot delete this appraisal question because its assigned to appraisal(s)!');
 		}else{
 		
 		Appraisalquestion::destroy($id);
 
-		Audit::logaudit('Appraisal Question', 'delete', 'deleted: '.$appraisal->question);
+		Audit::logaudit('Appraisal Question', 'delete', 'deleted appraisal question '.$appraisal->question);
 
 		return Redirect::route('AppraisalSettings.index')->withDeleteMessage('Appraisal Settings successfully deleted!');
 	   }

@@ -1,6 +1,19 @@
 <?php
 
-class DeductionsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Deduction;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class PayrollDeductionsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -13,7 +26,7 @@ class DeductionsController extends \BaseController {
 
 		Audit::logaudit('Deductions', 'view', 'viewed deduction list ');
 
-		return View::make('deductions.index', compact('deductions'));
+		return view('deductions.index', compact('deductions'));
 	}
 
 	/**
@@ -23,7 +36,7 @@ class DeductionsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('deductions.create');
+		return view('deductions.create');
 	}
 
 	/**
@@ -48,9 +61,9 @@ class DeductionsController extends \BaseController {
 
 		$deduction->save();
 
-		Audit::logaudit('Deductions', 'create', 'created: '.$deduction->deduction_name);
+		Audit::logaudit('Deductions', 'create', 'created deduction '.$deduction->deduction_name);
 
-		return Redirect::route('deductions.index');
+		return Redirect::route('deductions.index')->withFlashMessage('Deduction successfully created!');
 	}
 
 	/**
@@ -63,7 +76,7 @@ class DeductionsController extends \BaseController {
 	{
 		$deduction = Deduction::findOrFail($id);
 
-		return View::make('deductions.show', compact('deduction'));
+		return view('deductions.show', compact('deduction'));
 	}
 
 	/**
@@ -76,7 +89,7 @@ class DeductionsController extends \BaseController {
 	{
 		$deduction = Deduction::find($id);
 
-		return View::make('deductions.edit', compact('deduction'));
+		return view('deductions.edit', compact('deduction'));
 	}
 
 	/**
@@ -99,9 +112,9 @@ class DeductionsController extends \BaseController {
 		$deduction->deduction_name = Input::get('name');
 		$deduction->update();
 
-		Audit::logaudit('Deductions', 'update', 'updated: '.$deduction->deduction_name);
+		Audit::logaudit('Deductions', 'update', 'updated deduction '.$deduction->deduction_name);
 
-		return Redirect::route('deductions.index');
+		return Redirect::route('deductions.index')->withFlashMessage('Deduction successfully updated!');
 	}
 
 	/**
@@ -116,9 +129,10 @@ class DeductionsController extends \BaseController {
 		
 		Deduction::destroy($id);
 
-		Audit::logaudit('Deductions', 'delete', 'deleted: '.$deduction->deduction_name);
+		Audit::logaudit('Deductions', 'delete', 'deleted deduction '.$deduction->deduction_name);
 
-		return Redirect::route('deductions.index');
+		return Redirect::route('deductions.index')->withDeleteMessage('Deduction successfully deleted!');
 	}
 
 }
+

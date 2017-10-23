@@ -1,6 +1,19 @@
 <?php
 
-class ReliefsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Relief;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class ReliefsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -10,8 +23,9 @@ class ReliefsController extends \BaseController {
 	public function index()
 	{
 		$reliefs = Relief::all();
+		Audit::logaudit('Relief', 'view', 'viewed reliefs');
 
-		return View::make('reliefs.index', compact('reliefs'));
+		return view('reliefs.index', compact('reliefs'));
 	}
 
 	/**
@@ -21,7 +35,7 @@ class ReliefsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('reliefs.create');
+		return view('reliefs.create');
 	}
 
 	/**
@@ -46,7 +60,9 @@ class ReliefsController extends \BaseController {
 
 		$relief->save();
 
-		return Redirect::route('reliefs.index');
+		Audit::logaudit('Relief', 'create', 'created relief '.Input::get('name'));
+
+		return Redirect::route('reliefs.index')->withFlashMessage('Relief successfully created!');
 	}
 
 	/**
@@ -59,7 +75,7 @@ class ReliefsController extends \BaseController {
 	{
 		$relief = Relief::findOrFail($id);
 
-		return View::make('reliefs.show', compact('relief'));
+		return view('reliefs.show', compact('relief'));
 	}
 
 	/**
@@ -72,7 +88,7 @@ class ReliefsController extends \BaseController {
 	{
 		$relief = Relief::find($id);
 
-		return View::make('reliefs.edit', compact('relief'));
+		return view('reliefs.edit', compact('relief'));
 	}
 
 	/**
@@ -95,7 +111,9 @@ class ReliefsController extends \BaseController {
 		$relief->relief_name = Input::get('name');
 		$relief->update();
 
-		return Redirect::route('reliefs.index');
+		Audit::logaudit('Relief', 'update', 'updated relief '.Input::get('name'));
+
+		return Redirect::route('reliefs.index')->withFlashMessage('Relief successfully updated!');
 	}
 
 	/**
@@ -106,9 +124,12 @@ class ReliefsController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$relief = Relief::findOrFail($id);
 		Relief::destroy($id);
 
-		return Redirect::route('reliefs.index');
+		Audit::logaudit('Relief', 'delete', 'deleted relief '.$relief->relief_name);
+
+		return Redirect::route('reliefs.index')->withDeleteMessage('Relief successfully deleted!');
 	}
 
 }

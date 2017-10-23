@@ -1,6 +1,19 @@
 <?php
 
-class JobGroupController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\JGroup;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class JobGroupController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -10,8 +23,9 @@ class JobGroupController extends \BaseController {
 	public function index()
 	{
 		$jgroups = JGroup::all();
+        Audit::logaudit('Job Group', 'view', 'viewed job groups');
 
-		return View::make('job_group.index', compact('jgroups'));
+		return view('job_group.index', compact('jgroups'));
 	}
 
 	/**
@@ -21,7 +35,7 @@ class JobGroupController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('job_group.create');
+		return view('job_group.create');
 	}
 
 	/**
@@ -46,7 +60,8 @@ class JobGroupController extends \BaseController {
 
 		$jgroup->save();
 
-		return Redirect::route('job_group.index');
+        Audit::logaudit('Job Group', 'create', 'created job group '.Input::get('name'));
+		return Redirect::route('job_group.index')->withFlashMessage('Job Group successfully created!');
 	}
 
 	/**
@@ -59,7 +74,7 @@ class JobGroupController extends \BaseController {
 	{
 		$jgroup = JGroup::findOrFail($id);
 
-		return View::make('job_group.show', compact('jgroup'));
+		return view('job_group.show', compact('jgroup'));
 	}
 
 	/**
@@ -72,7 +87,7 @@ class JobGroupController extends \BaseController {
 	{
 		$jgroup = JGroup::find($id);
 
-		return View::make('job_group.edit', compact('jgroup'));
+		return view('job_group.edit', compact('jgroup'));
 	}
 
 	/**
@@ -95,7 +110,9 @@ class JobGroupController extends \BaseController {
 		$jgroup->job_group_name = Input::get('name');
 		$jgroup->update();
 
-		return Redirect::route('job_group.index');
+		Audit::logaudit('Job Group', 'update', 'updated job group '.Input::get('name'));
+
+		return Redirect::route('job_group.index')->withFlashMessage('Job Group successfully updated!');
 	}
 
 	/**
@@ -106,9 +123,12 @@ class JobGroupController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$jgroup = JGroup::findOrFail($id);
 		JGroup::destroy($id);
 
-		return Redirect::route('job_group.index');
+		Audit::logaudit('Job Group', 'delete', 'deleted job group '.$jgroup->job_group_name);
+
+		return Redirect::route('job_group.index')->withDeleteMessage('Job Group successfully deleted!');
 	}
 
 }

@@ -1,6 +1,20 @@
 <?php
 
-class OccurencesettingsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Occurencesetting;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+
+class OccurencesettingsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,13 +23,13 @@ class OccurencesettingsController extends \BaseController {
 	 */
 	public function index()
 	{
-		$occurences = Occurencesetting::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$occurences = Occurencesetting::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
         
 		Audit::logaudit('Occurencesettings', 'view', 'viewed occurence settings');
 
 
-		return View::make('occurencesettings.index', compact('occurences'));
+		return view('occurencesettings.index', compact('occurences'));
 	}
 
 	/**
@@ -25,7 +39,7 @@ class OccurencesettingsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('occurencesettings.create');
+		return view('occurencesettings.create');
 	}
 
 	/**
@@ -46,11 +60,11 @@ class OccurencesettingsController extends \BaseController {
 
 		$occurence->occurence_type = Input::get('type');
 
-                $occurence->organization_id = Confide::user()->organization_id;
+                $occurence->organization_id = Auth::user()->organization_id;
 
 		$occurence->save();
 
-		Audit::logaudit('Occurencesettings', 'create', 'created: '.$occurence->occurence_type);
+		Audit::logaudit('Occurencesettings', 'create', 'created occurence setting '.$occurence->occurence_type);
 
 
 		return Redirect::route('occurencesettings.index')->withFlashMessage('Occurence type successfully created!');
@@ -66,7 +80,7 @@ class OccurencesettingsController extends \BaseController {
 	{
 		$occurence = Occurencesetting::findOrFail($id);
 
-		return View::make('Occurencesettings.show', compact('occurence'));
+		return view('Occurencesettings.show', compact('occurence'));
 	}
 
 	/**
@@ -79,7 +93,7 @@ class OccurencesettingsController extends \BaseController {
 	{
 		$occurence = Occurencesetting::find($id);
 
-		return View::make('occurencesettings.edit', compact('occurence'));
+		return view('occurencesettings.edit', compact('occurence'));
 	}
 
 	/**
@@ -102,7 +116,7 @@ class OccurencesettingsController extends \BaseController {
 		$occurence->occurence_type = Input::get('type');
 		$occurence->update();
 
-		Audit::logaudit('Occurencesettings', 'update', 'updated: '.$occurence->occurence_type);
+		Audit::logaudit('Occurencesettings', 'update', 'updated occurence setting '.$occurence->occurence_type);
 
 		return Redirect::route('occurencesettings.index')->withFlashMessage('Occurence type successfully updated!');
 	}
@@ -122,7 +136,7 @@ class OccurencesettingsController extends \BaseController {
 		}else{
 		Occurencesetting::destroy($id);
 
-		Audit::logaudit('Occurencesettings', 'delete', 'deleted: '.$occurence->occurence_type);
+		Audit::logaudit('Occurencesettings', 'delete', 'deleted occurence setting '.$occurence->occurence_type);
 
 		return Redirect::route('occurencesettings.index')->withDeleteMessage('Occurence type successfully deleted!');
 	}

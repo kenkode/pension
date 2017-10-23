@@ -1,6 +1,9 @@
 <?php
 
-class NssfRates extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+class NssfRates extends Model {
 
 	public $table = "social_security";
 

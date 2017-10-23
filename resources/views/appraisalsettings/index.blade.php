@@ -1,5 +1,9 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use App\Appraisalcategory;
+?>
 
 <div class="row">
 	<div class="col-lg-12">

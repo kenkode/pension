@@ -1,6 +1,20 @@
 <?php
 
-class HolidaysController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Holiday;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+
+class HolidaysController extends Controller {
 
 	/**
 	 * Display a listing of holidays
@@ -10,8 +24,9 @@ class HolidaysController extends \BaseController {
 	public function index()
 	{
 		$holidays = Holiday::all();
+        Audit::logaudit('Holiday', 'view', 'viewed holidays');
 
-		return View::make('holidays.index', compact('holidays'));
+		return view('holidays.index', compact('holidays'));
 	}
 
 	/**
@@ -21,7 +36,7 @@ class HolidaysController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('holidays.create');
+		return view('holidays.create');
 	}
 
 	/**
@@ -40,7 +55,9 @@ class HolidaysController extends \BaseController {
 
 		Holiday::createHoliday($data);
 
-		return Redirect::route('holidays.index');
+		Audit::logaudit('Holiday', 'create', 'created holiday '.Input::get("name"));
+
+		return Redirect::route('holidays.index')->withFlashMessage('Holiday successfully created!');
 	}
 
 	/**
@@ -53,7 +70,7 @@ class HolidaysController extends \BaseController {
 	{
 		$holiday = Holiday::findOrFail($id);
 
-		return View::make('holidays.show', compact('holiday'));
+		return view('holidays.show', compact('holiday'));
 	}
 
 	/**
@@ -66,7 +83,7 @@ class HolidaysController extends \BaseController {
 	{
 		$holiday = Holiday::find($id);
 
-		return View::make('holidays.edit', compact('holiday'));
+		return view('holidays.edit', compact('holiday'));
 	}
 
 	/**
@@ -87,8 +104,9 @@ class HolidaysController extends \BaseController {
 		}
 
 		Holiday::updateHoliday($data, $id);
+		Audit::logaudit('Holiday', 'update', 'updated holiday '.Input::get("name"));
 
-		return Redirect::route('holidays.index');
+		return Redirect::route('holidays.index')->withFlashMessage('Holiday successfully updated!');
 	}
 
 	/**
@@ -99,9 +117,12 @@ class HolidaysController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
-		Holiday::destroy($id);
 
-		return Redirect::route('holidays.index');
+		$holiday = Holiday::findOrFail($id);
+		Holiday::destroy($id);
+		Audit::logaudit('Holiday', 'update', 'updated holiday '.$holiday->name);
+
+		return Redirect::route('holidays.index')->withDeleteMessage('Holiday successfully deleted!');
 	}
 
 }

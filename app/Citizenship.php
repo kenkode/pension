@@ -1,6 +1,10 @@
 <?php
 
-class Citizenship extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Citizenship extends Model {
 /*
 	use \Traits\Encryptable;
 
@@ -25,7 +29,7 @@ public static $rules = [
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 }

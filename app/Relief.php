@@ -1,6 +1,10 @@
 <?php
 
-class Relief extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Relief extends Model {
 
 	/*
 
@@ -30,7 +34,7 @@ public static $messages = array(
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 }

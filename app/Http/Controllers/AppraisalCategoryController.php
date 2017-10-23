@@ -1,6 +1,19 @@
 <?php
 
-class AppraisalCategoryController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Appraisalcategory;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class AppraisalCategoryController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,13 +22,13 @@ class AppraisalCategoryController extends \BaseController {
 	 */
 	public function index()
 	{
-		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
         
 		Audit::logaudit('Appraisalcategories', 'view', 'viewed appraisal categories');
 
 
-		return View::make('appraisalcategories.index', compact('categories'));
+		return view('appraisalcategories.index', compact('categories'));
 	}
 
 	/**
@@ -25,7 +38,7 @@ class AppraisalCategoryController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('appraisalcategories.create');
+		return view('appraisalcategories.create');
 	}
 
 	/**
@@ -46,11 +59,11 @@ class AppraisalCategoryController extends \BaseController {
 
 		$category->name = Input::get('name');
 
-        $category->organization_id = Confide::user()->organization_id;
+        $category->organization_id = Auth::user()->organization_id;
 
 		$category->save();
 
-		Audit::logaudit('Appraisalcategories', 'create', 'created: '.$category->name);
+		Audit::logaudit('Appraisalcategories', 'create', 'created appraisal category '.$category->name);
 
 
 		return Redirect::route('appraisalcategories.index')->withFlashMessage('Appraisal category successfully created!');
@@ -66,7 +79,7 @@ class AppraisalCategoryController extends \BaseController {
 	{
 		$category = Appraisalcategory::findOrFail($id);
 
-		return View::make('appraisalcategories.show', compact('category'));
+		return view('appraisalcategories.show', compact('category'));
 	}
 
 	/**
@@ -79,7 +92,7 @@ class AppraisalCategoryController extends \BaseController {
 	{
 		$category = Appraisalcategory::find($id);
 
-		return View::make('appraisalcategories.edit', compact('category'));
+		return view('appraisalcategories.edit', compact('category'));
 	}
 
 	/**
@@ -102,7 +115,7 @@ class AppraisalCategoryController extends \BaseController {
 		$category->name = Input::get('name');
 		$category->update();
 
-		Audit::logaudit('Appraisalcategories', 'update', 'updated: '.$category->name);
+		Audit::logaudit('Appraisalcategories', 'update', 'updated appraisal category '.$category->name);
 
 		return Redirect::route('appraisalcategories.index')->withFlashMessage('Appraisal category successfully updated!');
 	}
@@ -117,13 +130,13 @@ class AppraisalCategoryController extends \BaseController {
 	{
 		$category = Appraisalcategory::findOrFail($id);
 
-		$app  = DB::table('Appraisalquestions')->where('Appraisalcategory_id',$id)->count();
+		$app  = DB::table('appraisalquestions')->where('appraisalcategory_id',$id)->count();
 		if($app>0){
 			return Redirect::route('appraisalcategories.index')->withDeleteMessage('Cannot delete this appraisal category because its assigned to appraisal question(s)!');
 		}else{
 		Appraisalcategory::destroy($id);
 
-		Audit::logaudit('Appraisalcategories', 'delete', 'deleted: '.$category->name);
+		Audit::logaudit('Appraisalcategories', 'delete', 'deleted appraisal category '.$category->name);
 
 		return Redirect::route('appraisalcategories.index')->withDeleteMessage('Appraisal category successfully deleted!');
 	}

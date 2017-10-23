@@ -1,4 +1,4 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -15,7 +15,7 @@
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +24,7 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('employee_type/update/'.$etype->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="username">Employee Type Name <span style="color:red">*</span></label>

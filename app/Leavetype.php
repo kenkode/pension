@@ -1,6 +1,10 @@
 <?php
 
-class Leavetype extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Leavetype extends Model {
 
 	// Add your validation rules here
 	public static $rules = [
@@ -13,12 +17,12 @@ class Leavetype extends \Eloquent {
 
 	public function organization(){
 
-		return $this->belongsTo('Organization');
+		return $this->belongsTo('App\Organization');
 	}
 
 	public function leaveapplications(){
 
-		return $this->hasMany('Leaveapplication');
+		return $this->hasMany('App\Leaveapplication');
 	}
 
 

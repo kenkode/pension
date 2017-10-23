@@ -1,8 +1,12 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 
-{{ HTML::script('media/jquery-1.12.0.min.js') }}
+{{ Html::script('media/jquery-1.12.0.min.js') }}
 
 @section('content')
+
+<?php
+use App\Appraisalcategory;
+?>
 
 <div class="row">
     <div class="col-lg-12">
@@ -18,7 +22,7 @@
 
     
         
-         @if ($errors->has())
+        @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -26,8 +30,8 @@
         </div>
         @endif
 
-        {{ HTML::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
-  {{ HTML::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
+        {{ Html::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
+  {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <style>
     label, input { display:block; }
@@ -47,11 +51,11 @@
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
@@ -60,7 +64,7 @@
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       name = $( "#name" ),
       
       allFields = $( [] ).add( name ),
@@ -125,7 +129,8 @@
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : name.val()
+                              'name'  : name.val(),
+                              '_token' : $("#form input[name=_token]").val()
                       },
                       success : function(s){
                          $('#category').append($('<option>', {
@@ -172,12 +177,13 @@
   });
   </script>
  
-   {{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+   {{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <div id="dialog-form" title="Create new appraisal category">
   <p class="validateTips">Please insert Appraisal Category.</p>
  
-  <form>
+  <form id="form">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
@@ -189,7 +195,7 @@
 </div>
 
          <form method="POST" action="{{{ URL::to('AppraisalSettings/update/'.$appraisal->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
                         <label for="username">Category <span style="color:red">*</span></label>

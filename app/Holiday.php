@@ -1,6 +1,10 @@
 <?php
 
-class Holiday extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Holiday extends Model {
 
 	// Add your validation rules here
 	public static $rules = [
@@ -13,7 +17,7 @@ class Holiday extends \Eloquent {
 
 	public function organization(){
 		
-		return $this->belongsTo('Organization');
+		return $this->belongsTo('App\Organization');
 	}
 
 

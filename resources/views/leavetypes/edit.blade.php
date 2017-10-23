@@ -1,4 +1,4 @@
-@extends('layouts.leave')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -15,7 +15,7 @@
 
     
 		
-		 @if ($errors->has())
+		 @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +24,7 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('leavetypes/update/'.$leavetype->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="username">Leave Type</label>
@@ -36,21 +36,6 @@
             <label for="username">Days Entitled</label>
             <input class="form-control" placeholder="" type="text" name="days" id="days" value="{{ $leavetype->days}}">
         </div>
-        
-        
-        
-        
-        
-
-        
-
-
-
-
-
-
-
-        
       
         
         <div class="form-actions form-group">

@@ -1,6 +1,10 @@
 <?php
 
-class Occurencesetting extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Occurencesetting extends Model {
 /*
 	use \Traits\Encryptable;
 
@@ -25,7 +29,7 @@ public static $rules = [
 
 	public function occurence(){
 
-		return $this->belongsTo('Occurence');
+		return $this->belongsTo('App\Occurence');
 	}
 
 	public static function getOccurenceType($id){

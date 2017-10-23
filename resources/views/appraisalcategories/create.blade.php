@@ -1,5 +1,10 @@
-@extends('layouts.hr')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 
 <div class="row">
 	<div class="col-lg-12">
@@ -15,7 +20,7 @@
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +29,7 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('appraisalcategories') }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="username">Name <span style="color:red">*</span> </label>

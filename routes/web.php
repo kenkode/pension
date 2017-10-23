@@ -1206,10 +1206,10 @@ Route::get('reliefs/edit/{id}', 'ReliefsController@edit');
 * deductions routes
 */
 
-Route::resource('deductions', 'DeductionsController');
-Route::post('deductions/update/{id}', 'DeductionsController@update');
-Route::get('deductions/delete/{id}', 'DeductionsController@destroy');
-Route::get('deductions/edit/{id}', 'DeductionsController@edit');
+Route::resource('deductions', 'PayrollDeductionsController');
+Route::post('deductions/update/{id}', 'PayrollDeductionsController@update');
+Route::get('deductions/delete/{id}', 'PayrollDeductionsController@destroy');
+Route::get('deductions/edit/{id}', 'PayrollDeductionsController@edit');
 
 /*
 * nssf routes
@@ -1521,10 +1521,6 @@ Route::get('reliefs/edit/{id}', 'ReliefsController@edit');
 * deductions routes
 */
 
-Route::resource('deductions', 'DeductionsController');
-Route::post('deductions/update/{id}', 'DeductionsController@update');
-Route::get('deductions/delete/{id}', 'DeductionsController@destroy');
-Route::get('deductions/edit/{id}', 'DeductionsController@edit');
 
 /*
 * nontaxables routes

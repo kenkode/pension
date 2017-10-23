@@ -1,6 +1,19 @@
 <?php
 
-class NssfController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\NssfRates;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class NssfController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -11,7 +24,7 @@ class NssfController extends \BaseController {
 	{
 		$nrates = DB::table('social_security')->where('income_from', '!=', 0.00)->get();
 
-		return View::make('nssf.index', compact('nrates'));
+		return view('nssf.index', compact('nrates'));
 	}
 
 	/**
@@ -21,7 +34,7 @@ class NssfController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('nssf.create');
+		return view('nssf.create');
 	}
 
 	/**
@@ -54,7 +67,9 @@ class NssfController extends \BaseController {
 
 		$nrate->save();
 
-		return Redirect::route('nssf.index');
+		Audit::logaudit('NSSF Rates', 'create', 'created NSSF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' employee amount '.$nrate->ss_amount_employee.' employer amount '.$nrate->ss_amount_employer.' tier '.$nrate->tier);
+
+		return Redirect::route('nssf.index')->withFlashMessage('NSSF Rate successfully created!');
 	}
 
 	/**
@@ -67,7 +82,7 @@ class NssfController extends \BaseController {
 	{
 		$nrate = NssfRates::findOrFail($id);
 
-		return View::make('nssf.show', compact('nrate'));
+		return view('nssf.show', compact('nrate'));
 	}
 
 	/**
@@ -80,7 +95,7 @@ class NssfController extends \BaseController {
 	{
 		$nrate = NssfRates::find($id);
 
-		return View::make('nssf.edit', compact('nrate'));
+		return view('nssf.edit', compact('nrate'));
 	}
 
 	/**
@@ -112,7 +127,9 @@ class NssfController extends \BaseController {
 
 		$nrate->update();
 
-		return Redirect::route('nssf.index');
+		Audit::logaudit('NSSF Rates', 'update', 'updated NSSF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' employee amount '.$nrate->ss_amount_employee.' employer amount '.$nrate->ss_amount_employer.' tier '.$nrate->tier);
+
+		return Redirect::route('nssf.index')->withFlashMessage('NSSF Rate successfully updated!');
 	}
 
 	/**
@@ -123,9 +140,12 @@ class NssfController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$nrate = NssfRates::findOrFail($id);
 		NssfRates::destroy($id);
 
-		return Redirect::route('nssf.index');
+		Audit::logaudit('NSSF Rates', 'delete', 'deleted NSSF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' employee amount '.$nrate->ss_amount_employee.' employer amount '.$nrate->ss_amount_employer.' tier '.$nrate->tier);
+
+		return Redirect::route('nssf.index')->withDeleteMessage('NSSF Rate successfully deleted!');
 	}
 
 }

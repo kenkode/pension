@@ -1,6 +1,10 @@
 <?php
 
-class Appraisalquestion extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Appraisalquestion extends Model{
 /*
 	use \Traits\Encryptable;
 
@@ -24,7 +28,7 @@ class Appraisalquestion extends \Eloquent {
 
 	public function appraisal(){
 
-		return $this->belongsTo('Appraisal');
+		return $this->belongsTo('App\Appraisal');
 	}
 
 

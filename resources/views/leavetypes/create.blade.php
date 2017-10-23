@@ -1,5 +1,10 @@
-@extends('layouts.leave')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 <div class="row">
 	<div class="col-lg-12">
  
@@ -14,7 +19,7 @@
 
     
 		
-		 @if ($errors->has())
+		 @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -23,10 +28,10 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('leavetypes') }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
-            <label for="username">Holiday Name</label>
+            <label for="username">Leave Type</label>
             <input class="form-control" placeholder="" type="text" name="name" id="name" value="{{{ Input::old('name') }}}">
         </div>
 

@@ -1,6 +1,10 @@
 <?php
 
-class EType extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class EType extends Model {
 
 public $table = "employee_type";
 
@@ -17,7 +21,7 @@ public static $messages = array(
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 }

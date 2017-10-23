@@ -1,6 +1,18 @@
 <?php
+namespace App\Http\Controllers;
 
-class NhifController extends \BaseController {
+use App\NhifRates;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class NhifController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -10,8 +22,8 @@ class NhifController extends \BaseController {
 	public function index()
 	{
 		$nrates = DB::table('hospital_insurance')->where('income_from', '!=', 0.00)->get();
-
-		return View::make('nhif.index', compact('nrates'));
+        Audit::logaudit('NHIF Rates', 'view', 'viewed NHIF Rates ');
+		return view('nhif.index', compact('nrates'));
 	}
 
 	/**
@@ -21,7 +33,7 @@ class NhifController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('nhif.create');
+		return view('nhif.create');
 	}
 
 	/**
@@ -50,7 +62,9 @@ class NhifController extends \BaseController {
 
 		$nrate->save();
 
-		return Redirect::route('nhif.index');
+		Audit::logaudit('NHIF Rates', 'create', 'created NHIF Rate income from '.$nrate->income_from.' to '.$nrate->income_to.' amount '.$nrate->hi_amount);
+
+		return Redirect::route('nhif.index')->withFlashMessage('NHIF Rate successfully created!');
 	}
 
 	/**
@@ -63,7 +77,7 @@ class NhifController extends \BaseController {
 	{
 		$nrate = NhifRates::findOrFail($id);
 
-		return View::make('nhif.show', compact('nrate'));
+		return view('nhif.show', compact('nrate'));
 	}
 
 	/**
@@ -76,7 +90,7 @@ class NhifController extends \BaseController {
 	{
 		$nrate = NhifRates::find($id);
 
-		return View::make('nhif.edit', compact('nrate'));
+		return view('nhif.edit', compact('nrate'));
 	}
 
 	/**
@@ -104,7 +118,9 @@ class NhifController extends \BaseController {
 
 		$nrate->update();
 
-		return Redirect::route('nhif.index');
+		Audit::logaudit('NHIF Rates', 'update', 'updated NHIF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' amount '.$nrate->hi_amount);
+
+		return Redirect::route('nhif.index')->withFlashMessage('NHIF Rate successfully updated!');
 	}
 
 	/**
@@ -115,9 +131,13 @@ class NhifController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$nrate = NhifRates::findOrFail($id);
+
 		NhifRates::destroy($id);
 
-		return Redirect::route('nhif.index');
+		Audit::logaudit('NHIF Rates', 'delete', 'deleted NHIF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' amount '.$nrate->hi_amount);
+
+		return Redirect::route('nhif.index')->withDeleteMessage('NHIF Rate successfully deleted!');
 	}
 
 }

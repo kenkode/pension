@@ -1,6 +1,19 @@
 <?php
 
-class CitizenshipController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Citizenship;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class CitizenshipController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,13 +22,13 @@ class CitizenshipController extends \BaseController {
 	 */
 	public function index()
 	{
-		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
         
 		Audit::logaudit('Citizenships', 'view', 'viewed citizenships');
 
 
-		return View::make('citizenship.index', compact('citizenships'));
+		return view('citizenship.index', compact('citizenships'));
 	}
 
 	/**
@@ -25,7 +38,7 @@ class CitizenshipController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('citizenship.create');
+		return view('citizenship.create');
 	}
 
 	/**
@@ -46,11 +59,11 @@ class CitizenshipController extends \BaseController {
 
 		$citizenship->name = Input::get('name');
 
-        $citizenship->organization_id = Confide::user()->organization_id;
+        $citizenship->organization_id = Auth::user()->organization_id;
 
 		$citizenship->save();
 
-		Audit::logaudit('Citizenships', 'create', 'created: '.$citizenship->name);
+		Audit::logaudit('Citizenships', 'create', 'created citizenship '.$citizenship->name);
 
 
 		return Redirect::route('citizenships.index')->withFlashMessage('Citizenship successfully created!');
@@ -66,7 +79,7 @@ class CitizenshipController extends \BaseController {
 	{
 		$citizenship = Citizenship::findOrFail($id);
 
-		return View::make('citizenship.show', compact('citizenship'));
+		return view('citizenship.show', compact('citizenship'));
 	}
 
 	/**
@@ -79,7 +92,7 @@ class CitizenshipController extends \BaseController {
 	{
 		$citizenship = Citizenship::find($id);
 
-		return View::make('citizenship.edit', compact('citizenship'));
+		return view('citizenship.edit', compact('citizenship'));
 	}
 
 	/**
@@ -102,7 +115,7 @@ class CitizenshipController extends \BaseController {
 		$citizenship->name = Input::get('name');
 		$citizenship->update();
 
-		Audit::logaudit('Citizenships', 'update', 'updated: '.$citizenship->name);
+		Audit::logaudit('Citizenships', 'update', 'updated citizenship '.$citizenship->name);
 
 		return Redirect::route('citizenships.index')->withFlashMessage('Citizenship successfully updated!');
 	}
@@ -122,7 +135,7 @@ class CitizenshipController extends \BaseController {
 		}else{
 		Citizenship::destroy($id);
 
-		Audit::logaudit('Citizenships', 'delete', 'deleted: '.$citizenship->name);
+		Audit::logaudit('Citizenships', 'delete', 'deleted citizenship '.$citizenship->name);
 
 		return Redirect::route('citizenships.index')->withDeleteMessage('Citizenship successfully deleted!');
 	}

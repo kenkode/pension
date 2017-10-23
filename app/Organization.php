@@ -39,18 +39,18 @@ class Organization extends Model {
 
 public function holidays(){
 
-	return $this->hasMany('Holiday');
+	return $this->hasMany('App\Holiday');
 }
 
 
 public function leavetypes(){
 
-	return $this->hasMany('Leavetype');
+	return $this->hasMany('App\Leavetype');
 }
 
 public function leaveapplications(){
 
-	return $this->hasMany('Leaveapplication');
+	return $this->hasMany('App\Leaveapplication');
 }
 
 

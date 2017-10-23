@@ -1,6 +1,19 @@
 <?php
 
-class LeavetypesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Leavetype;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class LeavetypesController extends Controller {
 
 	/**
 	 * Display a listing of leavetypes
@@ -10,8 +23,9 @@ class LeavetypesController extends \BaseController {
 	public function index()
 	{
 		$leavetypes = Leavetype::all();
+        Audit::logaudit('Leave Type', 'view', 'viewed leave types');
 
-		return View::make('leavetypes.index', compact('leavetypes'));
+		return view('leavetypes.index', compact('leavetypes'));
 	}
 
 	/**
@@ -21,7 +35,7 @@ class LeavetypesController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('leavetypes.create');
+		return view('leavetypes.create');
 	}
 
 	/**
@@ -40,7 +54,9 @@ class LeavetypesController extends \BaseController {
 
 		Leavetype::createLeaveType($data);
 
-		return Redirect::route('leavetypes.index');
+		Audit::logaudit('Leave Type', 'create', 'created leave type '.Input::get("name"));
+
+		return Redirect::route('leavetypes.index')->withFlashMessage('Leave type successfully created!');
 	}
 
 	/**
@@ -53,7 +69,7 @@ class LeavetypesController extends \BaseController {
 	{
 		$leavetype = Leavetype::findOrFail($id);
 
-		return View::make('leavetypes.show', compact('leavetype'));
+		return view('leavetypes.show', compact('leavetype'));
 	}
 
 	/**
@@ -66,7 +82,7 @@ class LeavetypesController extends \BaseController {
 	{
 		$leavetype = Leavetype::find($id);
 
-		return View::make('leavetypes.edit', compact('leavetype'));
+		return view('leavetypes.edit', compact('leavetype'));
 	}
 
 	/**
@@ -88,7 +104,9 @@ class LeavetypesController extends \BaseController {
 
 		Leavetype::updateLeaveType($data, $id);
 
-		return Redirect::route('leavetypes.index');
+		Audit::logaudit('Leave Type', 'update', 'updated leave type '.Input::get("name"));
+
+		return Redirect::route('leavetypes.index')->withFlashMessage('Leave type successfully updated!');
 	}
 
 	/**
@@ -99,9 +117,12 @@ class LeavetypesController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$leavetype = Leavetype::findOrFail($id);
 		Leavetype::destroy($id);
 
-		return Redirect::route('leavetypes.index');
+		Audit::logaudit('Leave Type', 'delete', 'deleted leave type '.$leavetype->name);
+
+		return Redirect::route('leavetypes.index')->withDeleteMessage('Leave type successfully deleted!');
 	}
 
 }

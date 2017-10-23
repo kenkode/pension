@@ -1,6 +1,19 @@
 <?php
 
-class AllowancesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Allowance;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class AllowancesController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -12,10 +25,10 @@ class AllowancesController extends \BaseController {
 		$allowances = Allowance::all();
 
 		
+       Audit::logaudit('Allowance', 'view', 'viewed allowances');
 
 
-
-		return View::make('allowances.index', compact('allowances'));
+		return view('allowances.index', compact('allowances'));
 	}
 
 	/**
@@ -25,7 +38,7 @@ class AllowancesController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('allowances.create');
+		return view('allowances.create');
 	}
 
 	/**
@@ -50,10 +63,10 @@ class AllowancesController extends \BaseController {
 
 		$allowance->save();
 
-		Audit::logaudit('Allowances', 'create', 'created: '.$allowance->allowance_name);
+		Audit::logaudit('Allowances', 'create', 'created allowance '.$allowance->allowance_name);
 
 
-		return Redirect::route('allowances.index');
+		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully created!');
 	}
 
 	/**
@@ -66,7 +79,7 @@ class AllowancesController extends \BaseController {
 	{
 		$allowance = Allowance::findOrFail($id);
 
-		return View::make('allowances.show', compact('allowance'));
+		return view('allowances.show', compact('allowance'));
 	}
 
 	/**
@@ -79,7 +92,7 @@ class AllowancesController extends \BaseController {
 	{
 		$allowance = Allowance::find($id);
 
-		return View::make('allowances.edit', compact('allowance'));
+		return view('allowances.edit', compact('allowance'));
 	}
 
 	/**
@@ -102,9 +115,9 @@ class AllowancesController extends \BaseController {
 		$allowance->allowance_name = Input::get('name');
 		$allowance->update();
 
-		Audit::logaudit('Allowances', 'update', 'updated: '.$allowance->allowance_name);
+		Audit::logaudit('Allowances', 'update', 'updated allowance '.$allowance->allowance_name);
 
-		return Redirect::route('allowances.index');
+		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully updated!');
 	}
 
 	/**
@@ -118,9 +131,9 @@ class AllowancesController extends \BaseController {
 		$allowance = Allowance::findOrFail($id);
 		Allowance::destroy($id);
 
-		Audit::logaudit('Allowances', 'delete', 'deleted: '.$allowance->allowance_name);
+		Audit::logaudit('Allowances', 'delete', 'deleted allowance '.$allowance->allowance_name);
 
-		return Redirect::route('allowances.index');
+		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully deleted!');
 	}
 
 }

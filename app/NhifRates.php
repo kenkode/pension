@@ -1,6 +1,9 @@
 <?php
 
-class NhifRates extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+class NhifRates extends Model {
 
 	public $table = "hospital_insurance";
 

@@ -65,7 +65,7 @@ class BanksController extends Controller {
 
 		Audit::logaudit('Banks', 'create', 'created bank '.Input::get('code').' - '.Input::get('name'));
 
-		return Redirect::route('banks.index')->withFlashMessage('Department successfully created!');
+		return Redirect::route('banks.index')->withFlashMessage('Bank successfully created!');
 	}
 
 	/**

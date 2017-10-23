@@ -1,6 +1,19 @@
 <?php
 
-class EmployeeTypeController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\EType;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class EmployeeTypeController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -10,8 +23,9 @@ class EmployeeTypeController extends \BaseController {
 	public function index()
 	{
 		$etypes = EType::all();
+        Audit::logaudit('Employee Type', 'view', 'viewed employee types');
 
-		return View::make('employee_type.index', compact('etypes'));
+		return view('employee_type.index', compact('etypes'));
 	}
 
 	/**
@@ -21,7 +35,7 @@ class EmployeeTypeController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('employee_type.create');
+		return view('employee_type.create');
 	}
 
 	/**
@@ -46,7 +60,9 @@ class EmployeeTypeController extends \BaseController {
 
 		$etype->save();
 
-		return Redirect::route('employee_type.index');
+		Audit::logaudit('Employee Type', 'create', 'created employee type '.Input::get("name"));
+
+		return Redirect::route('employee_type.index')->withFlashMessage('Employee type successfully created!');
 	}
 
 	/**
@@ -59,7 +75,7 @@ class EmployeeTypeController extends \BaseController {
 	{
 		$etype = EType::findOrFail($id);
 
-		return View::make('employee_type.show', compact('etype'));
+		return view('employee_type.show', compact('etype'));
 	}
 
 	/**
@@ -72,7 +88,7 @@ class EmployeeTypeController extends \BaseController {
 	{
 		$etype = EType::find($id);
 
-		return View::make('employee_type.edit', compact('etype'));
+		return view('employee_type.edit', compact('etype'));
 	}
 
 	/**
@@ -95,7 +111,9 @@ class EmployeeTypeController extends \BaseController {
 		$etype->employee_type_name = Input::get('name');
 		$etype->update();
 
-		return Redirect::route('employee_type.index');
+		Audit::logaudit('Employee Type', 'update', 'updated employee type '.Input::get("name"));
+
+		return Redirect::route('employee_type.index')->withFlashMessage('Employee type successfully updated!');
 	}
 
 	/**
@@ -106,9 +124,12 @@ class EmployeeTypeController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+		$etype = EType::findOrFail($id);
 		EType::destroy($id);
 
-		return Redirect::route('employee_type.index');
+		Audit::logaudit('Employee Type', 'delete', 'deleted employee type '.$etype->employee_type_name);
+
+		return Redirect::route('employee_type.index')->withDeleteMessage('Employee type successfully deleted!');
 	}
 
 }
