@@ -1,4 +1,4 @@
-@extends('layouts.system')
+@extends('layouts.app')
 @section('content')
 
 
@@ -11,7 +11,7 @@
 
       <form method="POST" action="{{{ URL::to('roles/update/'.$role->id) }}}" accept-charset="UTF-8">
         
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="name">Role Name</label>
@@ -109,7 +109,7 @@
         
           <button type="submit" class="btn btn-primary btn-sm">Update</button>
         </div>
-
+        <br><br>
     </fieldset>
 </form>
     

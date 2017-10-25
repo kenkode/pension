@@ -1,7 +1,9 @@
-@extends('layouts.system')
+@extends('layouts.app')
 @section('content')
 
-
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
 
@@ -10,7 +12,7 @@
 
       <form method="POST" action="{{{ URL::to('roles') }}}" accept-charset="UTF-8">
         
-   
+   {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="name">Role Name</label>
@@ -106,6 +108,7 @@
         
           <button type="submit" class="btn btn-primary btn-sm">Create</button>
         </div>
+        <br><br>
 
     </fieldset>
 </form>

@@ -22,35 +22,27 @@ use Illuminate\Support\Facades\Input;
             <div class="alert alert-error alert-danger">{{ Session::get('notice') }}</div>
         @endif
 
-      <form method="POST" action="{{{ URL::to('users/newuser') }}}" accept-charset="UTF-8">
+      <form method="POST" action="{{{ URL::to('users/updateuser/'.$user->id) }}}" accept-charset="UTF-8">
         <input class="form-control" type="hidden" name="user_type" id="user_type" value="admin">
          <input class="form-control" type="hidden" name="organization_id" id="user_type" value="1">
    {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
             <label for="username">Username <small>*</small></label>
-            <input class="form-control" placeholder="Username" type="text" name="username" id="username" value="{{{ Input::old('username') }}}" required="">
+            <input class="form-control" placeholder="Username" type="text" name="username" id="username" value="{{$user->name}}" required="">
         </div>
         <div class="form-group">
             <label for="email">Email Address <small>*</small></label>
-            <input class="form-control" placeholder="Email Address" type="email" name="email" id="email" value="{{{ Input::old('email') }}}" required="">
+            <input class="form-control" placeholder="Email Address" type="email" name="email" id="email" value="{{$user->email}}" required="">
         </div>
-        <div class="form-group">
-            <label for="password">Password <small>*</small></label>
-            <input class="form-control" placeholder="Password" type="password" name="password" id="password" required="">
-        </div>
-        <div class="form-group">
-            <label for="password_confirmation">Confirm Password <small>*</small></label>
-            <input class="form-control" placeholder="Confirm Password" type="password" name="password_confirmation" id="password_confirmation" required="">
-        </div>
-
+        
         <div class="form-group">
                         <label for="username">User Type <span style="color:red">*</span></label>
                         <select name="type" required="" id="type" class="form-control select2">
                             <option></option>
-                            <option value="Admin">Admin</option>
-                            <option value="Human Resource">Human Resource</option>
-                            <option value="Employee">Employee</option>
+                            <option value="Admin"<?= ($user->role=='Admin')?'selected="selected"':''; ?>>Admin</option>
+                            <option value="Human Resource"<?= ($user->role=='Human Resource')?'selected="selected"':''; ?>>Human Resource</option>
+                            <option value="Employee"<?= ($user->role=='Employee')?'selected="selected"':''; ?>>Employee</option>
                         </select>
                 
                     </div>
@@ -61,7 +53,6 @@ use Illuminate\Support\Facades\Input;
             <table class="table table-condensed">
 
           <tr>
-
             @foreach($roles as $role)
        
 
@@ -70,7 +61,7 @@ use Illuminate\Support\Facades\Input;
 
             <td>
 
-              <input type="radio" name="role[]" value="{{ $role->id }}"> {{$role->name}}
+              <input type="radio" name="role[]" value="{{ $role->id }}"<?= ($r->id==$role->id)?'checked="checked"':''; ?>> {{$role->name}}
 
 
             </td>

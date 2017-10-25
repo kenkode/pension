@@ -105,7 +105,9 @@ Route::get('fpassword', function(){
 Route::resource('users', 'UsersController');
 Route::get('users/create', 'UsersController@create');
 Route::get('users/edit/{user}', 'UsersController@edit');
+Route::get('users/edituser/{user}', 'UsersController@edituser');
 Route::post('users/update/{user}', 'UsersController@update');
+Route::post('users/updateuser/{user}', 'UsersController@updateuser');
 Route::post('users', 'UsersController@store');
 Route::get('users/add', 'UsersController@add');
 Route::post('users/newuser', 'UsersController@newuser');
@@ -121,7 +123,7 @@ Route::get('users/activate/{user}', 'UsersController@activate');
 Route::get('users/deactivate/{user}', 'UsersController@deactivate');
 Route::get('users/destroy/{user}', 'UsersController@destroy');
 Route::get('users/password/{user}', 'UsersController@Password');
-Route::post('users/password/{user}', 'UsersController@changePassword');
+Route::post('users/password/{user}', 'UsersController@changePassword2');
 Route::get('users/profile/{user}', 'UsersController@profile');
 Route::get('users/show/{user}', 'UsersController@show');
 

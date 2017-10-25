@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-   <title>{{ config('app.name', 'Laravel') }}</title>
+   <title>{{ config('app.name', 'Pension System') }}</title>
 
     <link href="theme/css/bootstrap.min.css" rel="stylesheet">
     <link href="theme/font-awesome/css/font-awesome.css" rel="stylesheet">

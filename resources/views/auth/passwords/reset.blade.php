@@ -1,20 +1,33 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html>
 
-@section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">Reset Password</div>
+<head>
 
-                <div class="panel-body">
-                    @if (session('status'))
-                        <div class="alert alert-success">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-                    <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}">
+   <title>{{ config('app.name', 'Pension System') }}</title>
+
+    <link href="{{ asset('theme/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('theme/font-awesome/css/font-awesome.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('theme/css/animate.css') }}" rel="stylesheet">
+    <link href="{{ asset('theme/css/style.css') }}" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+
+    <div class="loginColumns animated fadeInDown">
+        <div class="row">
+
+           
+            <div class="col-md-10 col-md-offset-1">
+                <div class="ibox-content">
+
+                    <h2>Reset Password</h2><br>
+
+                    <form class="m-t" role="form" method="POST" action="{{ url('/password/reset') }}">
                         {{ csrf_field() }}
 
                         <input type="hidden" name="token" value="{{ $token }}">
@@ -32,6 +45,7 @@
                                 @endif
                             </div>
                         </div>
+                        <br><br><br>
 
                         <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
                             <label for="password" class="col-md-4 control-label">Password</label>
@@ -46,6 +60,7 @@
                                 @endif
                             </div>
                         </div>
+                        <br><br>
 
                         <div class="form-group{{ $errors->has('password_confirmation') ? ' has-error' : '' }}">
                             <label for="password-confirm" class="col-md-4 control-label">Confirm Password</label>
@@ -59,7 +74,7 @@
                                 @endif
                             </div>
                         </div>
-
+                        <br><br><br>
                         <div class="form-group">
                             <div class="col-md-6 col-md-offset-4">
                                 <button type="submit" class="btn btn-primary">
@@ -67,10 +82,22 @@
                                 </button>
                             </div>
                         </div>
+                         <br><br><br>
                     </form>
                 </div>
             </div>
         </div>
+        <hr/>
+        <div class="row">
+            <div class="col-md-6">
+                Copyright &copy; prioritymobile.co.ke <?PHP echo date("Y",time()) ;?>All Rights Reserved
+            </div>
+            <div class="col-md-6 text-right">
+               <small>© <?PHP echo date("Y",time()) ;?></small>
+            </div>
+        </div>
     </div>
-</div>
-@endsection
+
+</body>
+
+</html>                 

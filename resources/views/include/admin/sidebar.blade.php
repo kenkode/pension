@@ -166,6 +166,9 @@
                             <li><a href="{{ URL::to('accounts') }}"><i class="fa fa-cog fa-fw"></i>Accounts Settings</a></li> 
                             <li><a href="{{ URL::to('migrate') }}"><i class="fa fa-random fa-fw"></i>Data Migration</a></li>
                             <li><a href="{{ URL::to('organizations') }}"><i class="fa fa-chevron-right fa-fw"></i>Organization Settings</a></li>
+                            <li><a href="{{ URL::to('users') }}"><i class="fa fa-user fa-fw"></i> System Users</a></li>
+                            <li><a href="{{ URL::to('roles') }}"><i class="fa fa-bookmark fa-fw"></i> System Roles</a></li> 
+                            <li><a href="{{ URL::to('audits') }}"><i class="fa fa-list fa-fw"></i> Audit Trail</a></li>
                             <li><a href="{{ URL::to('branches') }}"><i class="fa fa-chevron-right fa-fw"></i>Branches</a></li>
                             <li><a href="{{ URL::to('departments') }}"><i class="fa fa-chevron-right fa-fw"></i>Departments</a></li>
                             <li><a href="{{ URL::to('banks') }}"><i class="fa fa-chevron-right fa-fw"></i>Banks</a></li>

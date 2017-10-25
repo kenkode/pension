@@ -1,6 +1,18 @@
 <?php
 
+namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+use App\Audit;
+use App\Role;
+use App\Permission;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
 
 /**
  * rolesController Class
@@ -17,8 +29,9 @@ class RolesController extends Controller
     public function index(){
 
         $roles = Role::all();
+        Audit::logaudit('Roles', 'view', 'viewed system roles');
 
-        return View::make('roles.index')->with('roles', $roles);
+        return view('roles.index')->with('roles', $roles);
     }
 
 
@@ -35,7 +48,7 @@ class RolesController extends Controller
             $roleperm[] = $p->name;
         }
         
-       return View::make('roles.edit', compact('role', 'permissions', 'categories', 'roleperm'));
+       return view('roles.edit', compact('role', 'permissions', 'categories', 'roleperm'));
     }
 
 
@@ -56,8 +69,8 @@ class RolesController extends Controller
         $role->perms()->sync($perms);
 
         
-
-        return Redirect::to('roles/show/'.$role->id);
+        Audit::logaudit('Roles', 'update', 'updated role '.$role->name);
+        return Redirect::to('roles/show/'.$role->id)->withFlashMessage('Role successfully updated!');
     }
 
 
@@ -75,7 +88,7 @@ class RolesController extends Controller
         $permissions = Permission::all();
         
         
-        return View::make('roles.create', compact('permissions', 'categories'));
+        return view('roles.create', compact('permissions', 'categories'));
     }
 
     /**
@@ -100,7 +113,7 @@ class RolesController extends Controller
 
         $role->perms()->sync($perms);
 
-        return Redirect::route('roles.index');
+        return Redirect::route('roles.index')->withFlashMessage('Role successfully created!');
 
         
 
@@ -125,7 +138,7 @@ class RolesController extends Controller
         
         $role->delete();
 
-        return Redirect::to('roles');
+        return Redirect::to('roles')->withDeleteMessage('Role successfully deleted!');
     }
 
 
@@ -140,7 +153,7 @@ class RolesController extends Controller
             $roleperm[] = $p->name;
         }
         
-       return View::make('roles.show', compact('role', 'permissions', 'categories', 'roleperm'));
+       return view('roles.show', compact('role', 'permissions', 'categories', 'roleperm'));
     }
 
 

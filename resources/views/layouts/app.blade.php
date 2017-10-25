@@ -47,7 +47,9 @@
                 <li class="dropdown">
                     <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">{{ Auth::user()->name }}</a>
                     <ul class="dropdown-menu">
-                        
+                        <li>
+                           <a href="{{ URL::to('users/profile/'.Auth::user()->id) }}">Profile</a>
+                       </li>
                         
                         <li class="divider"></li>
                         
