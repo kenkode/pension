@@ -1,6 +1,12 @@
 <?php
 
-class Occurence extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class Occurence extends Model {
 /*
 	use \Traits\Encryptable;
 
@@ -31,10 +37,10 @@ public static $rules = [
 
 	public function employee(){
 		
-		return $this->belongsTo('Employee');
+		return $this->belongsTo('App\Employee');
 	}
 	public function occurencesetting(){
 		
-		return $this->hasMany('Occurencesetting');
+		return $this->hasMany('App\Occurencesetting');
 	}
 }

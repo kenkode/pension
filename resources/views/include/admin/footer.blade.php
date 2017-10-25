@@ -478,13 +478,33 @@ $(function (){$('.daily').datepicker({
         //$("table").velocity("transition.slideDownIn", 2000);
         //$("form").velocity("transition.slideDownIn", 2000);
 
-        $('#users').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'}) ;
+        $('#users tfoot th').each(function () {
+        var title1 = $(this).text();
+        $(this).html( '<input type="text" placeholder="Search '+title1+'" />' );
+    });
+ 
+    // DataTable
+    var table1 = $('#users').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+ 
+    // Apply the search
+    table1.columns().every(function () {
+        var that1 = this;
+ 
+        $(this.footer()).find('input').on( 'keyup change', function () {
+                that1.search( this.value ).draw();
+            
+        });
+    });
         $('table.users').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'}) ;
         $('#mobile').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
         $('#rejected').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
         $('#app').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
         $('#disbursed').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
         $('#amended').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#doc').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#appr').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#prop').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        $('#occ').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
 
     } );
 
@@ -509,7 +529,7 @@ $('.datepicker1').datepicker({
     format: 'yyyy-mm-dd',
     startDate: '-60y',
     endDate: '-18y',
-    autoclose: true
+    autoclose: true,
 });
 
 $('.expiry').datepicker({

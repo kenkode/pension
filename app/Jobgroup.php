@@ -1,6 +1,10 @@
 <?php
 
-class Jobgroup extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Jobgroup extends Model {
 
 public $table = "job_group";
 
@@ -20,7 +24,7 @@ public static $messages = array(
 
 	public function employeebenefits(){
 
-		return $this->hasMany('Employeebenefit');
+		return $this->hasMany('App\Employeebenefit');
 	}
 
 }

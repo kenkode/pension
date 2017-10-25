@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -8,6 +8,7 @@ function asMoney($value) {
 }
 
 ?>
+<br><br>
 <div class="row">
 	<div class="col-lg-12">
 

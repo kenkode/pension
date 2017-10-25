@@ -1,6 +1,12 @@
 <?php
 
-class Appraisal extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class Appraisal extends Model {
 /*
 	use \Traits\Encryptable;
 
@@ -26,12 +32,12 @@ class Appraisal extends \Eloquent {
 
 	public function employee(){
 
-		return $this->belongsTo('Employee');
+		return $this->belongsTo('App\Employee');
 	}
 
 	public function appraisalquestion(){
 
-		return $this->hasOne('Appraisalquestion');
+		return $this->hasOne('App\Appraisalquestion');
 	}
 
 }

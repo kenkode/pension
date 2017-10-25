@@ -1,6 +1,12 @@
 <?php
 
-class Employeebenefit extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class Employeebenefit extends Model {
 /*
 	use \Traits\Encryptable;
 

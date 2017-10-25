@@ -1,4 +1,4 @@
-@extends('layouts.organization1')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -8,6 +8,12 @@
 
   </div>
 </div>
+
+<?php
+use App\Department;
+use App\Branch;
+?>
+
 
 
 <div class="row">
@@ -56,7 +62,7 @@
 
       </thead>
 
-      <tfoot>
+      <!-- <tfoot>
 
         <th>#</th>
         <th>PFN</th>
@@ -69,7 +75,7 @@
         <th>Branch</th>
         <th>Department</th>
 
-      </tfoot>
+      </tfoot> -->
       <tbody>
 
         <?php $i = 1; ?>

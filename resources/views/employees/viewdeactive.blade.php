@@ -1,4 +1,4 @@
-@extends('layouts.organization')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -9,6 +9,13 @@ function asMoney($value) {
 }
 
 ?>
+
+<?php
+use App\Department;
+use App\Branch;
+?>
+
+<br><br>
 <div class="row">
 	<div class="col-lg-12">
 
@@ -94,7 +101,7 @@ function asMoney($value) {
             $education = DB::table('education')->where('id', '=', $employee->education_type_id)->pluck('education_name');            
             ?>
 
-            {{ $education}}</td>
+            {{ $education[0]}}</td>
         @else
         <td></td>
         @endif
@@ -137,7 +144,7 @@ function asMoney($value) {
     <li role="presentation"><a href="#appraisals" aria-controls="appraisals" role="tab" data-toggle="tab">Appraisal</a></li>
     <li role="presentation"><a href="#properties" aria-controls="properties" role="tab" data-toggle="tab">Company Property</a></li>
     <li role="presentation"><a href="#occurences" aria-controls="occurences" role="tab" data-toggle="tab">Occurence</a></li>
-    <li role="presentation"><a href="#benefits" aria-controls="benefits" role="tab" data-toggle="tab">Benefits</a></li>
+    <!-- <li role="presentation"><a href="#benefits" aria-controls="benefits" role="tab" data-toggle="tab">Benefits</a></li> -->
   </ul>
 
   <!-- Tab panes -->
@@ -176,7 +183,7 @@ function asMoney($value) {
             $jgroup = DB::table('job_group')->where('id', '=', $employee->job_group_id)->pluck('job_group_name');            
             ?>
 
-            {{ $jgroup}}</td>
+            {{ $jgroup[0]}}</td>
         @else
         <td></td>
         @endif
@@ -188,7 +195,7 @@ function asMoney($value) {
             $etype = DB::table('employee_type')->where('id', '=', $employee->type_id)->pluck('employee_type_name');            
             ?>
 
-            {{ $etype}}</td>
+            {{ $etype[0]}}</td>
         @else
         <td></td>
         @endif
@@ -277,7 +284,7 @@ function asMoney($value) {
             $bank = DB::table('banks')->where('id', '=', $employee->bank_id)->pluck('bank_name');            
             ?>
 
-            {{ $bank}}</td>
+            {{ $bank[0]}}</td>
         @else
         <td></td>
         @endif
@@ -290,7 +297,7 @@ function asMoney($value) {
             $bbranch = DB::table('bank_branches')->where('id', '=', $employee->bank_branch_id)->pluck('bank_branch_name');            
             ?>
 
-            {{ $bbranch}}</td>
+            {{ $bbranch[0]}}</td>
         @else
         <td></td>
         @endif
@@ -360,6 +367,7 @@ function asMoney($value) {
         @endif
         </tr>
 </table>
+<br><br><br>
 </div>
 
 <div class="col-lg-4">
@@ -427,14 +435,14 @@ function asMoney($value) {
 
       </thead>
 
-      <tfoot>
+      <!-- <tfoot>
 
         <th>#</th>
         <th>Kin Name</th>
          <th>ID Number</th>
          <th>Relationship</th>
 
-      </tfoot>
+      </tfoot> -->
 
       <tbody>
 
@@ -444,7 +452,11 @@ function asMoney($value) {
         <tr>
 
           <td> {{ $i }}</td>
-          <td>{{ $kin->name }}</td>
+          @if($kin->middle_name == '')
+          <td>{{ $kin->first_name.' '.$kin->last_name }}</td>
+          @else
+          <td>{{ $kin->first_name.' '.$kin->middle_name.' '.$kin->last_name }}</td>
+          @endif
           @if($kin->id_number!=' ' || $kin->id_number!=null)
           <td>{{ $kin->id_number }}</td>
           @else
@@ -515,20 +527,19 @@ function asMoney($value) {
 
         <th>#</th>
         <th>Document Type</th>
-        <th>From Date</th>
-        <th>End Date</th>
+        <th>Description</th>
         <th></th>
 
       </thead>
 
-      <tfoot>
+      <!-- <tfoot>
 
         <th>#</th>
         <th>Document Type</th>
         <th>From Date</th>
         <th>End Date</th>
 
-      </tfoot>
+      </tfoot> -->
       <tbody>
           
         <?php $i = 1; ?>
@@ -541,8 +552,7 @@ function asMoney($value) {
 
           <td> {{ $i }}</td>
           <td>{{ $file_name }}</td>
-          <td>{{ $document->from_date }}</td>
-          <td>{{ $document->expiry_date }}</td>
+          <td>{{ $document->description }}</td>
           <td>
 
                   <div class="btn-group">
@@ -607,14 +617,14 @@ function asMoney($value) {
 
       </thead>
 
-       <tfoot>
+       <!-- <tfoot>
 
         <th>#</th>
         <th>Appraisal Question</th>
         <th>Performance</th>
         <th>Score</th>
 
-      </tfoot>
+      </tfoot> -->
 
       <tbody>
 
@@ -692,13 +702,13 @@ function asMoney($value) {
 
       </thead>
 
-      <tfoot>
+      <!-- <tfoot>
 
         <th>#</th>
         <th>Name</th>
          <th>Amount</th>
 
-      </tfoot>
+      </tfoot> -->
 
       <tbody>
 
@@ -776,12 +786,12 @@ function asMoney($value) {
 
       </thead>
 
-      <tfoot>
+     <!--  <tfoot>
 
         <th>#</th>
         <th>Occurence</th>
 
-      </tfoot>
+      </tfoot> -->
 
       <tbody>
 
@@ -833,7 +843,7 @@ function asMoney($value) {
   </div>
 
 
-  <div role="tabpanel" class="tab-pane" id="benefits">
+<!--   <div role="tabpanel" class="tab-pane" id="benefits">
 
         <br>
 
@@ -869,7 +879,7 @@ function asMoney($value) {
     </div>
 
 </div>
-</div>
+</div> -->
 
 </div>
 </div>

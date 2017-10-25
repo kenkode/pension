@@ -1,6 +1,12 @@
 <?php
 
-class Employee extends Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class Employee extends Model {
 
 	
 
@@ -35,16 +41,16 @@ class Employee extends Eloquent {
 		 'pay' => 'required|regex:/^(\$?(?(?=\()(\())\d+(?:,\d+)?(?:\.\d+)?(?(2)\)))$/',
 		 'djoined'=>'required',
 		 'email_office' => 'required|email|unique:employee',
-		 'email_personal' => 'email|unique:employee',
-		 'passport_number' => 'unique:employee',
-		 'work_permit_number' => 'unique:employee',
-		 'pin' => 'unique:employee',
-		 'social_security_number' => 'unique:employee',
-		 'hospital_insurance_number' => 'unique:employee',
-		 'telephone_mobile' => 'unique:employee',
-		 'swift_code' => 'unique:employee',
-		 'bank_account_number' => 'unique:employee',
-		 'bank_eft_code' => 'unique:employee'
+		 'email_personal' => 'nullable|email|unique:employee',
+		 'passport_number' => 'nullable|unique:employee',
+		 'work_permit_number' => 'nullable|unique:employee',
+		 'pin' => 'nullable|unique:employee',
+		 'social_security_number' => 'nullable|unique:employee',
+		 'hospital_insurance_number' => 'nullable|unique:employee',
+		 'telephone_mobile' => 'nullable|unique:employee',
+		 'swift_code' => 'nullable|unique:employee',
+		 'bank_account_number' => 'nullable|unique:employee',
+		 'bank_eft_code' => 'nullable|unique:employee'
 
 	];
 
@@ -62,16 +68,16 @@ class Employee extends Eloquent {
 		 'type_id'=>'required',
 		 'djoined'=>'required',
 		 'email_office' => 'required|email|unique:employee,email_office,' . $id,
-		 'email_personal' => 'email|unique:employee,email_personal,' . $id,
-		 'passport_number' => 'unique:employee,passport_number,' . $id,
-		 'work_permit_number' => 'unique:employee,work_permit_number,' . $id,
-		 'pin' => 'unique:employee,pin,' . $id,
-		 'social_security_number' => 'unique:employee,social_security_number,' . $id,
-		 'hospital_insurance_number' => 'unique:employee,hospital_insurance_number,' . $id,
-		 'telephone_mobile' => 'unique:employee,telephone_mobile,' . $id,
-		 'swift_code' => 'unique:employee,swift_code,' . $id,
-		 'bank_account_number' => 'unique:employee,bank_account_number,' . $id,
-		 'bank_eft_code' => 'unique:employee,bank_eft_code,' . $id
+		 'email_personal' => 'nullable|email|unique:employee,email_personal,' . $id,
+		 'passport_number' => 'nullable|unique:employee,passport_number,' . $id,
+		 'work_permit_number' => 'nullable|unique:employee,work_permit_number,' . $id,
+		 'pin' => 'nullable|unique:employee,pin,' . $id,
+		 'social_security_number' => 'nullable|unique:employee,social_security_number,' . $id,
+		 'hospital_insurance_number' => 'nullable|unique:employee,hospital_insurance_number,' . $id,
+		 'telephone_mobile' => 'nullable|unique:employee,telephone_mobile,' . $id,
+		 'swift_code' => 'nullable|unique:employee,swift_code,' . $id,
+		 'bank_account_number' => 'nullable|unique:employee,bank_account_number,' . $id,
+		 'bank_eft_code' => 'nullable|unique:employee,bank_eft_code,' . $id
         );
     }
 
@@ -110,58 +116,58 @@ class Employee extends Eloquent {
 
 	public function branch(){
 
-		return $this->belongsTo('Branch');
+		return $this->belongsTo('App\Branch');
 	}
 
 	public function department(){
 
-		return $this->belongsTo('Department');
+		return $this->belongsTo('App\Department');
 	}
 
     public function jobgroup(){
 
-		return $this->belongsTo('Jobgroup');
+		return $this->belongsTo('App\Jobgroup');
 	}
 
 
 	public function allowances(){
-		return $this->belongsTo('EAllowances');
+		return $this->belongsTo('App\EAllowances');
 	}
 	public function reliefs(){
-		return $this->belongsTo('ERelief');
+		return $this->belongsTo('App\ERelief');
 	}
 	public function benefits(){
-		return $this->belongsTo('Earnings');
+		return $this->belongsTo('App\Earnings');
 	}
 
 	public function Leaveapplications(){
 
-		return $this->hasMany('Leaveapplication');
+		return $this->hasMany('App\Leaveapplication');
 	}
 
 	public function employeenontaxables(){
 
-		return $this->hasMany('Employeenontaxable');
+		return $this->hasMany('App\Employeenontaxable');
 	}
 
     public function occurences(){
 
-		return $this->hasMany('Occurence');
+		return $this->hasMany('App\Occurence');
 	}
 
     public function citizenship(){
 
-		return $this->belongsTo('Citizenship');
+		return $this->belongsTo('App\Citizenship');
 	}
 
 	public function member(){
 
-		return $this->belongsTo('Member');
+		return $this->belongsTo('App\Member');
 	}
 
     public function education(){
 
-		return $this->hasMany('Education');
+		return $this->hasMany('App\Education');
 	}
 
 
@@ -176,14 +182,14 @@ class Employee extends Eloquent {
 
     public static function getActiveEmployee(){
 
-		$employee = DB::table('employee')->where('in_employment', '=', 'Y')->where('organization_id',Confide::user()->organization_id)->get();
+		$employee = DB::table('employee')->where('in_employment', '=', 'Y')->where('organization_id',Auth::user()->organization_id)->get();
 
 		return $employee;
 	}
 
 	public static function getDeactiveEmployee(){
 
-		$employee = DB::table('employee')->where('in_employment', '=', 'N')->where('organization_id',Confide::user()->organization_id)->get();
+		$employee = DB::table('employee')->where('in_employment', '=', 'N')->where('organization_id',Auth::user()->organization_id)->get();
 
 		return $employee;
 	}

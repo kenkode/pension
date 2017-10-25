@@ -1,4 +1,10 @@
-@extends('layouts.main')
+@extends('layouts.app')
+
+<?php
+use App\Department;
+use App\Branch;
+?>
+
 <style type="text/css"></style>
 @section('content')
 
@@ -57,7 +63,7 @@
 
       </thead>
 
-      <tfoot>
+      <!-- <tfoot>
 
         <th>#</th>
         <th>PFN</th>
@@ -70,7 +76,7 @@
         <th>Branch</th>
         <th>Department</th>
 
-      </tfoot>
+      </tfoot> -->
 
       <tbody>
 

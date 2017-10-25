@@ -1,9 +1,11 @@
-@extends('layouts.main')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+{{Html::script('media/jquery-1.8.0.min.js') }}
 
 <?php 
-$organization = Organization::find(Confide::user()->organization_id);
+use App\Organization;
+use Illuminate\Support\Facades\Input;
+$organization = Organization::find(Auth::user()->organization_id);
 
 $string = $organization->name;
 
@@ -23,6 +25,7 @@ function initials($str,$pfn) {
 
 
 <style>
+.select2 {z-index:10 !important; }
 #imagePreview {
     width: 180px;
     height: 180px;
@@ -62,9 +65,9 @@ tr,#ncontainer input,#ncontainer textarea,#fdate,#edate{height:30px;width:150px;
 #dcontainer table{border-collapse:collapse;border-radius:25px;width:500px;}
 table, td, th{border:1px solid #00BB64;}
 #dcontainer input[type=checkbox]{height:30px;width:10px;border:1px solid #fff;}
-tr,#dcontainer input,#dcontainer textarea{height:30px;width:180px;border:1px solid #fff;}\
+tr,#dcontainer input,#dcontainer textarea{height:30px;width:350px;border:1px solid #fff;}
 #f{width:200px;}
-#dcontainer textarea{height:50px; width:100px;border:1px solid #fff;}
+#dcontainer textarea{height:50px; width:250px;border:1px solid #fff;}
 #dcontainer input:focus,#dcontainer input:focus{border:1px solid yellow;} 
 .space{margin-bottom: 2px;}
 #dcontainer{margin-left:0px;}
@@ -89,11 +92,11 @@ tr,#dcontainer input,#dcontainer textarea{height:30px;width:180px;border:1px sol
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png')}}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
@@ -182,8 +185,8 @@ $(document).ready(function() {
   <div class="col-lg-12">
 
     
-  {{ HTML::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
-  {{ HTML::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
+  {{ Html::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
+  {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <script type="text/javascript">
   $(document).ready(function(){
@@ -394,7 +397,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       cname = $( "#cname" ),
       
       allFields = $( [] ).add( cname ),
@@ -459,14 +462,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : cname.val()
+                              'name'  : cname.val(),
+                              '_token' : $("#cform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#citizenship').append($('<option>', {
                          value: s,
                          text: cname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -510,7 +514,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       ename = $( "#ename" ),
       
       allFields = $( [] ).add( ename ),
@@ -575,14 +579,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : ename.val()
+                              'name'  : ename.val(),
+                              '_token' : $("#eform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#education').append($('<option>', {
                          value: s,
                          text: ename.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -627,7 +632,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       bname = $( "#bname" ),
       bcode = $( "#bcode" ),
       allFields = $( [] ).add( bname ).add( bcode ),
@@ -693,14 +698,15 @@ $(document).ready(function() {
                       async   : false,
                       data    : {
                               'name'  : bname.val(),
-                              'code'  : bcode.val()
+                              'code'  : bcode.val(),
+                              '_token' : $("#bform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#bank_id').append($('<option>', {
                          value: s,
                          text: bname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
 
                          $("#bid").val($("#bank_id").val());
       
@@ -752,7 +758,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       bname = $( "#bname" ),
       bcode = $( "#bcode" ),
       bid   = $( "#bid" ),
@@ -822,14 +828,15 @@ $(document).ready(function() {
                       data    : {
                               'name'  : bname.val(),
                               'code'  : bcode.val(),
-                              'bid'   : bid.val()
+                              'bid'   : bid.val(),
+                              '_token' : $("#bbform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#bbranch_id').append($('<option>', {
                          value: s,
                          text: bname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -875,7 +882,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       bname = $( "#bname" ),
       allFields = $( [] ).add( bname ),
       tips = $( ".validateTips5" );
@@ -941,14 +948,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : bname.val()
+                              'name'  : bname.val(),
+                              '_token' : $("#brform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#branch_id').append($('<option>', {
                          value: s,
                          text: bname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -993,7 +1001,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       dname = $( "#dname" ),
       dcode = $( "#dcode" ),
       allFields = $( [] ).add( dname ).add(dcode),
@@ -1061,14 +1069,15 @@ $(document).ready(function() {
                       async   : false,
                       data    : {
                               'name'  : dname.val(),
-                              'code'  : dcode.val()
+                              'code'  : dcode.val(),
+                              '_token' : $("#dform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#department_id').append($('<option>', {
                          value: s,
                          text: dname.val()+"("+dcode.val()+")",
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -1114,7 +1123,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       jname = $( "#jname" ),
       allFields = $( [] ).add( jname ),
       tips = $( ".validateTips7" );
@@ -1180,14 +1189,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : jname.val()
+                              'name'  : jname.val(),
+                              '_token' : $("#jform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#jgroup_id').append($('<option>', {
                          value: s,
                          text: jname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -1232,7 +1242,7 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       tname = $( "#tname" ),
       allFields = $( [] ).add( tname ),
       tips = $( ".validateTips8" );
@@ -1298,14 +1308,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : tname.val()
+                              'name'  : tname.val(),
+                              '_token' : $("#tform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#type_id').append($('<option>', {
                          value: s,
                          text: tname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -1351,7 +1362,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new citizenship name">
   <p class="validateTips1">Please insert citizenship name.</p>
  
-  <form>
+  <form id="cform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="cname" id="cname" value="" class="text ui-widget-content ui-corner-all">
@@ -1365,7 +1377,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new education level">
   <p class="validateTips2">Please insert education level.</p>
  
-  <form>
+  <form id="eform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="ename" id="ename" value="" class="text ui-widget-content ui-corner-all">
@@ -1379,7 +1392,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new bank">
   <p class="validateTips3">Please insert bank name.</p>
  
-  <form>
+  <form id="bform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="bname" id="bname" value="" class="text ui-widget-content ui-corner-all">
@@ -1396,7 +1410,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new bank branch">
   <p class="validateTips4">Please fill fields in *.</p>
  
-  <form>
+  <form id="bbform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="bname" id="bname" value="" class="text ui-widget-content ui-corner-all">
@@ -1415,7 +1430,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new branch">
   <p class="validateTips5">Please insert branch.</p>
  
-  <form>
+  <form id="brform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="bname" id="bname" value="" class="text ui-widget-content ui-corner-all">
@@ -1429,7 +1445,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new department">
   <p class="validateTips6">Please insert fields in *.</p>
  
-  <form>
+  <form id="dform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Code <span style="color:red">*</span></label>
       <input type="text" name="dcode" id="dcode" value="" class="text ui-widget-content ui-corner-all">
@@ -1446,7 +1463,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new job group">
   <p class="validateTips7">Please insert job group.</p>
  
-  <form>
+  <form id="jform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="jname" id="jname" value="" class="text ui-widget-content ui-corner-all">
@@ -1460,7 +1478,8 @@ $(document).ready(function() {
 <div id="dialog-form" title="Create new employee type">
   <p class="validateTips8">Please insert employee type.</p>
  
-  <form>
+  <form id="tform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="tname" id="tname" value="" class="text ui-widget-content ui-corner-all">
@@ -1473,7 +1492,7 @@ $(document).ready(function() {
 
      
  <form method="POST" action="{{{ URL::to('employees') }}}" accept-charset="UTF-8" enctype="multipart/form-data">
-
+    {{ csrf_field() }}
   <div class="row">
   <div class="col-lg-12">
   <h3>New Employee <button style="margin-left:620px" type="submit" class="btn btn-primary btn-sm">Create Employee</button></h3>
@@ -1482,7 +1501,7 @@ $(document).ready(function() {
 </div>  
 </div>
 
-@if ($errors->has())
+@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -1525,7 +1544,7 @@ $(document).ready(function() {
                         <div id="signPreview"></div>
                         <input class="img" placeholder="" type="file" name="signature" id="signFile" value="{{{ Input::old('signature') }}}">
                     </div>
-
+                    <br><br><br>
                   </div>
 
                     <div class="col-lg-4">
@@ -1570,7 +1589,7 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Marital Status</label>
-                        <select name="status" id="status" class="form-control">
+                        <select name="status" id="status" class="form-control select2">
                             <option></option>
                             <option value="Single">Single</option>
                             <option value="Married">Married</option>
@@ -1584,7 +1603,7 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Citizenship</label>
-                        <select name="citizenship" id="citizenship" class="form-control">
+                        <select name="citizenship" id="citizenship" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                              @foreach($citizenships as $citizenship)
@@ -1596,7 +1615,7 @@ $(document).ready(function() {
                     
                     <div class="form-group">
                         <label for="username">Education Background</label>
-                        <select name="education" id="education" class="form-control">
+                        <select name="education" id="education" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($educations as $education)
@@ -1636,6 +1655,7 @@ $(document).ready(function() {
                         <label for="username">Nhif Number</label>
                         <input class="form-control" placeholder="" type="text" name="hospital_insurance_number" id="hospital_insurance_number" value="{{{ Input::old('hospital_insurance_number') }}}">
                     </div>
+                    <br><br><br>
                      </div>
 
                      <div class="col-lg-4">
@@ -1670,6 +1690,7 @@ $(document).ready(function() {
                         </label>
                     </div>
                    </div>
+
                  </div>
 
                      <div role="tabpanel" class="tab-pane" id="payment">
@@ -1678,7 +1699,7 @@ $(document).ready(function() {
               
                     <div class="form-group">
                         <label for="username">Mode of Payment</label>
-                        <select name="modep" id="modep" class="form-control">
+                        <select name="modep" id="modep" class="form-control select2">
                             <option></option>
                             <option value="Bank">Bank</option>
                             <option value="Mpesa">Mpesa</option>
@@ -1696,7 +1717,7 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Bank</label>
-                        <select name="bank_id" id="bank_id" class="form-control">
+                        <select name="bank_id" id="bank_id" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($banks as $bank)
@@ -1710,7 +1731,7 @@ $(document).ready(function() {
                       
                      <div class="form-group">
                         <label for="username">Bank Branch</label>
-                        <select name="bbranch_id" id="bbranch_id" class="form-control">
+                        <select name="bbranch_id" id="bbranch_id" class="form-control select2">
                             <option></option>
                         </select>
                 
@@ -1733,7 +1754,7 @@ $(document).ready(function() {
                         <label for="username">Swift Code</label>
                         <input class="form-control" placeholder="" type="text" name="swift_code" id="swift_code" value="{{{ Input::old('swift_code') }}}">
                     </div>
-                     
+                    <br><br><br> 
 
               </div>
 
@@ -1744,7 +1765,7 @@ $(document).ready(function() {
             <div class="col-lg-4">
                     <div class="form-group">
                         <label for="username">Employee Branch </label>
-                        <select name="branch_id" id="branch_id" class="form-control">
+                        <select name="branch_id" id="branch_id" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($branches as $branch)
@@ -1758,7 +1779,7 @@ $(document).ready(function() {
 
                      <div class="form-group">
                         <label for="username">Employee Department </label>
-                        <select name="department_id" id="department_id" class="form-control">
+                        <select name="department_id" id="department_id" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($departments as $department)
@@ -1771,7 +1792,7 @@ $(document).ready(function() {
 
                      <div class="form-group">
                         <label for="username">Job Group  <span style="color:red">*</span></label>
-                        <select name="jgroup_id" id="jgroup_id" class="form-control">
+                        <select name="jgroup_id" id="jgroup_id" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($jgroups as $jgroup)
@@ -1785,7 +1806,7 @@ $(document).ready(function() {
 
                      <div class="form-group">
                         <label for="username">Employee Type  <span style="color:red">*</span></label>
-                        <select name="type_id" id="type_id" class="form-control">
+                        <select name="type_id" id="type_id" class="form-control select2">
                             <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($etypes as $etype)
@@ -1813,7 +1834,7 @@ $(document).ready(function() {
                         <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="enddate" id="enddate" value="{{{ Input::old('enddate') }}}">
                         </div>
                      </div>
-
+                    <br><br><br> 
                  </div>
 
                </div>
@@ -1849,7 +1870,7 @@ $(document).ready(function() {
                         <input class="form-control datepicker"  readonly="readonly" placeholder=""  type="text" name="djoined" id="djoined" value="{{{ Input::old('djoined') }}}">
                         </div>
                         </div>
-
+                       <br><br><br> 
                         </div>
 
                         <div class="col-lg-4">
@@ -1889,7 +1910,7 @@ $(document).ready(function() {
                         <label for="username">Postal Address</label>
                         <textarea class="form-control"  name="address" id="address">{{{ Input::old('address') }}}</textarea>
                     </div>
-
+                  <br><br><br> 
                   </div>
 
                  </div>
@@ -1926,6 +1947,7 @@ $(document).ready(function() {
 <button type="button" class='ndelete'>- Delete</button>
 <button type="button" class='naddmore'>+ Add More</button>
 </div>
+<br><br>
 <script>
 $(".ndelete").on('click', function() {
   if($('.ncase:checkbox:checked').length > 0){
@@ -1963,7 +1985,7 @@ function check(){
   obj=$('#nextkin tr').find('span');
   $.each( obj, function( key, value ) {
   id=value.id;
-  $('#'+id).html(key+1);
+  $('#'+id).Html(key+1);
   });
   }
 
@@ -1979,32 +2001,23 @@ function check(){
 <h4 align="center"><strong>Employee Documents</strong></h4>
 <div id='dcontainer'>
 
-<table id="docEmp" width="500" border="1" cellspacing="0">
+<table id="docEmp" style="width: 85% !important" border="1" cellspacing="0">
     <tr>
     <th><input class='dcheck_all' type='checkbox' onclick="dselect_all()"/></th>
     <th>#</th>
     <th width="200">Document</th>
     <th>Name</th>
     <th>Description</th>
-    <th>Date From</th>
+    <!-- <th>Date From</th>
     <th>End Date</th>
-    </tr>
+     --></tr>
     <tr>
     <td><input type='checkbox' class='dcase'/></td>
     <td><span id='dsnum'>1.</span></td>
     <td id="f"><input class="docdata" type="file" name="path[0]" id="path" value="{{{ Input::old('path[0]') }}}"></td>
     <td><input class="docdata" type='text' id='doc_name' name='doc_name[0]' value="{{{ Input::old('doc_name[0]') }}}"/></td>
-    <td><textarea class="docdata" style="width:150px" name="description[0]" id="description">{{{ Input::old('description[0]') }}}</textarea></td>
-    <td><div class="right-inner-addon">
-        <i class="glyphicon glyphicon-calendar"></i>
-        <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="fdate[0]" id="fdate" value="">
-        </div>
-    </td>
-    <td><div class="right-inner-addon">
-        <i class="glyphicon glyphicon-calendar"></i>
-        <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="edate[0]" id="edate" value="">
-        </div>
-    </td>
+    <td><textarea class="docdata" style="width:300px" name="description[0]" id="description">{{{ Input::old('description[0]') }}}</textarea></td>
+    
   </tr>
 </table>
 
@@ -2013,8 +2026,9 @@ function check(){
  
   
 </div>
+<br><br>
 
-{{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+{{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <script type="text/javascript">
 $(function(){ 
@@ -2047,7 +2061,7 @@ var j=2;
 $(".daddmore").on('click',function(){
   count=$('#docEmp tr').length;
     var data="<tr><td><input type='checkbox' class='dcase'/></td><td><span id='dsnum"+j+"'>"+count+".</span></td>";
-    data +="<td id='f'><input class='docdata' type='file' id='path"+j+"' name='path["+(j-1)+"]' value='{{{ Input::old('path["+(j-1)+"]') }}}'/></td><td><input class='docdata' type='text' id='doc_name"+j+"' name='doc_name["+(j-1)+"]' value='{{{ Input::old('doc_name["+(j-1)+"]') }}}'/></td><td><textarea class='docdata' name='description["+(j-1)+"]' id='description"+j+"'>{{{ Input::old('description["+(j-1)+"]') }}}</textarea></td><td><div class='right-inner-addon'><i class='glyphicon glyphicon-calendar'></i><input class='form-control expiry' readonly='readonly' placeholder='' type='text' name='fdate["+(j-1)+"]' id='fdate"+j+"' value='{{{ Input::old('fdate["+(j-1)+"]') }}}'></div></td><td><div class='right-inner-addon'><i class='glyphicon glyphicon-calendar'></i><input class='form-control expiry' readonly='readonly' placeholder='' type='text' name='edate["+(j-1)+"]' id='edate"+j+"' value='{{{ Input::old('edate["+(j-1)+"]') }}}'></div></td>";
+    data +="<td id='f'><input class='docdata' type='file' id='path"+j+"' name='path["+(j-1)+"]' value='{{{ Input::old('path["+(j-1)+"]') }}}'/></td><td><input class='docdata' type='text' id='doc_name"+j+"' name='doc_name["+(j-1)+"]' value='{{{ Input::old('doc_name["+(j-1)+"]') }}}'/></td><td><textarea class='docdata' name='description["+(j-1)+"]' id='description"+j+"'>{{{ Input::old('description["+(j-1)+"]') }}}</textarea></td>";
   $('#docEmp').append(data);
   j++;
 });
@@ -2066,7 +2080,7 @@ function dcheck(){
   obj=$('#docEmp tr').find('span');
   $.each( obj, function( key, value ) {
   id=value.id;
-  $('#'+id).html(key+1);
+  $('#'+id).Html(key+1);
   });
   }
 

@@ -1,6 +1,22 @@
 <?php
 
-class NextOfKinsController extends \BaseController {
+namespace App\Http\Controllers;
+
+
+use App\Nextofkin;
+use App\Employee;
+use App\Organization;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class NextOfKinsController extends Controller {
 
 	/**
 	 * Display a listing of kins
@@ -12,12 +28,12 @@ class NextOfKinsController extends \BaseController {
 		$kins = DB::table('employee')
 		          ->join('nextofkins', 'employee.id', '=', 'nextofkins.employee_id')
 		          ->where('in_employment','=','Y')
-		          ->where('organization_id',Confide::user()->organization_id)
+		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
 
 		Audit::logaudit('Next of Kins', 'view', 'viewed employee next of kin');
 
-		return View::make('nextofkins.index', compact('kins'));
+		return view('nextofkins.index', compact('kins'));
 	}
 
 	public function serializecheck(){
@@ -37,9 +53,9 @@ class NextOfKinsController extends \BaseController {
 
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('organization_id',Confide::user()->organization_id)
+		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
-		return View::make('nextofkins.create', compact('employees','id'));
+		return view('nextofkins.create', compact('employees','id'));
 	}
 
 	/**
@@ -65,7 +81,7 @@ class NextOfKinsController extends \BaseController {
 		$kin->contact = Input::get('contact');
 		$kin->id_number = Input::get('id_number');
 		$kin->id_number = Input::get('id_number');
-		$kin->organization_id = Confide::user()->organization_id;
+		$kin->organization_id = Auth::user()->organization_id;
 		$kin->save();
 
 		Audit::logaudit('NextofKins', 'create', 'created: '.$kin->name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
@@ -84,7 +100,7 @@ class NextOfKinsController extends \BaseController {
 	{
 		$kin = Nextofkin::findOrFail($id);
 
-		return View::make('nextofkins.show', compact('kin'));
+		return view('nextofkins.show', compact('kin'));
 	}
 
 	/**
@@ -97,7 +113,7 @@ class NextOfKinsController extends \BaseController {
 	{
 		$kin = Nextofkin::find($id);
 
-		return View::make('nextofkins.edit', compact('kin'));
+		return view('nextofkins.edit', compact('kin'));
 	}
 
 	/**
@@ -150,9 +166,9 @@ class NextOfKinsController extends \BaseController {
 
 		$kin = Nextofkin::find($id);
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('nextofkins.view', compact('kin'));
+		return view('nextofkins.view', compact('kin'));
 		
 	}
 

@@ -1,6 +1,35 @@
 <?php
 
-class EmployeesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Department;
+use App\Branch;
+use App\Bank;
+use App\BBranch;
+use App\Employee;
+use App\Citizenship;
+use App\EType;
+use App\Jobgroup;
+use App\Organization;
+use App\Education;
+use App\Currency;
+use App\Nextofkin;
+use App\Property;
+use App\Document;
+use App\Appraisal;
+use App\Occurence;
+use App\Employeebenefit;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class EmployeesController extends Controller {
 
 	/**
 	 * Display a listing of the resource.
@@ -14,14 +43,14 @@ class EmployeesController extends \BaseController {
 
 		 Audit::logaudit('Employees', 'view', 'viewed employee list');
 
-		return View::make('employees.index', compact('employees'));
+		return view('employees.index', compact('employees'));
 	}
 
     public function createcitizenship()
 	{
       $postcitizen = Input::all();
       $data = array('name' => $postcitizen['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('citizenships')->insertGetId( $data );
@@ -40,7 +69,7 @@ class EmployeesController extends \BaseController {
 	{
       $posteducation = Input::all();
       $data = array('education_name' => $posteducation['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('education')->insertGetId( $data );
@@ -60,7 +89,7 @@ class EmployeesController extends \BaseController {
       $postbank = Input::all();
       $data = array('bank_name' => $postbank['name'], 
       	            'bank_code' => $postbank['code'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('banks')->insertGetId( $data );
@@ -81,7 +110,7 @@ class EmployeesController extends \BaseController {
       $data = array('bank_branch_name' => $postbankbranch['name'], 
       	            'branch_code' => $postbankbranch['code'], 
       	            'bank_id' => $postbankbranch['bid'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('bank_branches')->insertGetId( $data );
@@ -100,7 +129,7 @@ class EmployeesController extends \BaseController {
 	{
       $postbranch = Input::all();
       $data = array('name' => $postbranch['name'],
-                    'organization_id' => Confide::user()->organization_id,
+                    'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('branches')->insertGetId( $data );
@@ -121,7 +150,7 @@ class EmployeesController extends \BaseController {
       $postdept = Input::all();
       $data = array('department_name' => $postdept['name'],
                     'codes' => $postdept['code'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('departments')->insertGetId( $data );
@@ -140,7 +169,7 @@ class EmployeesController extends \BaseController {
 	{
       $posttype = Input::all();
       $data = array('employee_type_name' => $posttype['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('employee_type')->insertGetId( $data );
@@ -159,7 +188,7 @@ class EmployeesController extends \BaseController {
 	{
       $postgroup = Input::all();
       $data = array('job_group_name' => $postgroup['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('job_group')->insertGetId( $data );
@@ -182,31 +211,31 @@ class EmployeesController extends \BaseController {
 	public function create()
 	{
 		//
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $employees = count(Employee::where('organization_id',Confide::user()->organization_id)->get());
+    $employees = count(Employee::where('organization_id',Auth::user()->organization_id)->get());
 
     if($organization->payroll_licensed <= $employees){
-       return View::make('employees.employeelimit');
+       return view('employees.employeelimit');
     }else{
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		$branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$jgroups = Jobgroup::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$etypes = EType::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$banks = Bank::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$bbranches = BBranch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$educations = Education::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+		$branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$jgroups = Jobgroup::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$etypes = EType::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$banks = Bank::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$bbranches = BBranch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$educations = Education::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 		$pfn = 0;
-    if(Employee::where('employee.organization_id',Confide::user()->organization_id)->orderBy('id', 'DESC')->count() == 0){
+    if(Employee::where('employee.organization_id',Auth::user()->organization_id)->orderBy('id', 'DESC')->count() == 0){
       $pfn = 0;
     }else{
-      $pfn = Employee::where('employee.organization_id',Confide::user()->organization_id)->orderBy('id', 'DESC')->pluck('personal_file_number');
+      $pfn = Employee::where('employee.organization_id',Auth::user()->organization_id)->orderBy('id', 'DESC')->pluck('personal_file_number');
       $pfn = preg_replace('/\D/', '', $pfn);
       
     }
-		return View::make('employees.create', compact('currency','citizenships','pfn','branches','departments','etypes','jgroups','banks','bbranches','educations'));
+		return view('employees.create', compact('currency','citizenships','pfn','branches','departments','etypes','jgroups','banks','bbranches','educations'));
 	}
   }
 
@@ -383,7 +412,7 @@ class EmployeesController extends \BaseController {
 	    $employee->social_security_applicable = '0';
 	    }
 	    $employee->custom_field1 = Input::get('omode');
-		   $employee->organization_id = Confide::user()->organization_id;
+		   $employee->organization_id = Auth::user()->organization_id;
         $employee->start_date = Input::get('startdate');
         $employee->end_date = Input::get('enddate');
         if(Input::get('active') != null ){
@@ -439,9 +468,9 @@ class EmployeesController extends \BaseController {
 
         $document->description = Input::get('description')[$j];
 
-        $document->from_date = Input::get('fdate')[$j];
+        /*$document->from_date = Input::get('fdate')[$j];
 
-        $document->expiry_date = Input::get('edate')[$j];
+        $document->expiry_date = Input::get('edate')[$j];*/
 
         $document->save();
 
@@ -484,7 +513,7 @@ class EmployeesController extends \BaseController {
 	{
 		$employee = Employee::findOrFail($id);
 
-		return View::make('employees.show', compact('employee'));
+		return view('employees.show', compact('employee'));
 	}
 
 	/**
@@ -496,24 +525,24 @@ class EmployeesController extends \BaseController {
 	public function edit($id)
 	{
 		$employee = Employee::find($id);
-		$branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$jgroups = Jobgroup::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$etypes = EType::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$jgroups = Jobgroup::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$etypes = EType::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 		$contract = DB::table('employee')
 		          ->join('employee_type','employee.type_id','=','employee_type.id')
 		          ->where('type_id',2)
 		          ->first();
-		$banks = Bank::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$bbranches = BBranch::where('bank_id',$employee->bank_id)->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$educations = Education::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$banks = Bank::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$bbranches = BBranch::where('bank_id',$employee->bank_id)->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$educations = Education::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     $kins = Nextofkin::where('employee_id',$id)->get();
     $docs = Document::where('employee_id',$id)->get();
     $countk = Nextofkin::where('employee_id',$id)->count();
     $countd = Document::where('employee_id',$id)->count();
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('employees.edit', compact('currency','countk','countd','docs','kins','citizenships','contract','branches','educations','departments','etypes','jgroups','banks','bbranches','employee'));
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+		return view('employees.edit', compact('currency','countk','countd','docs','kins','citizenships','contract','branches','educations','departments','etypes','jgroups','banks','bbranches','employee'));
 	}
 
 	/**
@@ -689,7 +718,7 @@ class EmployeesController extends \BaseController {
       $employee->social_security_applicable = '0';
       }
       $employee->custom_field1 = Input::get('omode');
-    $employee->organization_id = Confide::user()->organization_id;
+    $employee->organization_id = Auth::user()->organization_id;
         $employee->start_date = Input::get('startdate');
         $employee->end_date = Input::get('enddate');
         if(Input::get('active') != null ){
@@ -748,10 +777,6 @@ class EmployeesController extends \BaseController {
 
         $document->description = Input::get('description')[$j];
 
-        $document->from_date = Input::get('fdate')[$j];
-
-        $document->expiry_date = Input::get('edate')[$j];
-
         $document->save();
 
        Audit::logaudit('Documents', 'create', 'created: '.Input::get('doc_name')[$j].' for '.Employee::getEmployeeName($id));
@@ -760,7 +785,7 @@ class EmployeesController extends \BaseController {
        }
 
 
-		 if(Confide::user()->user_type == 'employee'){
+		 if(Auth::user()->user_type == 'employee'){
 		 	return Redirect::to('dashboard');
 		 } else {
 		 	return Redirect::route('employees.index')->withFlashMessage('Employee successfully updated!');
@@ -831,9 +856,9 @@ class EmployeesController extends \BaseController {
 
         $count = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->count();
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('employees.view', compact('employee','appraisals','kins','documents','occurences','properties','count','benefits'));
+		return view('employees.view', compact('employee','appraisals','kins','documents','occurences','properties','count','benefits'));
 		
 	}
 
@@ -855,9 +880,9 @@ class EmployeesController extends \BaseController {
 
         $count = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->count();
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties','count','benefits'));
+		return view('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties','count','benefits'));
 		
 	}
 
@@ -888,7 +913,7 @@ class EmployeesController extends \BaseController {
     'user_type'=>'employee',
     'confirmation_code'=> md5(uniqid(mt_rand(), true)),
     'confirmed'=> 1,
-    'organization_id'=> Confide::user()->organization_id
+    'organization_id'=> Auth::user()->organization_id
     )
 );
 
@@ -949,7 +974,7 @@ else{
     //$id = DB::table('members')->where('membership_no', '=', $mem)->pluck('id');
     $employee = Employee::findOrFail($id);
     
-    $user_id = DB::table('users')->where('organization_id',Confide::user()->organization_id)->where('username', '=', $employee->personal_file_number)->pluck('id');
+    $user_id = DB::table('users')->where('organization_id',Auth::user()->organization_id)->where('username', '=', $employee->personal_file_number)->pluck('id');
     
     $user = User::findOrFail($user_id);
     
