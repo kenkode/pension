@@ -30,7 +30,7 @@
             <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $kin->employee->id }}">
 
         <div class="form-group">
-            <label for="username">First Name</label>
+            <label for="username">First Name <span style="color:red">*</span></label>
             <input class="form-control" placeholder="" type="text" name="fname" id="fname" value="{{ $kin->first_name }}">
         </div>
 
@@ -40,7 +40,7 @@
         </div>
 
         <div class="form-group">
-            <label for="username">last Name</label>
+            <label for="username">last Name <span style="color:red">*</span></label>
             <input class="form-control" placeholder="" type="text" name="lname" id="lname" value="{{ $kin->last_name }}">
         </div>
 

@@ -1,6 +1,24 @@
 <?php
 
-class PropertiesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Property;
+use App\Employee;
+use App\User;
+use App\Currency;
+use App\Organization;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+use Response;
+
+class PropertiesController extends Controller {
 
 	/**
 	 * Display a listing of kins
@@ -12,12 +30,12 @@ class PropertiesController extends \BaseController {
 		$properties = DB::table('employee')
 		          ->join('properties', 'employee.id', '=', 'properties.employee_id')
 		          ->where('in_employment','=','Y')
-		          ->where('organization_id',Confide::user()->organization_id)
+		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
 
 		Audit::logaudit('Properties', 'view', 'viewed company properties');
 
-		return View::make('properties.index', compact('properties'));
+		return view('properties.index', compact('properties'));
 	}
 
 	/**
@@ -27,12 +45,12 @@ class PropertiesController extends \BaseController {
 	 */
 	public function create()
 	{
-		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('organization_id',Confide::user()->organization_id)
+		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
-		return View::make('properties.create', compact('employees','currency'));
+		return view('properties.create', compact('employees','currency'));
 	}
 
 	/**
@@ -59,12 +77,12 @@ class PropertiesController extends \BaseController {
 		$property->digitalserial = Input::get('dserial');
 		$a = str_replace( ',', '', Input::get('amount') );
 		$property->monetary = $a;
-		$property->issued_by = Confide::user()->id;
+		$property->issued_by = Auth::user()->id;
 		$property->issue_date = Input::get('idate');
 		$property->scheduled_return_date = Input::get('sdate');
 		if(filter_var(Input::get('active'), FILTER_VALIDATE_BOOLEAN)){
         $property->state = 1;
-        $property->received_by = Confide::user()->id;
+        $property->received_by = Auth::user()->id;
         $property->return_date = Input::get('idate');
 		}else{
         $property->state = 0;
@@ -89,7 +107,7 @@ class PropertiesController extends \BaseController {
 	{
 		$property = Property::findOrFail($id);
 
-		return View::make('properties.show', compact('property'));
+		return view('properties.show', compact('property'));
 	}
 
 	/**
@@ -102,14 +120,14 @@ class PropertiesController extends \BaseController {
 	{
 		$property = Property::find($id);
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 		$user = User::findOrFail($property->issued_by);
 
 		if($property->received_by>0){
         $retuser = User::findOrFail($property->received_by);
 		}
 
-		return View::make('properties.edit', compact('currency','property','user','retuser'));
+		return view('properties.edit', compact('currency','property','user','retuser'));
 	}
 
 	/**
@@ -139,7 +157,7 @@ class PropertiesController extends \BaseController {
 		$property->scheduled_return_date = Input::get('sdate');
 		if(filter_var(Input::get('active'), FILTER_VALIDATE_BOOLEAN)){
         $property->state = 1;
-        $property->received_by = Confide::user()->id;
+        $property->received_by = Auth::user()->id;
         $property->return_date = date('Y-m-d');
 		}else{
         $property->state = 0;
@@ -168,7 +186,7 @@ class PropertiesController extends \BaseController {
 
 		Audit::logaudit('Properties', 'delete', 'deleted: '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
 
-		return Redirect::to('employees/view/'.$property->employee_id)->withDeleteMessage('Company Property successfully deleted!');
+		return Redirect::to('Properties')->withDeleteMessage('Company Property successfully deleted!');
 	}
     
     public function view($id){
@@ -181,9 +199,9 @@ class PropertiesController extends \BaseController {
         $retuser = User::findOrFail($property->received_by);
 		}
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('properties.view', compact('property','user','retuser'));
+		return view('properties.view', compact('property','user','retuser'));
 		
 	}
 

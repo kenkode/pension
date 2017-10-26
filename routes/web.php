@@ -9,7 +9,7 @@ use App\Allowance;
 use App\Deduction;
 use App\Relief;
 use App\Bank;
-use App\Tax;
+use App\Leaveapplication;
 use App\ItemTracker;
 use App\Stock;
 use App\Notification;
@@ -285,7 +285,7 @@ Route::get('leaveapplications/delete/{id}', 'LeaveapplicationsController@destroy
 Route::post('leaveapplications/update/{id}', 'LeaveapplicationsController@update');
 Route::get('leaveapplications/approve/{id}', 'LeaveapplicationsController@approve');
 Route::post('leaveapplications/approve/{id}', 'LeaveapplicationsController@doapprove');
-Route::get('leaveapplications/cancel', 'LeaveapplicationsController@cancel');
+Route::get('leaveapplications/cancel/{id}', 'LeaveapplicationsController@cancel');
 Route::get('leaveapplications/reject/{id}', 'LeaveapplicationsController@reject');
 Route::get('leaveapplications/show/{id}', 'LeaveapplicationsController@show');
 
@@ -293,6 +293,7 @@ Route::get('leaveapplications/approvals', 'LeaveapplicationsController@approvals
 Route::get('leaveapplications/rejects', 'LeaveapplicationsController@rejects');
 Route::get('leaveapplications/cancellations', 'LeaveapplicationsController@cancellations');
 Route::get('leaveapplications/amends', 'LeaveapplicationsController@amended');
+Route::post('createLeave', 'LeaveapplicationsController@createleave');
 
 
 Route::get('leaveapprovals', function(){
@@ -1625,7 +1626,7 @@ Route::get('EmployeeForm', function(){
 
   $organization = Organization::find(Auth::user()->organization_id);
 
-  $pdf = PDF::loadView('pdf.employee_form', compact('organization'))->setPaper('a4')->setOrientation('potrait');
+  $pdf = PDF::loadView('pdf.employee_form', compact('organization'))->setPaper('a4');
     
   return $pdf->stream('Employee_Form.pdf');
 
@@ -1929,6 +1930,7 @@ Route::post('Appraisals/update/{id}', 'AppraisalsController@update');
 Route::get('Appraisals/delete/{id}', 'AppraisalsController@destroy');
 Route::get('Appraisals/edit/{id}', 'AppraisalsController@edit');
 Route::get('Appraisals/view/{id}', 'AppraisalsController@view');
+Route::get('Appraisals/createapp/{id}', 'AppraisalsController@createapp');
 Route::post('createQuestion', 'AppraisalsController@createquestion');
 
 Route::resource('Properties', 'PropertiesController');

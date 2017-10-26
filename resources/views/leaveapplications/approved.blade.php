@@ -1,8 +1,25 @@
-@extends('layouts.leave')
+@extends('layouts.app')
 @section('content')
 
-
 <div class="row">
+											
+				<?php 
+        use App\Leaveapplication;
+        ?>							
+											
+       @if (Session::has('flash_message'))
+
+      <div class="alert alert-success">
+      {{ Session::get('flash_message') }}
+     </div>
+    @endif
+
+     @if (Session::has('delete_message'))
+
+      <div class="alert alert-danger">
+      {{ Session::get('delete_message') }}
+     </div>
+    @endif 						
 
 	<div class="col-lg-12">
 	<br>
@@ -17,8 +34,8 @@
 
   <thead>
     
-    <th>Employee #</th>
-    <th>Employee</th>
+    <th>PFN</th>
+    <th width="150">Employee</th>
     <th>Leave Type</th>
     <th>Approval Date</th>
     <th>Start Date</th>
@@ -29,6 +46,18 @@
 
   </thead>
 
+  <!-- <tfoot>
+    
+    <th>PFN</th>
+    <th width="150">Employee</th>
+    <th>Leave Type</th>
+    <th>Approval Date</th>
+    <th>Start Date</th>
+    <th>End Date</th>
+    <th>Leave Days</th>
+
+  </tfoot> -->
+
   <tbody>
 
    
@@ -38,12 +67,12 @@
          <tr>
 
           <td>{{$leaveapplication->employee->personal_file_number}}</td>
-          <td>{{$leaveapplication->employee->first_name." ".$leaveapplication->employee->last_name." ".$leaveapplication->employee->middle_name}}</td>
+          <td width="150">{{$leaveapplication->employee->first_name." ".$leaveapplication->employee->middle_name." ".$leaveapplication->employee->last_name}}</td>
           <td>{{$leaveapplication->leavetype->name}}</td>
           <td>{{$leaveapplication->date_approved}}</td>
            <td>{{$leaveapplication->approved_start_date}}</td>
             <td>{{$leaveapplication->approved_end_date}}</td>
-            <td>{{Leaveapplication::getLeaveDays($leaveapplication->approved_end_date,$leaveapplication->approved_start_date)}}</td>
+            <td>{{Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1}}</td>
 
 
           <td>

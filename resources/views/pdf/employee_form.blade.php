@@ -36,7 +36,7 @@ body {
 
 
 
- @page { margin-top: 160px; margin-left:30px; margin-right:30px; margin-bottom: 100px; }
+ @page { margin-top: 30px; margin-left:30px; margin-right:30px; margin-bottom: 100px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px; margin-left:auto; margin-right: auto;}
  .footer { position: fixed; left: 0px; bottom: -120px; right: 0px; height: 50px;  }
@@ -96,9 +96,9 @@ body {
    </div>
 
 
-	<div class="emp" style="margin-top:-70px">
+	<div class="emp" style="margin-top:-130px">
      
-  <div style="margin-top:20px" align="center"> <h3>EMPLOYEE DETAILS FORM</h3></div>
+  <div style="margin-top:-50px" align="center"> <h3>EMPLOYEE DETAILS FORM</h3></div>
     <table style="margin-top:0px" style="margin-left:40px" border='0' width='500' height='300' cellspacing='0' cellpadding='0'>
       <tr><td colspan='2'><strong><span style="font-size:14px">Personal Details</span></strong></td></tr>
       <tr><td width="150" height="20">Surname Name: </td><td>.........................................................................................................................</td></tr>

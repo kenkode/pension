@@ -56,7 +56,7 @@ body {
 }
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -206,7 +206,7 @@ body {
             $jgroup = DB::table('job_group')->where('id', '=', $employee->job_group_id)->pluck('job_group_name');            
             ?>
 
-            {{ $jgroup}}</td>
+            {{ $jgroup[0]}}</td>
         @else
         <td></td>
         @endif
@@ -230,7 +230,7 @@ body {
             $etype = DB::table('employee_type')->where('id', '=', $employee->type_id)->pluck('employee_type_name');            
             ?>
 
-            {{ $etype}}</td>
+            {{ $etype[0]}}</td>
         @else
         <td></td>
         @endif
@@ -258,7 +258,11 @@ body {
         </tr>
         <tr><td><strong>Citizenship:</strong></td>
         @if($employee->citizenship_id != null || $employee->citizenship_id != '')
-        <td>{{$employee->citizenship->name}}</td>
+        <td><?php 
+            $citizenship = DB::table('citizenships')->where('id', '=', $employee->citizenship_id)->pluck('name');            
+            ?>
+
+            {{ $citizenship[0]}}</td>
         @else
         <td></td>
         @endif
@@ -271,7 +275,7 @@ body {
             $bank = DB::table('banks')->where('id', '=', $employee->bank_id)->pluck('bank_name');            
             ?>
 
-            {{ $bank}}</td>
+            {{ $bank[0]}}</td>
         @else
         <td></td>
         @endif
@@ -284,7 +288,7 @@ body {
             $bbranch = DB::table('bank_branches')->where('id', '=', $employee->bank_branch_id)->pluck('bank_branch_name');            
             ?>
 
-            {{ $bbranch}}</td>
+            {{ $bbranch[0]}}</td>
         @else
         <td></td>
         @endif

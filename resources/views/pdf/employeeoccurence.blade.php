@@ -1,5 +1,7 @@
 <html >
-
+<?php
+use App\Occurencesetting;
+?>
 
 
 <head>
@@ -36,7 +38,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -100,9 +102,9 @@ body {
     <div class="content" style='margin-top:-70px;'>
 
        @if($employee->middle_name != null || $employee->middle_name != '')
-         <div align="center"><strong>Occurence Report for {{$employee->first_name.' '.$employee->middle_name.' '.$employee->last_name}}</strong></div><br>
+         <div align="center" style='margin-top:-50px;'><strong>Occurence Report for {{$employee->first_name.' '.$employee->middle_name.' '.$employee->last_name}}</strong></div><br>
         @else
-         <div align="center"><strong>Occurence Report for {{$employee->first_name.' '.$employee->last_name}}</strong></div><br>
+         <div align="center" style='margin-top:-50px;'><strong>Occurence Report for {{$employee->first_name.' '.$employee->last_name}}</strong></div><br>
         @endif
 
     <table class="table table-bordered" border='1' cellspacing='0' cellpadding='0'>

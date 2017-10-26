@@ -1,6 +1,10 @@
-@extends('layouts.main')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+{{Html::script('media/jquery-1.8.0.min.js') }}
+
+<?php
+use App\Appraisalquestion;
+?>
 
 <script type="text/javascript">
  function totalBalance() {
@@ -48,7 +52,7 @@ width:100px;
 
     
 		
-		 @if ($errors->has())
+		 @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -56,10 +60,11 @@ width:100px;
         </div>
         @endif
 
-         {{ HTML::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
-  {{ HTML::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
+         {{ Html::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
+  {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <style>
+    .select2 {z-index:10 !important; }
     label, input { display:block; }
     input.text { margin-bottom:12px; width:95%; padding: .4em; }
     fieldset { padding:0; border:0; margin-top:25px; }
@@ -77,11 +82,11 @@ width:100px;
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
@@ -90,7 +95,7 @@ width:100px;
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       question = $( "#question" ),
       rate = $( "#rate" ),
       category = $( "#category" ),
@@ -163,14 +168,15 @@ width:100px;
                       data    : {
                               'question'  : question.val(),
                               'rate'      : rate.val(),
-                              'category'  : category.val()
+                              'category'  : category.val(),
+                              '_token' : $("#form input[name=_token]").val()
                       },
                       success : function(s){
                          $('#appraisal_id').append($('<option>', {
                          value: s,
                          text: question.val(),
                          selected:true
-                        }));
+                        })).trigger('change');
                          $("#maxscore").val(rate.val());
                          totalBalance();
                       }        
@@ -212,12 +218,13 @@ width:100px;
   });
   </script>
  
-   {{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+   {{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <div id="dialog-form" title="Create new Account">
   <p class="validateTips">Please insert All fields.</p>
  
-  <form>
+  <form id="form">
+    {{ csrf_field() }}
     <fieldset>
       <label for="username">Category <span style="color:red">*</span></label>
           <select name="category" id="category" class="form-control">
@@ -239,14 +246,14 @@ width:100px;
 </div>
 
 		 <form method="POST" action="{{{ URL::to('Appraisals/update/'.$appraisal->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
             <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $appraisal->employee->id}}"> 
 
         <div class="form-group">
                         <label for="username">Appraisal <span style="color:red">*</span></label>
-                        <select name="appraisal_id" id="appraisal_id" class="form-control">
+                        <select name="appraisal_id" id="appraisal_id" class="form-control select2">
                            <option></option>
                            <option value="cnew">Create New</option>
                             @foreach($appraisalqs as $appraisalq)
@@ -259,7 +266,7 @@ width:100px;
 
                     <div class="form-group">
                         <label for="username">Performance Rating <span style="color:red">*</span></label>
-                        <select name="performance" class="form-control">
+                        <select name="performance" class="form-control select2">
                            <option></option>
                             <option value="Outstanding"<?= ($appraisal->performance=='Outstanding')?'selected="selected"':''; ?>>Outstanding</option>
                             <option value="Exceeds Expectations"<?= ($appraisal->performance=='Exceeds Expectations')?'selected="selected"':''; ?>>Exceeds Expectations</option>
@@ -290,7 +297,7 @@ width:100px;
 
         <div class="form-group">
             <label for="username">Examiner</label>
-            <input class="form-control" readonly placeholder="" type="text" name="examiner" id="examiner" value="{{$user->username}}">
+            <input class="form-control" readonly placeholder="" type="text" name="examiner" id="examiner" value="{{$user->name}}">
         </div>
 
         <div class="form-group">
@@ -324,7 +331,7 @@ $('.appdate').datepicker({
         
           <button type="submit" class="btn btn-primary btn-sm">Update Appraisal</button>
         </div>
-
+    <br><br><br>
     </fieldset>
 </form>
 		

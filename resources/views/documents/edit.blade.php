@@ -54,7 +54,7 @@
             <textarea name="desc" class="form-control" id="desc">{{ $document->description }}</textarea>
         </div>
 
-        <div class="form-group">
+        <!-- <div class="form-group">
                         <label for="username">Date From </label>
                         <div class="right-inner-addon ">
                         <i class="glyphicon glyphicon-calendar"></i>
@@ -68,7 +68,7 @@
                         <i class="glyphicon glyphicon-calendar"></i>
                         <input class="form-control expiry" readonly="readonly" placeholder="" required type="text" name="edate" id="edate" value="{{ $document->expiry_date }}">
                     </div>
-                  </div>
+                  </div> -->
         
         <div class="form-actions form-group">
         

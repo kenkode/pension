@@ -1,5 +1,10 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 
 <div class="row">
 	<div class="col-lg-12">
@@ -15,7 +20,7 @@
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +29,7 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('documents') }}}" accept-charset="UTF-8" enctype="multipart/form-data">
-   
+   {{ csrf_field() }}
     <fieldset>
 
             <input class="form-control" placeholder="" type="hidden" name="employee" id="employee" value="{{$id}}">
@@ -43,22 +48,6 @@
             <label for="username">Description </label><br>
             <textarea name="desc" class="form-control" id="desc">{{{ Input::old('desc') }}}</textarea>
         </div>
-
-                <div class="form-group">
-                        <label for="username">Date From </label>
-                        <div class="right-inner-addon ">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control expiry" readonly="readonly" placeholder="" required type="text" name="fdate" id="fdate" value="{{{ Input::old('fdate') }}}">
-                    </div>
-                </div>
-        
-        <div class="form-group">
-                        <label for="username">End Date</label>
-                        <div class="right-inner-addon ">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control expiry" readonly="readonly" placeholder="" required type="text" name="edate" id="edate" value="{{{ Input::old('edate') }}}">
-                    </div>
-                </div>
 
         <div class="form-actions form-group">
         

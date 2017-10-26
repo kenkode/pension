@@ -1,6 +1,24 @@
 <?php
 
-class AppraisalsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Appraisal;
+use App\Appraisalquestion;
+use App\Appraisalcategory;
+use App\Employee;
+use App\User;
+use App\Organization;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class AppraisalsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,19 +27,19 @@ class AppraisalsController extends \BaseController {
 	 */
 	public function index()
 	{
-		$employees = Appraisal::where('organization_id',Confide::user()->organization_id)->get();
+		$employees = Appraisal::where('organization_id',Auth::user()->organization_id)->get();
 
 		$appraisals = DB::table('employee')
 		          ->join('appraisals', 'employee.id', '=', 'appraisals.employee_id')
 		          ->join('appraisalquestions', 'appraisals.appraisalquestion_id', '=', 'appraisalquestions.id')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->select('appraisals.id','appraisalquestion_id','first_name','middle_name','last_name','question','performance','appraisals.rate')
 		          ->get();
 
 		Audit::logaudit('Appraisals', 'view', 'viewed appraisals');
 
-		return View::make('appraisals.index', compact('appraisals'));
+		return view('appraisals.index', compact('appraisals'));
 	}
 
 	/**
@@ -33,11 +51,18 @@ class AppraisalsController extends \BaseController {
 	{
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->get();
-		$appraisals = Appraisalquestion::where('organization_id',Confide::user()->organization_id)->get();
-		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		return View::make('appraisals.create',compact('employees','appraisals','categories'));
+		$appraisals = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
+		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		return view('appraisals.create',compact('employees','appraisals','categories'));
+	}
+
+	public function createapp($id)
+	{
+		$appraisals = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
+		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		return view('appraisals.createApp',compact('id','appraisals','categories'));
 	}
 
 	public function createquestion()
@@ -46,7 +71,7 @@ class AppraisalsController extends \BaseController {
       $data = array('appraisalcategory_id' => $postapp['category'], 
       	            'rate' => $postapp['rate'], 
       	            'question' => $postapp['question'],
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('appraisalquestions')->insertGetId( $data );
@@ -85,13 +110,13 @@ class AppraisalsController extends \BaseController {
 
                 $appraisal->rate = Input::get('score');
 
-                $appraisal->examiner = Confide::user()->id;
+                $appraisal->examiner = Auth::user()->id;
 
                 $appraisal->appraisaldate = Input::get('date');
 
                 $appraisal->comment = Input::get('comment');
                 
-                $appraisal->organization_id = Confide::user()->organization_id;
+                $appraisal->organization_id = Auth::user()->organization_id;
 
 		$appraisal->save();
 
@@ -111,7 +136,7 @@ class AppraisalsController extends \BaseController {
 	{
 		$appraisal = Appraisal::findOrFail($id);
 
-		return View::make('appraisals.show', compact('appraisal'));
+		return view('appraisals.show', compact('appraisal'));
 	}
 
 	/**
@@ -123,10 +148,10 @@ class AppraisalsController extends \BaseController {
 	public function edit($id)
 	{
 		$appraisal = Appraisal::find($id);
-		$appraisalqs = Appraisalquestion::where('organization_id',Confide::user()->organization_id)->get();
+		$appraisalqs = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
 		$user = User::find($appraisal->examiner);
-                $categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		return View::make('appraisals.edit', compact('appraisal','appraisalqs','user','categories'));
+                $categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		return view('appraisals.edit', compact('appraisal','appraisalqs','user','categories'));
 	}
 
 	/**
@@ -156,7 +181,7 @@ class AppraisalsController extends \BaseController {
 
         $appraisal->comment = Input::get('comment');
         
-        $appraisal->organization_id= Confide::user()->organization_id;
+        $appraisal->organization_id= Auth::user()->organization_id;
 
 		$appraisal->update();
 
@@ -181,7 +206,7 @@ class AppraisalsController extends \BaseController {
 		Audit::logaudit('Employee Appraisal', 'delete', 'deleted: '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
 
 
-		return Redirect::to('employees/view/'.$appraisal->employee_id)->withDeleteMessage('Employee Appraisal successfully deleted!');
+		return Redirect::to('Appraisals')->withDeleteMessage('Employee Appraisal successfully deleted!');
 	}
 
 	public function view($id){
@@ -190,9 +215,9 @@ class AppraisalsController extends \BaseController {
 
 		$user = User::find($appraisal->examiner);
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('appraisals.view', compact('appraisal','user'));
+		return view('appraisals.view', compact('appraisal','user'));
 		
 	}
 

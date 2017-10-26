@@ -1,4 +1,4 @@
-@extends('layouts.emp_ports')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -9,13 +9,15 @@
 </div>	
 </div>
 
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
 	<div class="col-lg-5">
 
     
-		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,11 +26,11 @@
         @endif
 
 		 <form target="_blank" method="POST" action="{{URL::to('reports/occurence')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
             <div class="form-group">
                         <label for="username">Select:</label>
-                        <select name="employeeid" class="form-control" required>
+                        <select name="employeeid" class="form-control select2" required>
                             <option></option>
                             @foreach($employees as $employee)
                              @if($employee->middle_name != null || $employee->middle_name != '')

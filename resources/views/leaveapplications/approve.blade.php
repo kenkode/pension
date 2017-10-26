@@ -1,10 +1,10 @@
-@extends('layouts.leave')
+@extends('layouts.app')
 @section('content')
+
 
 <div class="row">
 	<div class="col-lg-12">
  
-
 <hr>
 </div>	
 </div>
@@ -14,8 +14,7 @@
 	<div class="col-lg-5">
 
     
-		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -26,7 +25,7 @@
 	<table class="table table-responsive table-bordered table-condensed">
    
    <tr>
-   <td><strong>Employee</strong></td><td>{{$leaveapplication->employee->first_name.' '.$leaveapplication->employee->last_name.' '.$leaveapplication->employee->middle_name}}</td>
+   <td><strong>Employee</strong></td><td>{{$leaveapplication->employee->first_name.' '.$leaveapplication->employee->middle_name.' '.$leaveapplication->employee->last_name}}</td>
      
    </tr> 
 
@@ -60,7 +59,7 @@
 
 
   <form method="POST" action="{{{ URL::to('leaveapplications/approve/'.$leaveapplication->id) }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         

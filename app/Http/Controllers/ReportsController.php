@@ -1,22 +1,44 @@
 <?php
 
-class ReportsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Account;
+use App\Employeebenefit;
+use App\Employee;
+use App\Organization;
+use App\Occurencesetting;
+use App\Property;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+use Barryvdh\DomPDF\Facade as PDF;
+use Session;
+use PHPExcel;
+use Maatwebsite\Excel\Facades\Excel as Excel;
+
+class ReportsController extends Controller {
 
   
 
   public function selstate()
   {
 
-    return View::make('pdf.selectStateEmployee');
+    return view('pdf.selectStateEmployee');
   }
 
   public function employees(){
 
     if(Input::get('format') == "excel"){
       if(Input::get('status') == 'Active'){
-         $data = Employee::where('in_employment','=','Y')->where('organization_id',Confide::user()->organization_id)->get();
+         $data = Employee::where('in_employment','=','Y')->where('organization_id',Auth::user()->organization_id)->get();
 
-         $organization = Organization::find(Confide::user()->organization_id);
+         $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Active Employee Report', function($excel) use($data,$organization) {
@@ -105,9 +127,9 @@ class ReportsController extends \BaseController {
 
   })->download('xls');
       }else if(Input::get('status') == 'Deactive'){
-           $data = Employee::where('in_employment','=','N')->where('organization_id',Confide::user()->organization_id)->get();
+           $data = Employee::where('in_employment','=','N')->where('organization_id',Auth::user()->organization_id)->get();
 
-         $organization = Organization::find(Confide::user()->organization_id);
+         $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Deactivated Employee Report', function($excel) use($data,$organization) {
@@ -197,9 +219,9 @@ class ReportsController extends \BaseController {
 
   })->download('xls');
       }else if(Input::get('status') == 'All'){
-        $data = Employee::where('organization_id',Confide::user()->organization_id)->get();
+        $data = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         Excel::create('Employee Report', function($excel) use($data,$organization) {
 
@@ -299,30 +321,30 @@ class ReportsController extends \BaseController {
     }else{
 
     if(Input::get('status') == 'Active'){
-    $employees = Employee::where('in_employment','=','Y')->where('organization_id',Confide::user()->organization_id)->get();
+    $employees = Employee::where('in_employment','=','Y')->where('organization_id',Auth::user()->organization_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.activeemployee', compact('employees', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.activeemployee', compact('employees', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Employee List.pdf');
 
     }else if(Input::get('status') == 'Deactive'){
-    $employees = Employee::where('in_employment','N')->where('organization_id',Confide::user()->organization_id)->get();
+    $employees = Employee::where('in_employment','N')->where('organization_id',Auth::user()->organization_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.deactiveemployee', compact('employees', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.deactiveemployee', compact('employees', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Employee List.pdf');
 
     }else if(Input::get('status') == 'All'){
 
-    $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
+    $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.employeelist', compact('employees', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.employeelist', compact('employees', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Employee List.pdf');
     }
@@ -331,9 +353,9 @@ class ReportsController extends \BaseController {
 
   public function emp_id()
   {
-    $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
+    $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-    return View::make('pdf.ind_emp', compact('employees'));
+    return view('pdf.ind_emp', compact('employees'));
   }
 
     public function individual(){
@@ -344,9 +366,9 @@ class ReportsController extends \BaseController {
 
     $benefits = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.individualemployee', compact( 'employee','organization','benefits'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.individualemployee', compact( 'employee','organization','benefits'))->setPaper('a4');
   
     //dd($organization);
 
@@ -356,9 +378,9 @@ class ReportsController extends \BaseController {
 
     public function selEmp()
     {
-        $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
+        $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('pdf.selectEmployee', compact('employees'));
+        return view('pdf.selectEmployee', compact('employees'));
     }
 
     public function occurence(){
@@ -372,7 +394,7 @@ class ReportsController extends \BaseController {
                    ->where('employee_id','=',$id)
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Occurence Report', function($excel) use($data,$employee,$organization) {
@@ -461,9 +483,9 @@ class ReportsController extends \BaseController {
                    ->where('employee_id','=',$id)
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.employeeoccurence', compact( 'employee','organization','occurences'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.employeeoccurence', compact( 'employee','organization','occurences'))->setPaper('a4');
     
         //dd($organization);
 
@@ -474,9 +496,9 @@ class ReportsController extends \BaseController {
 
     public function selEmpDisc()
     {
-        $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
+        $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('pdf.selectDisciplineEmployee', compact('employees'));
+        return view('pdf.selectDisciplineEmployee', compact('employees'));
     }
 
     public function discipline(){
@@ -496,7 +518,7 @@ class ReportsController extends \BaseController {
                    ->whereBetween('discipline_date', array($from, $to))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Compliance_Report_'.$from.'_'.$to, function($excel) use($data,$employee,$organization,$from,$to) {
@@ -599,7 +621,7 @@ class ReportsController extends \BaseController {
                    ->whereBetween('discipline_date', array($from, $to))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create($employee->personal_file_number.'_'.$employee->first_name.'_'.$employee->last_name.'_Compliance_Report_'.$from.'_'.$to, function($excel) use($data,$employee,$organization,$from,$to) {
@@ -706,9 +728,9 @@ class ReportsController extends \BaseController {
                    ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.discipline', compact('organization','disciplines','id','from','to'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.discipline', compact('organization','disciplines','id','from','to'))->setPaper('a4');
     
         //dd($organization);
 
@@ -729,9 +751,9 @@ class ReportsController extends \BaseController {
                    ->whereBetween('discipline_date', array($from, $to))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.discipline', compact( 'employee','organization','disciplines','id','from','to'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.discipline', compact( 'employee','organization','disciplines','id','from','to'))->setPaper('a4');
     
         //dd($organization);
 
@@ -742,9 +764,9 @@ class ReportsController extends \BaseController {
 
     public function selPromEmp()
     {
-        $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
+        $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('pdf.selectPromotionEmployee', compact('employees'));
+        return view('pdf.selectPromotionEmployee', compact('employees'));
     }
 
     public function promotion(){
@@ -764,7 +786,7 @@ class ReportsController extends \BaseController {
                    ->whereBetween('promotion_date', array($from, $to))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Promotion_Report_'.$from.'_'.$to, function($excel) use($data,$employee,$organization,$from,$to) {
@@ -867,7 +889,7 @@ class ReportsController extends \BaseController {
                    ->whereBetween('promotion_date', array($from, $to))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create($employee->personal_file_number.'_'.$employee->first_name.'_'.$employee->last_name.'_Promotion_Report', function($excel) use($data,$employee,$organization,$from,$to) {
@@ -972,9 +994,9 @@ class ReportsController extends \BaseController {
                    ->whereBetween('promotion_date',array($from ,$to ))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.promotion', compact( 'employee','organization','promotions','id','from','to'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.promotion', compact( 'employee','organization','promotions','id','from','to'))->setPaper('a4');
     
         //dd($organization);
 
@@ -995,9 +1017,9 @@ class ReportsController extends \BaseController {
                    ->whereBetween('promotion_date',array($from ,$to ))
                    ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.promotion', compact( 'employee','organization','promotions','id','from','to'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.promotion', compact( 'employee','organization','promotions','id','from','to'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1009,8 +1031,8 @@ class ReportsController extends \BaseController {
     public function propertyperiod()
     {
             
-       $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
-        return View::make('pdf.selectPropertyPeriod',compact('employees'));
+       $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+        return view('pdf.selectPropertyPeriod',compact('employees'));
     }
 
     public function property(){
@@ -1022,11 +1044,11 @@ class ReportsController extends \BaseController {
 
          $data = DB::table('properties')
             ->join('employee', 'properties.employee_id', '=', 'employee.id')
-            ->where('organization_id',Confide::user()->organization_id)
+            ->where('organization_id',Auth::user()->organization_id)
             ->whereBetween('issue_date', array($from, $to))
             ->get();
 
-         $organization = Organization::find(Confide::user()->organization_id);
+         $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Company Property Report', function($excel) use($data,$from,$to,$organization) {
@@ -1128,11 +1150,11 @@ class ReportsController extends \BaseController {
          $data = DB::table('properties')
             ->join('employee', 'properties.employee_id', '=', 'employee.id')
             ->where('employee_id', $id)
-            ->where('organization_id',Confide::user()->organization_id)
+            ->where('organization_id',Auth::user()->organization_id)
             ->whereBetween('issue_date', array($from, $to))
             ->get();
 
-         $organization = Organization::find(Confide::user()->organization_id);
+         $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Company Property Report', function($excel) use($data,$from,$to,$employee,$organization) {
@@ -1235,12 +1257,12 @@ class ReportsController extends \BaseController {
         $properties = DB::table('properties')
             ->join('employee', 'properties.employee_id', '=', 'employee.id')
             ->whereBetween('issue_date', array($from, $to))
-            ->where('organization_id',Confide::user()->organization_id)
+            ->where('organization_id',Auth::user()->organization_id)
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.property', compact('from','to','organization','properties'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.property', compact('from','to','organization','properties'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1258,13 +1280,13 @@ class ReportsController extends \BaseController {
         $properties = DB::table('properties')
             ->join('employee', 'properties.employee_id', '=', 'employee.id')
             ->where('employee_id', $id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('issue_date', array($from, $to))
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.individualproperty', compact( 'from','to','employee','organization','properties'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.individualproperty', compact( 'from','to','employee','organization','properties'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1276,8 +1298,8 @@ class ReportsController extends \BaseController {
 
     public function appraisalperiod()
     {
-       $employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
-        return View::make('pdf.selectAppraisalPeriod',compact('employees'));
+       $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+        return view('pdf.selectAppraisalPeriod',compact('employees'));
     }
 
     public function appraisal(){
@@ -1292,11 +1314,11 @@ class ReportsController extends \BaseController {
             ->join('appraisalquestions', 'appraisals.appraisalquestion_id', '=', 'appraisalquestions.id')
             ->join('users', 'appraisals.examiner', '=', 'users.id')
             ->whereBetween('appraisaldate', array($from, $to))
-            ->where('employee.organization_id',Confide::user()->organization_id)
-            ->select('first_name','appraisalquestions.rate as score','last_name','middle_name','comment','appraisals.rate','username','question','performance','appraisaldate')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->select('first_name','appraisalquestions.rate as score','last_name','middle_name','comment','appraisals.rate','name','question','performance','appraisaldate')
             ->get();
 
-         $organization = Organization::find(Confide::user()->organization_id);
+         $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Appraisal Report', function($excel) use($data,$from,$to,$organization) {
@@ -1363,7 +1385,7 @@ class ReportsController extends \BaseController {
              }
 
              $sheet->row($row, array(
-             $x,$name,$data[$i]->question,$data[$i]->performance,$data[$i]->rate.'/'.$data[$i]->score,$data[$i]->username,$data[$i]->appraisaldate,$data[$i]->comment
+             $x,$name,$data[$i]->question,$data[$i]->performance,$data[$i]->rate.'/'.$data[$i]->score,$data[$i]->name,$data[$i]->appraisaldate,$data[$i]->comment
              ));
              $x++;
              $row++;
@@ -1387,12 +1409,12 @@ class ReportsController extends \BaseController {
             ->join('appraisalquestions', 'appraisals.appraisalquestion_id', '=', 'appraisalquestions.id')
             ->join('users', 'appraisals.examiner', '=', 'users.id')
             ->where('employee_id', $id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('appraisaldate', array($from, $to))
-            ->select('first_name','last_name','appraisalquestions.rate as score','middle_name','comment','appraisals.rate','username','question','performance','appraisaldate')
+            ->select('first_name','last_name','appraisalquestions.rate as score','middle_name','comment','appraisals.rate','name','question','performance','appraisaldate')
             ->get();
 
-         $organization = Organization::find(Confide::user()->organization_id);
+         $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Appraisal Report', function($excel) use($data,$from,$to,$employee,$organization) {
@@ -1458,7 +1480,7 @@ class ReportsController extends \BaseController {
              for($i = 0; $i<count($data); $i++){
             
              $sheet->row($row, array(
-             $x,$data[$i]->question,$data[$i]->performance,$data[$i]->rate.'/'.$data[$i]->score,$data[$i]->username,$data[$i]->appraisaldate,$data[$i]->comment
+             $x,$data[$i]->question,$data[$i]->performance,$data[$i]->rate.'/'.$data[$i]->score,$data[$i]->name,$data[$i]->appraisaldate,$data[$i]->comment
              ));
              $x++;
              $row++;
@@ -1481,13 +1503,13 @@ class ReportsController extends \BaseController {
             ->join('appraisalquestions', 'appraisals.appraisalquestion_id', '=', 'appraisalquestions.id')
             ->join('users', 'appraisals.examiner', '=', 'users.id')
             ->whereBetween('appraisaldate', array($from, $to))
-            ->where('employee.organization_id',Confide::user()->organization_id)
-            ->select('first_name','last_name','appraisalquestions.rate as score','middle_name','comment','appraisals.rate','username','question','performance','appraisaldate')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->select('first_name','last_name','appraisalquestions.rate as score','middle_name','comment','appraisals.rate','name','question','performance','appraisaldate')
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.appraisal', compact('from','to', 'organization','appraisals'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.appraisal', compact('from','to', 'organization','appraisals'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1507,14 +1529,14 @@ class ReportsController extends \BaseController {
             ->join('appraisalquestions', 'appraisals.appraisalquestion_id', '=', 'appraisalquestions.id')
             ->join('users', 'appraisals.examiner', '=', 'users.id')
             ->where('employee_id', $id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('appraisaldate', array($from, $to))
-            ->select('first_name','last_name','middle_name','appraisalquestions.rate as score','comment','appraisals.rate','username','question','performance','appraisaldate')
+            ->select('first_name','last_name','middle_name','appraisalquestions.rate as score','comment','appraisals.rate','name','question','performance','appraisaldate')
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.individualappraisal', compact( 'from','to','employee','organization','appraisals'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.individualappraisal', compact( 'from','to','employee','organization','appraisals'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1526,8 +1548,8 @@ class ReportsController extends \BaseController {
 
     public function selempkin()
     {
-       $employees = Employee::where('employee.organization_id',Confide::user()->organization_id)->get();
-        return View::make('pdf.selectKinEmployee',compact('employees'));
+       $employees = Employee::where('employee.organization_id',Auth::user()->organization_id)->get();
+        return view('pdf.selectKinEmployee',compact('employees'));
     }
 
     public function kin(){
@@ -1539,11 +1561,12 @@ class ReportsController extends \BaseController {
 
         $data = DB::table('nextofkins')
             ->join('employee', 'nextofkins.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('employee_id', '=', $id)
+            ->select("nextofkins.first_name","nextofkins.last_name","nextofkins.middle_name","nextofkins.relationship","nextofkins.contact","nextofkins.id_number")
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Employee Kin Report', function($excel) use($data,$employee,$organization) {
@@ -1592,7 +1615,7 @@ class ReportsController extends \BaseController {
               });
 
               $sheet->row(5, array(
-              '#', 'KIN NAME', 'RELATIONSHIP', 'kIN`S IDENTITY NUMBER','KIN`S CONTACT','GOOD WILL(%)'
+              '#', 'KIN NAME', 'RELATIONSHIP', 'kIN`S IDENTITY NUMBER','KIN`S CONTACT'
               ));
 
               $sheet->row(5, function ($r) {
@@ -1616,7 +1639,7 @@ class ReportsController extends \BaseController {
              }
 
              $sheet->row($row, array(
-             $x,$name,$data[$i]->relationship,$data[$i]->id_number,$data[$i]->contact,$data[$i]->goodwill
+             $x,$name,$data[$i]->relationship,$data[$i]->id_number,$data[$i]->contact
              ));
              $x++;
              $row++;
@@ -1635,13 +1658,14 @@ class ReportsController extends \BaseController {
 
         $kins = DB::table('nextofkins')
             ->join('employee', 'nextofkins.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('employee_id', '=', $id)
+            ->select("nextofkins.first_name","nextofkins.last_name","nextofkins.middle_name","nextofkins.relationship","nextofkins.contact","nextofkins.id_number")
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.kin', compact( 'employee','organization','kins'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.kin', compact( 'employee','organization','kins'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1658,11 +1682,12 @@ class ReportsController extends \BaseController {
 
         $data = DB::table('nextofkins')
             ->join('employee', 'nextofkins.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('employee_id', '=', $id)
+            ->select("nextofkins.first_name","nextofkins.last_name","nextofkins.middle_name","nextofkins.relationship","nextofkins.contact","nextofkins.id_number")
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Employee Kin Report', function($excel) use($data,$employee,$organization) {
@@ -1711,7 +1736,7 @@ class ReportsController extends \BaseController {
               });
 
               $sheet->row(5, array(
-              '#', 'KIN NAME', 'RELATIONSHIP', 'kIN`S IDENTITY NUMBER','KIN`S CONTACT','GOOD WILL(%)'
+              '#', 'KIN NAME', 'RELATIONSHIP', 'kIN`S IDENTITY NUMBER','KIN`S CONTACT'
               ));
 
               $sheet->row(5, function ($r) {
@@ -1735,7 +1760,7 @@ class ReportsController extends \BaseController {
              }
 
              $sheet->row($row, array(
-             $x,$name,$data[$i]->relationship,$data[$i]->id_number,$data[$i]->contact,$data[$i]->goodwill
+             $x,$name,$data[$i]->relationship,$data[$i]->id_number,$data[$i]->contact
              ));
              $x++;
              $row++;
@@ -1754,13 +1779,14 @@ class ReportsController extends \BaseController {
 
         $kins = DB::table('nextofkins')
             ->join('employee', 'nextofkins.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('employee_id', '=', $id)
+            ->select("nextofkins.first_name","nextofkins.last_name","nextofkins.middle_name","nextofkins.relationship","nextofkins.contact","nextofkins.id_number")
             ->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.nextkin', compact( 'employee','organization','kins'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('pdf.nextkin', compact( 'employee','organization','kins'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1771,20 +1797,20 @@ class ReportsController extends \BaseController {
 
     public function period_payslip()
   {
-    $employees = DB::table('employee')->where('employee.organization_id',Confide::user()->organization_id)->get();
-    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-    $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+    $employees = DB::table('employee')->where('employee.organization_id',Auth::user()->organization_id)->get();
+    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
-    return View::make('pdf.payslipSelect', compact('employees','branches','departments','type'));
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    return view('pdf.payslipSelect', compact('employees','branches','departments','type'));
   }
 
     public function payslip(){
@@ -1830,9 +1856,9 @@ class ReportsController extends \BaseController {
             ->select('shortname')
             ->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.monthlySlip', compact('transacts','allws','deds','earnings','period','currencies', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.monthlySlip', compact('transacts','allws','deds','earnings','period','currencies', 'organization'))->setPaper('a4');
     }
     return $pdf->stream('Monthly_Payslip_'.$period.'.pdf');
     }else{*/
@@ -1843,16 +1869,16 @@ class ReportsController extends \BaseController {
         $type = Input::get("type");
         $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-        $employees = Employee::where('organization_id',Confide::User()->organization_id)->get();
+        $employees = Employee::where('organization_id',Auth::User()->organization_id)->get();
 
         if(Entrust::can('manager_payroll')){
-        $employees = Employee::where('organization_id',Confide::User()->organization_id)->where('job_group_id',$jgroup->id)->get();
+        $employees = Employee::where('organization_id',Auth::User()->organization_id)->where('job_group_id',$jgroup->id)->get();
         }else{
-        $employees = Employee::where('organization_id',Confide::User()->organization_id)->where('job_group_id','!=',$jgroup->id)->get();
+        $employees = Employee::where('organization_id',Auth::User()->organization_id)->where('job_group_id','!=',$jgroup->id)->get();
         }
 
         foreach ($employees as $employee) {
@@ -1862,14 +1888,14 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->first(); 
 
         $allws = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('allowance_name')
             ->get(); 
 
@@ -1877,7 +1903,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('nontaxable_name')
             ->get(); 
 
@@ -1885,7 +1911,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('earning_name')
             ->get(); 
 
@@ -1893,7 +1919,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('deduction_name')
             ->get(); 
 
@@ -1901,7 +1927,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('overtime_type')
             ->get();
 
@@ -1909,7 +1935,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('relief_name')
             ->get();
 
@@ -1943,9 +1969,9 @@ class ReportsController extends \BaseController {
               $name = $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name;
               }
  
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
      
     
   Excel::create('Payslips', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency) {
@@ -2310,14 +2336,14 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->first(); 
 
         $allws = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('allowance_name')
             ->get(); 
 
@@ -2325,7 +2351,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('nontaxable_name')
             ->get(); 
 
@@ -2333,7 +2359,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('earning_name')
             ->get(); 
 
@@ -2341,7 +2367,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('deduction_name')
             ->get(); 
 
@@ -2349,7 +2375,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('overtime_type')
             ->get();
 
@@ -2357,7 +2383,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('relief_name')
             ->get();
 
@@ -2391,9 +2417,9 @@ class ReportsController extends \BaseController {
               $name = $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name;
               }
  
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
      
     
   Excel::create($save.'_'.$month.' Payslip', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency) {
@@ -2758,20 +2784,20 @@ class ReportsController extends \BaseController {
         $empall = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->get(); 
 
         $currency = DB::table('currencies')
-                    ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+                    ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
                     ->select('shortname')
                     ->first();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $type = Input::get("type");
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
@@ -2779,18 +2805,18 @@ class ReportsController extends \BaseController {
          $empall = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->get(); 
       }else{
         $empall = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('job_group_id' ,'!=', $jgroup->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->get(); 
         }
 
-    $pdf = PDF::loadView('pdf.monthlySlip', compact('empall','select','period','currency', 'organization'))->setPaper('a5')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.monthlySlip', compact('empall','select','period','currency', 'organization'))->setPaper('a5');
   
     return $pdf->stream('Payslips.pdf');
 
@@ -2804,7 +2830,7 @@ class ReportsController extends \BaseController {
 
         $employee = Employee::find($id);
 
-        $empall = Employee::where('employee.organization_id',Confide::user()->organization_id)->get();
+        $empall = Employee::where('employee.organization_id',Auth::user()->organization_id)->get();
 
         $name = '';
 
@@ -2830,14 +2856,14 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->first(); 
 
          $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('nontaxable_name')
             ->get(); 
 
@@ -2845,7 +2871,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('allowance_name')
             ->get(); 
 
@@ -2853,7 +2879,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('earning_name')
             ->get(); 
 
@@ -2861,7 +2887,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('deduction_name')
             ->get(); 
 
@@ -2869,7 +2895,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('overtime_type')
             ->get();
 
@@ -2877,18 +2903,18 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('relief_name')
             ->get();
  
         $currency = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->first();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.monthlySlip', compact('nontaxables','empall','select','name','employee','transact','allws','deds','earnings','overtimes','rels','period','currency', 'organization','id'))->setPaper('a5')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.monthlySlip', compact('nontaxables','empall','select','name','employee','transact','allws','deds','earnings','overtimes','rels','period','currency', 'organization','id'))->setPaper('a5');
   
     return $pdf->stream($employee->personal_file_number.'_'.$employee->first_name.'_'.$employee->last_name.'_'.$month.'.pdf');
     }
@@ -2899,21 +2925,21 @@ class ReportsController extends \BaseController {
   {
     
     $allws = DB::table('transact_allowances')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
     ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
     ->get();
 
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
-    return View::make('pdf.allowanceSelect', compact('allws','type'));
+    return view('pdf.allowanceSelect', compact('allws','type'));
   }
 
     public function allowances(){
@@ -2922,73 +2948,73 @@ class ReportsController extends \BaseController {
             if(Input::get('type') == 'All'){
      $data = DB::table('transact_allowances')
                   ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_allowances.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
       $dataearning = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
       $dataovertime = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
      $total = DB::table('transact_allowances')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("allowance_amount");
 
       $totalearning = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
 
      $totalovertime = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
 
         }else{
           $data = DB::table('transact_allowances')
                   ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_allowances.financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->get();
 
       $dataearning = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->get();
 
       $dataovertime = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->get();
 
      $total = DB::table('transact_allowances')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("allowance_amount");
 
       $totalearning = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("earning_amount");
 
      $totalovertime = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("overtime_amount");
@@ -3006,9 +3032,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."-".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
      
     
   Excel::create('Allowances Report '.$month, function($excel) use($data,$dataearning,$dataovertime,$total,$totalearning,$totalovertime,$organization,$currency) {
@@ -3199,35 +3225,35 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_allowances.allowance_name','transact_allowances.allowance_amount')
             ->get();
 
     $dataearning = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
     $dataovertime = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
      $total = DB::table('transact_allowances')
                   ->where('financial_month_year' ,'=', Input::get('period'))
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
                   ->sum("allowance_amount");
 
       $totalearning = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
 
      $totalovertime = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
                 }else{
@@ -3235,40 +3261,40 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_allowances.allowance_name','transact_allowances.allowance_amount')
             ->get();
 
     $dataearning = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
     $dataovertime = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
      $total = DB::table('transact_allowances')
                   ->where('financial_month_year' ,'=', Input::get('period'))
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
                   ->sum("allowance_amount");
 
       $totalearning = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
 
      $totalovertime = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
@@ -3285,9 +3311,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."-".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     
   Excel::create('Allowances Report '.$month, function($excel) use($data,$currency,$total,$type,$organization) {
@@ -3431,43 +3457,43 @@ class ReportsController extends \BaseController {
         $allws = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','allowance_name','allowance_amount')
             ->get();    
 
 
         $earnings = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
         $overtimes = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
         $totalearning = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
 
         $totalovertime = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
 
 
         $total = DB::table('transact_allowances')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("allowance_amount");
         }else{
          $allws = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','allowance_name','allowance_amount')
             ->get();    
@@ -3475,39 +3501,39 @@ class ReportsController extends \BaseController {
 
         $earnings = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
         $overtimes = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->get();
 
         $totalearning = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("earning_amount");
 
         $totalovertime = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("overtime_amount");
 
 
         $total = DB::table('transact_allowances')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("allowance_amount"); 
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -3523,9 +3549,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.allowanceReport', compact('allws','earnings','overtimes','totalearning','totalovertime','period','type','currencies','total', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.allowanceReport', compact('allws','earnings','overtimes','totalearning','totalovertime','period','type','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Allowance_Report_'.$month.'.pdf');
     }else{
@@ -3536,7 +3562,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_allowances.allowance_name','transact_allowances.allowance_amount')
             ->get();
 
@@ -3544,7 +3570,7 @@ class ReportsController extends \BaseController {
                   ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
                   ->join('allowances', 'transact_allowances.allowance_id', '=', 'allowances.id')
                   ->where('allowances.id' ,'=', Input::get('allowance'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("allowance_amount");
 
@@ -3552,7 +3578,7 @@ class ReportsController extends \BaseController {
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                   ->join('earnings', 'transact_earnings.earning_id', '=', 'earnings.id')
                   ->where('earnings.id' ,'=', Input::get('allowance'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
                   ->get();
@@ -3561,7 +3587,7 @@ class ReportsController extends \BaseController {
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
                   ->join('overtimes', 'transact_overtimes.overtime_id', '=', 'overtimes.id')
                   ->where('overtimes.type' ,'=', Input::get('allowance'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
                   ->get();
@@ -3569,14 +3595,14 @@ class ReportsController extends \BaseController {
         $totalearning = DB::table('transact_earnings')
                   ->join('earnings', 'transact_earnings.earning_id', '=', 'earnings.id')
                   ->where('earnings.id' ,'=', Input::get('allowance'))
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
 
         $totalovertime = DB::table('transact_overtimes')
                   ->join('overtimes', 'transact_overtimes.overtime_id', '=', 'overtimes.id')
                   ->where('overtimes.type' ,'=', Input::get('allowance')) 
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
                 }else{
@@ -3585,7 +3611,7 @@ class ReportsController extends \BaseController {
             ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_allowances.allowance_name','transact_allowances.allowance_amount')
             ->get();
 
@@ -3594,7 +3620,7 @@ class ReportsController extends \BaseController {
                   ->join('allowances', 'transact_allowances.allowance_id', '=', 'allowances.id')
                   ->where('allowances.id' ,'=', Input::get('allowance'))
                   ->where('process_type' ,'=', Input::get('type'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("allowance_amount");
 
@@ -3603,7 +3629,7 @@ class ReportsController extends \BaseController {
                   ->join('earnings', 'transact_earnings.earning_id', '=', 'earnings.id')
                   ->where('earnings.id' ,'=', Input::get('allowance'))
                   ->where('process_type' ,'=', Input::get('type'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_earnings.financial_month_year' ,'=', Input::get('period'))
                   ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
                   ->get();
@@ -3613,7 +3639,7 @@ class ReportsController extends \BaseController {
                   ->join('overtimes', 'transact_overtimes.overtime_id', '=', 'overtimes.id')
                   ->where('overtimes.type' ,'=', Input::get('allowance'))
                   ->where('process_type' ,'=', Input::get('type'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_overtimes.financial_month_year' ,'=', Input::get('period'))
                   ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
                   ->get();
@@ -3622,7 +3648,7 @@ class ReportsController extends \BaseController {
                   ->join('earnings', 'transact_earnings.earning_id', '=', 'earnings.id')
                   ->where('earnings.id' ,'=', Input::get('allowance'))
                   ->where('process_type' ,'=', Input::get('type'))
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
 
@@ -3630,12 +3656,12 @@ class ReportsController extends \BaseController {
                   ->join('overtimes', 'transact_overtimes.overtime_id', '=', 'overtimes.id')
                   ->where('overtimes.type' ,'=', Input::get('allowance')) 
                   ->where('process_type' ,'=', Input::get('type')) 
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -3652,9 +3678,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.allowanceReport', compact('allws','earnings','overtimes','totalearning','totalovertime','name','period','type','currencies','total','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.allowanceReport', compact('allws','earnings','overtimes','totalearning','totalovertime','name','period','type','currencies','total','organization'))->setPaper('a4');
   
     return $pdf->stream('Allowance_Report_'.$month.'.pdf');
      }
@@ -3667,21 +3693,21 @@ class ReportsController extends \BaseController {
   {
     $earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
             ->get();
 
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
-    return View::make('pdf.earningSelect', compact('earnings','type'));
+    return view('pdf.earningSelect', compact('earnings','type'));
   }
 
     public function earnings(){
@@ -3691,32 +3717,32 @@ class ReportsController extends \BaseController {
      $data = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
             ->get();    
 
      $total = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
      }else{
      $data = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('process_type',Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
             ->get();    
 
      $total = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('process_type',Input::get('type'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
      }
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -3868,7 +3894,7 @@ class ReportsController extends \BaseController {
     $data = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
             ->get();
@@ -3876,14 +3902,14 @@ class ReportsController extends \BaseController {
     $total = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->sum("earning_amount");
     }else{
     $data = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type',Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
@@ -3892,13 +3918,13 @@ class ReportsController extends \BaseController {
     $total = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type',Input::get('type'))
             ->sum("earning_amount");
     }
-    $organization = Organization::find(Confide::user()->organization_id);
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $organization = Organization::find(Auth::user()->organization_id);
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -4052,33 +4078,33 @@ class ReportsController extends \BaseController {
         
         $earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','earning_name','earning_amount')
             ->get();    
  
         $total = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
         }else{
          $earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type',Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','earning_name','earning_amount')
             ->get();    
  
         $total = DB::table('transact_earnings')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type',Input::get('type'))
                   ->sum("earning_amount");
         }
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -4094,9 +4120,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.earningReport', compact('earnings','type','period','currencies','total', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.earningReport', compact('earnings','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Earning_Report_'.$month.'.pdf');
     }else{
@@ -4107,7 +4133,7 @@ class ReportsController extends \BaseController {
       $earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
             ->get();
@@ -4115,14 +4141,14 @@ class ReportsController extends \BaseController {
         $total = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                   ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("earning_amount");
         }else{
           $earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type',Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_earnings.earning_name','transact_earnings.earning_amount')
@@ -4131,13 +4157,13 @@ class ReportsController extends \BaseController {
         $total = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                   ->where('transact_earnings.earning_name' ,'=', Input::get('earning'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type',Input::get('type'))
                   ->sum("earning_amount");
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -4153,9 +4179,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.earningReport', compact('earnings','name','type','period','currencies', 'total','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.earningReport', compact('earnings','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Earning_Report_'.$month.'.pdf');
     }
@@ -4165,16 +4191,16 @@ class ReportsController extends \BaseController {
 
   public function employee_overtimes()
   {
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
-    return View::make('pdf.overtimeSelect',compact('type'));
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    return view('pdf.overtimeSelect',compact('type'));
   }
 
     public function overtimes(){
@@ -4184,12 +4210,12 @@ class ReportsController extends \BaseController {
      $data = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
             ->get();    
 
      $total = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
      }else{
@@ -4197,19 +4223,19 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
             ->get();    
 
      $total = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
      }
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -4361,14 +4387,14 @@ class ReportsController extends \BaseController {
     $data = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('overtime_type' ,'=', Input::get('overtime'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
             ->get();
 
     $total = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('overtime_type' ,'=', Input::get('overtime'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->sum("overtime_amount");
@@ -4376,7 +4402,7 @@ class ReportsController extends \BaseController {
      $data = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('overtime_type' ,'=', Input::get('overtime'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
@@ -4384,14 +4410,14 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('overtime_type' ,'=', Input::get('overtime'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->sum("overtime_amount"); 
     }
-    $organization = Organization::find(Confide::user()->organization_id);
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $organization = Organization::find(Auth::user()->organization_id);
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -4545,33 +4571,33 @@ class ReportsController extends \BaseController {
         if(Input::get('type') == 'All'){
         $overtimes = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','overtime_type','overtime_amount')
             ->get();    
  
         $total = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
         }else{
         $overtimes = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','overtime_type','overtime_amount')
             ->get();    
  
         $total = DB::table('transact_overtimes')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("overtime_amount");
         }
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -4587,9 +4613,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.overtimeReport', compact('overtimes','type','period','currencies','total', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.overtimeReport', compact('overtimes','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Overtimes_Report_'.$month.'.pdf');
     }else{
@@ -4601,7 +4627,7 @@ class ReportsController extends \BaseController {
       $overtimes = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('overtime_type' ,'=', Input::get('overtime'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
             ->get();
@@ -4609,14 +4635,14 @@ class ReportsController extends \BaseController {
         $total = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
                   ->where('overtime_type' ,'=', Input::get('overtime'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("overtime_amount");
         }else{
           $overtimes = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('overtime_type' ,'=', Input::get('overtime'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_overtimes.overtime_type','transact_overtimes.overtime_amount')
@@ -4625,13 +4651,13 @@ class ReportsController extends \BaseController {
         $total = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
                   ->where('overtime_type' ,'=', Input::get('overtime'))
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("overtime_amount");
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -4647,9 +4673,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.overtimeReport', compact('overtimes','name','type','period','currencies', 'total','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.overtimeReport', compact('overtimes','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Overtime_Report_'.$month.'.pdf');
     }
@@ -4662,21 +4688,21 @@ class ReportsController extends \BaseController {
   {
     $reliefs = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select(DB::raw('DISTINCT(relief_name) as relief_name'))
             ->get();
 
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
-    return View::make('pdf.reliefSelect', compact('reliefs','type'));
+    return view('pdf.reliefSelect', compact('reliefs','type'));
   }
 
     public function reliefs(){
@@ -4686,12 +4712,12 @@ class ReportsController extends \BaseController {
      $data = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_reliefs.relief_name','transact_reliefs.relief_amount')
             ->get();    
 
      $total = DB::table('transact_reliefs')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("relief_amount");
      }else{
@@ -4699,19 +4725,19 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('personal_file_number','first_name','last_name','middle_name','transact_reliefs.relief_name','transact_reliefs.relief_amount')
             ->get();    
 
      $total = DB::table('transact_reliefs')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("relief_amount");
      }
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -4862,7 +4888,7 @@ class ReportsController extends \BaseController {
     if(Input::get('type') == 'All'){
     $data = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_reliefs.relief_name','transact_reliefs.relief_amount')
@@ -4870,14 +4896,14 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->sum("relief_amount");
     }else{
      $data = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -4886,15 +4912,15 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->sum("relief_amount");
 
     }
-    $organization = Organization::find(Confide::user()->organization_id);
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $organization = Organization::find(Auth::user()->organization_id);
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -5048,32 +5074,32 @@ class ReportsController extends \BaseController {
         if(Input::get('type') == 'All'){
         $reliefs = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','relief_name','relief_amount')
             ->get();    
  
         $total = DB::table('transact_reliefs')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("relief_amount");
         }else{
          $reliefs = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','relief_name','relief_amount')
             ->get();    
  
         $total = DB::table('transact_reliefs')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("relief_amount"); 
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -5089,9 +5115,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.reliefReport', compact('reliefs','type','period','currencies','total', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.reliefReport', compact('reliefs','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Relief_Report_'.$month.'.pdf');
     }else{
@@ -5102,14 +5128,14 @@ class ReportsController extends \BaseController {
         $reliefs = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_reliefs.relief_name','transact_reliefs.relief_amount')
             ->get();
 
         $total = DB::table('transact_reliefs')
                   ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("relief_amount");
@@ -5117,7 +5143,7 @@ class ReportsController extends \BaseController {
          $reliefs = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_reliefs.relief_name','transact_reliefs.relief_amount')
@@ -5125,14 +5151,14 @@ class ReportsController extends \BaseController {
 
         $total = DB::table('transact_reliefs')
                   ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_reliefs.relief_name' ,'=', Input::get('relief'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("relief_amount"); 
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -5148,9 +5174,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.reliefReport', compact('reliefs','name','type','period','currencies', 'total','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.reliefReport', compact('reliefs','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Relief_Report_'.$month.'.pdf');
     }
@@ -5163,21 +5189,21 @@ class ReportsController extends \BaseController {
   {
     $deds = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
 
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
-    return View::make('pdf.deductionSelect', compact('deds','type'));
+    return view('pdf.deductionSelect', compact('deds','type'));
   }
 
     public function deductions(){
@@ -5186,33 +5212,33 @@ class ReportsController extends \BaseController {
             if(Input::get('type') == 'All'){
      $data = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_deductions.deduction_name','transact_deductions.deduction_amount')
             ->get();    
 
      $total = DB::table('transact_deductions')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("deduction_amount");
     }else{
       $data = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_deductions.deduction_name','transact_deductions.deduction_amount')
             ->get();    
 
      $total = DB::table('transact_deductions')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("deduction_amount");
     }
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -5363,14 +5389,14 @@ class ReportsController extends \BaseController {
     $data = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_deductions.deduction_name','transact_deductions.deduction_amount')
             ->get();
 
     $total = DB::table('transact_deductions')
                   ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("deduction_amount");
@@ -5378,7 +5404,7 @@ class ReportsController extends \BaseController {
     $data = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_deductions.deduction_name','transact_deductions.deduction_amount')
@@ -5386,14 +5412,14 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact_deductions')
                   ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("deduction_amount");
     }
-    $organization = Organization::find(Confide::user()->organization_id);
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $organization = Organization::find(Auth::user()->organization_id);
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -5547,32 +5573,32 @@ class ReportsController extends \BaseController {
         if(Input::get('type') == 'All'){
         $deds = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','deduction_name','deduction_amount')
             ->get();    
  
         $total = DB::table('transact_deductions')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("deduction_amount");
         }else{
           $deds = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','deduction_name','deduction_amount')
             ->get();    
  
         $total = DB::table('transact_deductions')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("deduction_amount");
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -5588,9 +5614,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.deductionReport', compact('deds','type','period','currencies','total', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.deductionReport', compact('deds','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Deduction_Report_'.$month.'.pdf');
     }else{
@@ -5600,14 +5626,14 @@ class ReportsController extends \BaseController {
       $deds = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_deductions.deduction_name','transact_deductions.deduction_amount')
             ->get();
 
         $total = DB::table('transact_deductions')
                   ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("deduction_amount");
@@ -5615,7 +5641,7 @@ class ReportsController extends \BaseController {
         $deds = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_deductions.deduction_name','transact_deductions.deduction_amount')
@@ -5623,14 +5649,14 @@ class ReportsController extends \BaseController {
 
         $total = DB::table('transact_deductions')
                   ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_deductions.deduction_name' ,'=', Input::get('deduction'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("deduction_amount");  
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -5646,9 +5672,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.deductionReport', compact('deds','name','type','period','currencies', 'total','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.deductionReport', compact('deds','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Deduction_Report_'.$month.'.pdf');
     }
@@ -5661,21 +5687,21 @@ class ReportsController extends \BaseController {
   {
     $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select(DB::raw('DISTINCT(nontaxable_name) as nontaxable_name'))
             ->get();
 
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
-    return View::make('pdf.nontaxableSelect', compact('nontaxables','type'));
+    return view('pdf.nontaxableSelect', compact('nontaxables','type'));
   }
 
     public function employeenontaxables(){
@@ -5684,35 +5710,35 @@ class ReportsController extends \BaseController {
             if(Input::get('type') == 'All'){
      $data = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_nontaxables.nontaxable_name','transact_nontaxables.nontaxable_amount')
             ->get();    
 
      $total = DB::table('transact_nontaxables')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("nontaxable_amount");
 
                 }else{
                   $data = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_nontaxables.nontaxable_name','transact_nontaxables.nontaxable_amount')
             ->get();    
 
      $total = DB::table('transact_nontaxables')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("nontaxable_amount");
                 }
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -5863,14 +5889,14 @@ class ReportsController extends \BaseController {
     $data = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_nontaxables.nontaxable_name','transact_nontaxables.nontaxable_amount')
             ->get();
 
     $total = DB::table('transact_nontaxables')
                   ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("nontaxable_amount");
@@ -5879,7 +5905,7 @@ class ReportsController extends \BaseController {
      $data = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_nontaxables.nontaxable_name','transact_nontaxables.nontaxable_amount')
@@ -5887,15 +5913,15 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact_nontaxables')
                   ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("nontaxable_amount"); 
     }
 
-    $organization = Organization::find(Confide::user()->organization_id);
-    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+    $organization = Organization::find(Auth::user()->organization_id);
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
     $part = explode("-", Input::get('period'));
               
@@ -6048,32 +6074,32 @@ class ReportsController extends \BaseController {
         if(Input::get('income') == 'All'){
         $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','nontaxable_name','nontaxable_amount')
             ->get();    
  
         $total = DB::table('transact_nontaxables')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("nontaxable_amount");
         }else{
           $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','last_name','middle_name','nontaxable_name','nontaxable_amount')
             ->get();    
  
         $total = DB::table('transact_nontaxables')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("nontaxable_amount");
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -6089,9 +6115,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.nontaxableReport', compact('nontaxables','type','period','currencies','total', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.nontaxableReport', compact('nontaxables','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Non_Taxable_Income_Report_'.$month.'.pdf');
     }else{
@@ -6101,7 +6127,7 @@ class ReportsController extends \BaseController {
         if(Input::get('income') == 'All'){
         $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','last_name','middle_name','transact_nontaxables.nontaxable_name','transact_nontaxables.nontaxable_amount')
@@ -6109,14 +6135,14 @@ class ReportsController extends \BaseController {
 
         $total = DB::table('transact_nontaxables')
                   ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->sum("nontaxable_amount");
         }else{
          $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -6125,14 +6151,14 @@ class ReportsController extends \BaseController {
 
         $total = DB::table('transact_nontaxables')
                   ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('transact_nontaxables.nontaxable_name' ,'=', Input::get('income'))
                   ->where('financial_month_year' ,'=', Input::get('period'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->sum("nontaxable_amount"); 
         }
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -6148,9 +6174,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.nontaxableReport', compact('nontaxables','name','type','period','currencies', 'total','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.nontaxableReport', compact('nontaxables','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Non_Taxable_Income_Report_'.$month.'.pdf');
     }
@@ -6169,40 +6195,40 @@ class ReportsController extends \BaseController {
 
      public function period_paye()
   {
-    return View::make('pdf.payeSelect');
+    return view('pdf.payeSelect');
   }
 
     public function payeReturns(){
       if(Input::get('format') == "excel"){
        $total_enabled = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('income_tax_applicable' ,'=', 1)
         ->sum('paye');
 
       $total_disabled = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('income_tax_applicable' ,'=', 0)
         ->sum('paye');
 
        $payes_enabled = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('income_tax_applicable' ,'=', 1)
             ->get(); 
 
         $payes_disabled = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('income_tax_applicable' ,'=', 0)
             ->get(); 
 
-       $organization = Organization::find(Confide::user()->organization_id);
+       $organization = Organization::find(Auth::user()->organization_id);
 
        $period = Input::get('period');
 
@@ -6365,12 +6391,12 @@ class ReportsController extends \BaseController {
         $period = Input::get('period');
 
         $data = DB::table('employee')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('income_tax_applicable' ,'=', 1)
             ->get();
 
         $data_disabled = DB::table('employee')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('income_tax_applicable' ,'=', 0)
             ->get();
 
@@ -6465,7 +6491,7 @@ class ReportsController extends \BaseController {
     $period = Input::get('period');
 
         $data_disabled = DB::table('employee')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('income_tax_applicable' ,'=', 0)
             ->get();
 
@@ -6564,33 +6590,33 @@ class ReportsController extends \BaseController {
 
     $total_enabled = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('income_tax_applicable' ,'=', 1)
         ->sum('paye');
 
     $total_disabled = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('income_tax_applicable' ,'=', 0)
         ->sum('paye');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     $payes_enabled = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('income_tax_applicable' ,'=', 1)
             ->get(); 
 
     $payes_disabled = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('income_tax_applicable' ,'=', 0)
             ->get(); 
@@ -6607,9 +6633,9 @@ class ReportsController extends \BaseController {
               
               $month = $m."_".$part[1];
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.payeReport', compact('payes_enabled','payes_disabled','type','total_enabled','total_disabled','currencies','period','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.payeReport', compact('payes_enabled','payes_disabled','type','total_enabled','total_disabled','currencies','period','organization'))->setPaper('a4');
   
     return $pdf->stream('Paye_Returns_'.$month.'.pdf');
     }
@@ -6617,7 +6643,7 @@ class ReportsController extends \BaseController {
 
    public function period_nssf()
   {
-    return View::make('pdf.nssfSelect');
+    return view('pdf.nssfSelect');
   }
 
     public function nssfReturns(){
@@ -6625,19 +6651,19 @@ class ReportsController extends \BaseController {
         if(Input::get('format') == "excel"){
        $total = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('social_security_applicable' ,'=', 1)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nssf_amount');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('social_security_applicable' ,'=', 1)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-       $organization = Organization::find(Confide::user()->organization_id);
+       $organization = Organization::find(Auth::user()->organization_id);
 
        $part = explode("-", Input::get('period'));
               
@@ -6750,24 +6776,24 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
     ->where('social_security_applicable' ,'=', 1)
     ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('nssf_amount');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     $nssfs = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('social_security_applicable' ,'=', 1)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $part = explode("-", Input::get('period'));
               
@@ -6782,7 +6808,7 @@ class ReportsController extends \BaseController {
               $month = $m."_".$part[1];
 
 
-    $pdf = PDF::loadView('pdf.nssfReport', compact('nssfs','total','currencies','period','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.nssfReport', compact('nssfs','total','currencies','period','organization'))->setPaper('a4');
   
     return $pdf->stream('nssf_Report_'.$month.'.pdf');
     
@@ -6792,7 +6818,7 @@ class ReportsController extends \BaseController {
 
     public function period_nhif()
   {
-    return View::make('pdf.nhifSelect');
+    return view('pdf.nhifSelect');
   }
 
     public function nhifReturns(){
@@ -6800,19 +6826,19 @@ class ReportsController extends \BaseController {
 
        $total = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('hospital_insurance_applicable' ,'=', 1)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nhif_amount');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('hospital_insurance_applicable' ,'=', 1)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-       $organization = Organization::find(Confide::user()->organization_id);
+       $organization = Organization::find(Auth::user()->organization_id);
 
        $part = explode("-", Input::get('period'));
               
@@ -6926,24 +6952,24 @@ class ReportsController extends \BaseController {
 
     $total = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
     ->where('hospital_insurance_applicable' ,'=', 1)
     ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('nhif_amount');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     $nhifs = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('hospital_insurance_applicable' ,'=', 1)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $part = explode("-", Input::get('period'));
               
@@ -6958,7 +6984,7 @@ class ReportsController extends \BaseController {
               $month = $m."_".$part[1];
 
 
-    $pdf = PDF::loadView('pdf.nhifReport', compact('nhifs','total','currencies','period','organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.nhifReport', compact('nhifs','total','currencies','period','organization'))->setPaper('a4');
   
     return $pdf->stream('nhif_Report_'.$month.'.pdf');
     }
@@ -6968,18 +6994,18 @@ class ReportsController extends \BaseController {
 
     public function period_rem()
   {
-    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-    $depts = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $depts = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
-    return View::make('pdf.remittanceSelect',compact('branches','depts','type'));
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    return view('pdf.remittanceSelect',compact('branches','depts','type'));
   }
 
     public function payeRems(){
@@ -6990,7 +7016,7 @@ class ReportsController extends \BaseController {
         if(Input::get('type') == 'All'){
         $total = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('mode_of_payment' ,'=', 'Bank')
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('net');
@@ -6999,7 +7025,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
@@ -7007,7 +7033,7 @@ class ReportsController extends \BaseController {
 
          $total = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('mode_of_payment' ,'=', 'Bank')
         ->where('process_type' ,'=', Input::get('type'))
         ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7017,15 +7043,15 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7147,7 +7173,7 @@ class ReportsController extends \BaseController {
       $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('net');
@@ -7157,7 +7183,7 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
@@ -7166,7 +7192,7 @@ class ReportsController extends \BaseController {
          $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('process_type' ,'=', Input::get('type'))
           ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7177,15 +7203,15 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7307,7 +7333,7 @@ class ReportsController extends \BaseController {
           $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('net');
@@ -7317,7 +7343,7 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
@@ -7326,7 +7352,7 @@ class ReportsController extends \BaseController {
         $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('process_type' ,'=', Input::get('type'))
           ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7337,16 +7363,16 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
       }
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7468,7 +7494,7 @@ class ReportsController extends \BaseController {
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('net');
@@ -7479,7 +7505,7 @@ class ReportsController extends \BaseController {
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
@@ -7488,7 +7514,7 @@ class ReportsController extends \BaseController {
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('process_type' ,'=', Input::get('type'))
           ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7500,15 +7526,15 @@ class ReportsController extends \BaseController {
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -7633,7 +7659,7 @@ class ReportsController extends \BaseController {
            $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('net');
 
@@ -7641,7 +7667,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
@@ -7649,7 +7675,7 @@ class ReportsController extends \BaseController {
            $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->where('process_type' ,'=', Input::get('type'))
           ->sum('net');
@@ -7658,7 +7684,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7668,13 +7694,13 @@ class ReportsController extends \BaseController {
          
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
         
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7710,7 +7736,7 @@ class ReportsController extends \BaseController {
           $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('net');
@@ -7719,7 +7745,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7729,7 +7755,7 @@ class ReportsController extends \BaseController {
           $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('process_type' ,'=', Input::get('type'))
           ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7739,7 +7765,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
@@ -7748,13 +7774,13 @@ class ReportsController extends \BaseController {
         }
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7788,7 +7814,7 @@ class ReportsController extends \BaseController {
           $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('net');
@@ -7798,7 +7824,7 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
@@ -7807,7 +7833,7 @@ class ReportsController extends \BaseController {
           $total = DB::table('transact')
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('process_type' ,'=', Input::get('type'))
           ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7818,7 +7844,7 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7826,13 +7852,13 @@ class ReportsController extends \BaseController {
         }
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7867,7 +7893,7 @@ class ReportsController extends \BaseController {
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('process_type' ,'=', Input::get('type'))
           ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7878,7 +7904,7 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('process_type' ,'=', Input::get('type'))
@@ -7890,7 +7916,7 @@ class ReportsController extends \BaseController {
           ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('mode_of_payment' ,'=', 'Bank')
           ->where('financial_month_year' ,'=', Input::get('period'))
       ->sum('net');
@@ -7900,7 +7926,7 @@ class ReportsController extends \BaseController {
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -7908,13 +7934,13 @@ class ReportsController extends \BaseController {
           }
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -7950,18 +7976,18 @@ class ReportsController extends \BaseController {
 
    public function period_summary()
   {
-    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-    $depts = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-    $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $depts = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
     $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-    $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
-    return View::make('pdf.summarySelect',compact('branches','depts','type'));
+    $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    return view('pdf.summarySelect',compact('branches','depts','type'));
   }
 
     public function paySummary(){
@@ -7970,169 +7996,169 @@ class ReportsController extends \BaseController {
         if(Input::get('branch') == 'All' && Input::get('department') == 'All'){
          if(Input::get('type') == "All"){
          $total_pay = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('net');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
             ->get();
 
         $data_allowance = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
             ->get(); 
 
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(nontaxable_name) as nontaxable_name'))
             ->get();
         
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
             ->get();
 
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
 
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Hourly')
             ->get();
 
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Daily')
             ->get();
 
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->get();
 
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
          }else{
          $total_pay = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('process_type' ,'=', Input::get('type'))
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('process_type' ,'=', Input::get('type'))
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('process_type' ,'=', Input::get('type'))
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('net');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
@@ -8140,7 +8166,7 @@ class ReportsController extends \BaseController {
 
         $data_allowance = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
@@ -8148,7 +8174,7 @@ class ReportsController extends \BaseController {
 
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(nontaxable_name) as nontaxable_name'))
@@ -8156,7 +8182,7 @@ class ReportsController extends \BaseController {
         
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
@@ -8164,14 +8190,14 @@ class ReportsController extends \BaseController {
 
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->get();
 
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Hourly')
             ->where('process_type' ,'=', Input::get('type'))
@@ -8179,7 +8205,7 @@ class ReportsController extends \BaseController {
 
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Daily')
             ->where('process_type' ,'=', Input::get('type'))
@@ -8187,7 +8213,7 @@ class ReportsController extends \BaseController {
 
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(relief_name) as relief_name'))
@@ -8195,15 +8221,15 @@ class ReportsController extends \BaseController {
 
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -8656,53 +8682,53 @@ class ReportsController extends \BaseController {
 
         if(Input::get('department') == 'All'){
          $total_pay = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('net');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
@@ -8710,7 +8736,7 @@ class ReportsController extends \BaseController {
 
         $data_allowance = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('financial_month_year' ,'=', Input::get('period'))
              ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
@@ -8718,7 +8744,7 @@ class ReportsController extends \BaseController {
 
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(nontaxable_name) as nontaxable_name'))
@@ -8727,7 +8753,7 @@ class ReportsController extends \BaseController {
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
             ->get();
@@ -8735,14 +8761,14 @@ class ReportsController extends \BaseController {
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
 
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Hourly')
             ->get();
@@ -8750,7 +8776,7 @@ class ReportsController extends \BaseController {
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Daily')
             ->get();
@@ -8758,7 +8784,7 @@ class ReportsController extends \BaseController {
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(relief_name) as relief_name'))
             ->get();
@@ -8766,68 +8792,68 @@ class ReportsController extends \BaseController {
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
         }else{
           $total_pay = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('net');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -8836,7 +8862,7 @@ class ReportsController extends \BaseController {
 
         $data_allowance = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -8845,7 +8871,7 @@ class ReportsController extends \BaseController {
 
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -8855,7 +8881,7 @@ class ReportsController extends \BaseController {
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
@@ -8864,7 +8890,7 @@ class ReportsController extends \BaseController {
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->get();
@@ -8872,7 +8898,7 @@ class ReportsController extends \BaseController {
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Hourly')
             ->where('process_type' ,'=', Input::get('type'))
@@ -8881,7 +8907,7 @@ class ReportsController extends \BaseController {
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Daily')
             ->where('process_type' ,'=', Input::get('type'))
@@ -8890,7 +8916,7 @@ class ReportsController extends \BaseController {
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(relief_name) as relief_name'))
@@ -8899,15 +8925,15 @@ class ReportsController extends \BaseController {
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -9359,53 +9385,53 @@ class ReportsController extends \BaseController {
 
         if(Input::get('type') == 'All'){
           $total_pay = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('net');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
@@ -9413,7 +9439,7 @@ class ReportsController extends \BaseController {
 
         $data_allowance = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
@@ -9421,7 +9447,7 @@ class ReportsController extends \BaseController {
 
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(nontaxable_name) as nontaxable_name'))
@@ -9429,7 +9455,7 @@ class ReportsController extends \BaseController {
         
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
@@ -9437,14 +9463,14 @@ class ReportsController extends \BaseController {
 
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
 
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Hourly')
@@ -9452,7 +9478,7 @@ class ReportsController extends \BaseController {
 
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Daily')
@@ -9460,7 +9486,7 @@ class ReportsController extends \BaseController {
 
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(relief_name) as relief_name'))
@@ -9468,69 +9494,69 @@ class ReportsController extends \BaseController {
 
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
         }else{
           $total_pay = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('net');
 
         $data = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -9539,7 +9565,7 @@ class ReportsController extends \BaseController {
 
         $data_allowance = DB::table('transact_allowances')
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -9548,7 +9574,7 @@ class ReportsController extends \BaseController {
 
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -9557,7 +9583,7 @@ class ReportsController extends \BaseController {
         
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -9566,7 +9592,7 @@ class ReportsController extends \BaseController {
 
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -9574,7 +9600,7 @@ class ReportsController extends \BaseController {
 
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -9583,7 +9609,7 @@ class ReportsController extends \BaseController {
 
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -9592,7 +9618,7 @@ class ReportsController extends \BaseController {
 
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -9601,16 +9627,16 @@ class ReportsController extends \BaseController {
 
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -10063,47 +10089,47 @@ class ReportsController extends \BaseController {
 
         if(Input::get('type') == 'All'){
             $total_pay = DB::table('transact')
-            ->where('organization_id',Confide::user()->organization_id)
+            ->where('organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('net');
 
@@ -10119,7 +10145,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
             ->get(); 
@@ -10127,7 +10153,7 @@ class ReportsController extends \BaseController {
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(nontaxable_name) as nontaxable_name'))
@@ -10136,7 +10162,7 @@ class ReportsController extends \BaseController {
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(earning_name) as earning_name'))
@@ -10145,7 +10171,7 @@ class ReportsController extends \BaseController {
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
@@ -10153,7 +10179,7 @@ class ReportsController extends \BaseController {
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Hourly')
@@ -10162,7 +10188,7 @@ class ReportsController extends \BaseController {
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('overtime_type' ,'=', 'Daily')
@@ -10171,7 +10197,7 @@ class ReportsController extends \BaseController {
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(relief_name) as relief_name'))
@@ -10180,62 +10206,62 @@ class ReportsController extends \BaseController {
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get();
         }else{
          $total_pay = DB::table('transact')
-            ->where('organization_id',Confide::user()->organization_id)
+            ->where('organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->sum('transact.basic_pay');
 
          $total_earning = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('earning_amount');
 
          $total_gross = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('paye');
 
          $total_nssf = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('nssf_amount');
 
          $total_nhif = DB::table('transact')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('nhif_amount');
 
         $total_others = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('other_deductions');
 
         $total_deds = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('total_deductions');
 
         $total_net = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
         ->sum('net');
@@ -10253,7 +10279,7 @@ class ReportsController extends \BaseController {
             ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('department_id' ,'=', Input::get('department'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(allowance_name) as allowance_name'))
@@ -10262,7 +10288,7 @@ class ReportsController extends \BaseController {
         $data_nontax = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -10272,7 +10298,7 @@ class ReportsController extends \BaseController {
         $data_earnings = DB::table('transact_earnings')
             ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -10282,7 +10308,7 @@ class ReportsController extends \BaseController {
         $data_overtime = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('process_type' ,'=', Input::get('type'))
             ->where('financial_month_year' ,'=', Input::get('period'))
@@ -10291,7 +10317,7 @@ class ReportsController extends \BaseController {
         $data_overtime_hourly = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -10301,7 +10327,7 @@ class ReportsController extends \BaseController {
         $data_overtime_daily = DB::table('transact_overtimes')
             ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -10311,7 +10337,7 @@ class ReportsController extends \BaseController {
         $data_relief = DB::table('transact_reliefs')
             ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -10321,16 +10347,16 @@ class ReportsController extends \BaseController {
         $data_deduction = DB::table('transact_deductions')
             ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select(DB::raw('DISTINCT(deduction_name) as deduction_name'))
             ->get(); 
         }
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -10787,47 +10813,47 @@ class ReportsController extends \BaseController {
     if(Input::get('branch') == 'All' && Input::get('department') == 'All'){
       if(Input::get('type') == 'All'){
      $total_pay = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
     ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('transact.basic_pay');
 
      $total_earning = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('earning_amount');
 
      $total_gross = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('paye');
 
      $total_nssf = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('nssf_amount');
 
      $total_nhif = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('nhif_amount');
 
     $total_others = DB::table('transact')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('other_deductions');
 
     $total_deds = DB::table('transact')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('total_deductions');
 
     $total_net = DB::table('transact')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('net');
 
@@ -10837,61 +10863,61 @@ class ReportsController extends \BaseController {
 
     $sums = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
             ->get(); 
     }else{
       $total_pay = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
     ->where('financial_month_year' ,'=', Input::get('period'))
     ->where('process_type' ,'=', Input::get('type'))
     ->sum('transact.basic_pay');
 
      $total_earning = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('earning_amount');
 
      $total_gross = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('paye');
 
      $total_nssf = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('nssf_amount');
 
      $total_nhif = DB::table('transact')
-     ->where('organization_id',Confide::user()->organization_id)
+     ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('nhif_amount');
 
     $total_others = DB::table('transact')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('other_deductions');
 
     $total_deds = DB::table('transact')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('total_deductions');
 
     $total_net = DB::table('transact')
-    ->where('organization_id',Confide::user()->organization_id)
+    ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('net');
@@ -10902,13 +10928,13 @@ class ReportsController extends \BaseController {
 
     $sums = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
             ->get(); 
     }
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $part = explode("-", Input::get('period'));
               
@@ -10933,20 +10959,20 @@ class ReportsController extends \BaseController {
          $total_pay = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('transact.basic_pay');
 
      $total_earning = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('earning_amount');
 
      $total_gross = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
     ->where('branch_id' ,'=', Input::get('branch'))
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('taxable_income');
@@ -10954,20 +10980,20 @@ class ReportsController extends \BaseController {
         $total_paye = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
         ->where('branch_id' ,'=', Input::get('branch'))
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('paye');
 
      $total_nssf = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('nssf_amount');
 
      $total_nhif = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
     ->where('branch_id' ,'=', Input::get('branch'))
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('nhif_amount');
@@ -10975,33 +11001,33 @@ class ReportsController extends \BaseController {
     $total_others = DB::table('transact')
       ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('other_deductions');
 
     $total_deds = DB::table('transact')
       ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('total_deductions');
 
     $total_net = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
     ->sum('net');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     $sums = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('branches', 'employee.branch_id', '=', 'branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
@@ -11011,7 +11037,7 @@ class ReportsController extends \BaseController {
               $total_pay = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('transact.basic_pay');
@@ -11019,14 +11045,14 @@ class ReportsController extends \BaseController {
      $total_earning = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('earning_amount');
 
      $total_gross = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
     ->where('branch_id' ,'=', Input::get('branch'))
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
@@ -11035,7 +11061,7 @@ class ReportsController extends \BaseController {
         $total_paye = DB::table('transact')
         ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
         ->where('branch_id' ,'=', Input::get('branch'))
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('paye');
@@ -11043,14 +11069,14 @@ class ReportsController extends \BaseController {
      $total_nssf = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('nssf_amount');
 
      $total_nhif = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
     ->where('branch_id' ,'=', Input::get('branch'))
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
@@ -11059,7 +11085,7 @@ class ReportsController extends \BaseController {
     $total_others = DB::table('transact')
       ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('other_deductions');
@@ -11067,7 +11093,7 @@ class ReportsController extends \BaseController {
     $total_deds = DB::table('transact')
       ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('total_deductions');
@@ -11075,20 +11101,20 @@ class ReportsController extends \BaseController {
     $total_net = DB::table('transact')
     ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
     ->where('branch_id' ,'=', Input::get('branch'))
-    ->where('employee.organization_id',Confide::user()->organization_id)
+    ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->where('process_type' ,'=', Input::get('type'))
     ->sum('net');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
     $sums = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->join('branches', 'employee.branch_id', '=', 'branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('process_type' ,'=', Input::get('type'))
@@ -11096,7 +11122,7 @@ class ReportsController extends \BaseController {
             ->get();
             } 
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $part = explode("-", Input::get('period'));
               
@@ -11121,68 +11147,68 @@ class ReportsController extends \BaseController {
           $total_pay = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('transact.basic_pay');
 
      $total_earning = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('earning_amount');
 
      $total_gross = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('taxable_income');
         
         $total_paye = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('paye');
 
      $total_nssf = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('nssf_amount');
 
      $total_nhif = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('nhif_amount');
 
     $total_others = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('other_deductions');
 
     $total_deds = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('total_deductions');
 
     $total_net = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('net');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -11190,7 +11216,7 @@ class ReportsController extends \BaseController {
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
          ->get(); 
@@ -11198,7 +11224,7 @@ class ReportsController extends \BaseController {
         $total_pay = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->sum('transact.basic_pay');
@@ -11206,7 +11232,7 @@ class ReportsController extends \BaseController {
      $total_earning = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('earning_amount');
@@ -11214,7 +11240,7 @@ class ReportsController extends \BaseController {
      $total_gross = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('taxable_income');
@@ -11222,7 +11248,7 @@ class ReportsController extends \BaseController {
         $total_paye = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('paye');
@@ -11230,7 +11256,7 @@ class ReportsController extends \BaseController {
      $total_nssf = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('nssf_amount');
@@ -11238,7 +11264,7 @@ class ReportsController extends \BaseController {
      $total_nhif = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('nhif_amount');
@@ -11246,7 +11272,7 @@ class ReportsController extends \BaseController {
     $total_others = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('other_deductions');
@@ -11254,7 +11280,7 @@ class ReportsController extends \BaseController {
     $total_deds = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('total_deductions');
@@ -11262,13 +11288,13 @@ class ReportsController extends \BaseController {
     $total_net = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('net');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -11276,14 +11302,14 @@ class ReportsController extends \BaseController {
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
          ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
          ->get(); 
        }
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $part = explode("-", Input::get('period'));
               
@@ -11310,7 +11336,7 @@ class ReportsController extends \BaseController {
         $total_pay = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('transact.basic_pay');
@@ -11318,7 +11344,7 @@ class ReportsController extends \BaseController {
      $total_earning = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('earning_amount');
@@ -11326,7 +11352,7 @@ class ReportsController extends \BaseController {
      $total_gross = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('taxable_income');
@@ -11334,7 +11360,7 @@ class ReportsController extends \BaseController {
         $total_paye = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('paye');
@@ -11342,7 +11368,7 @@ class ReportsController extends \BaseController {
      $total_nssf = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('nssf_amount');
@@ -11350,7 +11376,7 @@ class ReportsController extends \BaseController {
      $total_nhif = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('nhif_amount');
@@ -11358,7 +11384,7 @@ class ReportsController extends \BaseController {
     $total_others = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('other_deductions');
@@ -11366,7 +11392,7 @@ class ReportsController extends \BaseController {
     $total_deds = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('total_deductions');
@@ -11374,13 +11400,13 @@ class ReportsController extends \BaseController {
     $total_net = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
      ->sum('net');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -11389,7 +11415,7 @@ class ReportsController extends \BaseController {
          ->join('branches', 'employee.branch_id', '=', 'branches.id')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
@@ -11398,7 +11424,7 @@ class ReportsController extends \BaseController {
           $total_pay = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('process_type' ,'=', Input::get('type'))
          ->where('financial_month_year' ,'=', Input::get('period'))
@@ -11407,7 +11433,7 @@ class ReportsController extends \BaseController {
      $total_earning = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('process_type' ,'=', Input::get('type'))
          ->where('financial_month_year' ,'=', Input::get('period'))
@@ -11416,7 +11442,7 @@ class ReportsController extends \BaseController {
      $total_gross = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
@@ -11425,7 +11451,7 @@ class ReportsController extends \BaseController {
         $total_paye = DB::table('transact')
          ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
@@ -11434,7 +11460,7 @@ class ReportsController extends \BaseController {
      $total_nssf = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
@@ -11443,7 +11469,7 @@ class ReportsController extends \BaseController {
      $total_nhif = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
@@ -11452,7 +11478,7 @@ class ReportsController extends \BaseController {
     $total_others = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
@@ -11461,7 +11487,7 @@ class ReportsController extends \BaseController {
     $total_deds = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('process_type' ,'=', Input::get('type'))
          ->where('financial_month_year' ,'=', Input::get('period'))
@@ -11470,14 +11496,14 @@ class ReportsController extends \BaseController {
     $total_net = DB::table('transact')
      ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
      ->where('branch_id' ,'=', Input::get('branch'))
-     ->where('employee.organization_id',Confide::user()->organization_id)
+     ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->where('process_type' ,'=', Input::get('type'))
      ->sum('net');
 
     $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -11486,14 +11512,14 @@ class ReportsController extends \BaseController {
          ->join('branches', 'employee.branch_id', '=', 'branches.id')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('process_type' ,'=', Input::get('type'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->select('personal_file_number','first_name','middle_name','last_name','transact.basic_pay','taxable_income','paye','nssf_amount','nhif_amount','earning_amount','relief','other_deductions','total_deductions','net','employee.id','income_tax_applicable','income_tax_relief_applicable')
          ->get(); 
 }
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $part = explode("-", Input::get('period'));
               
@@ -11519,11 +11545,11 @@ class ReportsController extends \BaseController {
 
 public function members(){
 
-    $members = Member::where('organization_id',Confide::user()->organization_id)->get();
+    $members = Member::where('organization_id',Auth::user()->organization_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.memberlist', compact('members', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.memberlist', compact('members', 'organization'))->setPaper('a4');
   
     return $pdf->stream('MemberList.pdf');
     
@@ -11533,11 +11559,11 @@ public function members(){
   public function remittance(){
 
     //$members = DB::table('members')->where('is_active', '=', '1')->get();
-    $members = Member::where('organization_id',Confide::user()->organization_id)->get();
-    $organization = Organization::find(Confide::user()->organization_id);
-    $savingproducts = Savingproduct::where('organization_id',Confide::user()->organization_id)
+    $members = Member::where('organization_id',Auth::user()->organization_id)->get();
+    $organization = Organization::find(Auth::user()->organization_id);
+    $savingproducts = Savingproduct::where('organization_id',Auth::user()->organization_id)
     ->get();
-    $loanproducts = Loanproduct::where('organization_id',Confide::user()->organization_id)->get();
+    $loanproducts = Loanproduct::where('organization_id',Auth::user()->organization_id)->get();
 
     $pdf = PDF::loadView('pdf.remittance', compact('members', 'organization', 'loanproducts', 'savingproducts'))->setPaper('a4')->setOrientation('landscape');
   
@@ -11549,9 +11575,9 @@ public function members(){
 
   public function template(){
 
-    $employees = Employee::where('employee.organization_id',Confide::user()->organization_id)
+    $employees = Employee::where('employee.organization_id',Auth::user()->organization_id)
     ->get();
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
     $pdf = PDF::loadView('pdf.blank', compact('employees', 'organization'))->setPaper('a4')->setOrientation('landscape');
   
@@ -11563,10 +11589,10 @@ public function members(){
 
   public function loanlisting(){
 
-    $loans = Loanaccount::where('organization_id',Confide::user()->organization_id)->get();
+    $loans = Loanaccount::where('organization_id',Auth::user()->organization_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
-    $pdf = PDF::loadView('pdf.loanreports.loanbalances', compact('loans', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $organization = Organization::find(Auth::user()->organization_id);
+    $pdf = PDF::loadView('pdf.loanreports.loanbalances', compact('loans', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Loan Listing.pdf');
     
@@ -11577,8 +11603,8 @@ public function members(){
   public function loanproduct($id){
 
     $loans = Loanproduct::find($id);
-    $organization = Organization::find(Confide::user()->organization_id);
-    $pdf = PDF::loadView('pdf.loanreports.loanproducts', compact('loans', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $organization = Organization::find(Auth::user()->organization_id);
+    $pdf = PDF::loadView('pdf.loanreports.loanproducts', compact('loans', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Loan Product Listing.pdf');
     
@@ -11588,10 +11614,10 @@ public function members(){
 
   public function savinglisting(){
 
-    $savings = Savingaccount::where('organization_id',Confide::user()->organization_id)->get();
+    $savings = Savingaccount::where('organization_id',Auth::user()->organization_id)->get();
 
-    $organization = Organization::find(Confide::user()->organization_id);
-    $pdf = PDF::loadView('pdf.savingreports.savingbalances', compact('savings', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $organization = Organization::find(Auth::user()->organization_id);
+    $pdf = PDF::loadView('pdf.savingreports.savingbalances', compact('savings', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Savings Listing.pdf');
     
@@ -11603,9 +11629,9 @@ public function members(){
 
     $saving = Savingproduct::find($id);
 
-    $organization = Organization::find(Confide::user()->organization_id);
+    $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.savingreports.savingproducts', compact('saving', 'organization'))->setPaper('a4')->setOrientation('potrait');
+    $pdf = PDF::loadView('pdf.savingreports.savingproducts', compact('saving', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Saving Product Listing.pdf');
     
@@ -11626,19 +11652,19 @@ public function members(){
     $organization = Organization::find(1);
 
     if($report == 'balancesheet'){
-      $pdf = PDF::loadView('pdf.financials.balancesheet', compact('accounts', 'date', 'organization','from','to','period'))->setPaper('a4')->setOrientation('potrait');
+      $pdf = PDF::loadView('pdf.financials.balancesheet', compact('accounts', 'date', 'organization','from','to','period'))->setPaper('a4');
       return $pdf->stream('Balance Sheet.pdf');
     }
 
 
     if($report == 'income'){
-      $pdf = PDF::loadView('pdf.financials.incomestatement', compact('accounts', 'date', 'organization','from','to','period'))->setPaper('a4')->setOrientation('potrait'); 
+      $pdf = PDF::loadView('pdf.financials.incomestatement', compact('accounts', 'date', 'organization','from','to','period'))->setPaper('a4'); 
       return $pdf->stream('Income Statement.pdf');
     }
 
 
     if($report == 'trialbalance'){
-      $pdf = PDF::loadView('pdf.financials.trialbalance', compact('accounts', 'date', 'organization','from','to','period'))->setPaper('a4')->setOrientation('potrait');  
+      $pdf = PDF::loadView('pdf.financials.trialbalance', compact('accounts', 'date', 'organization','from','to','period'))->setPaper('a4');  
       return $pdf->stream('Trial Balance.pdf');
     }
 
@@ -11649,9 +11675,9 @@ public function members(){
     
 
     if($report == 'cashflowstatement'){
-      $expenses = Expense::where('employee.organization_id',Confide::user()->organization_id)->where('void',0)->get();
+      $expenses = Expense::where('employee.organization_id',Auth::user()->organization_id)->where('void',0)->get();
       
-      $pdf = PDF::loadView('pdf.erpfinancials.cashflowstatement', compact('accounts','expenses', 'date', 'organization'))->setPaper('a4')->setOrientation('potrait');
+      $pdf = PDF::loadView('pdf.erpfinancials.cashflowstatement', compact('accounts','expenses', 'date', 'organization'))->setPaper('a4');
   
       return $pdf->stream('Cash Flow Statement.pdf');
 
@@ -11661,167 +11687,167 @@ public function members(){
 
      $date = Input::get('period');
 
-     $expenses = Expensesetting::where('id','!=',6)->where('organization_id',Confide::user()->organization_id)->get();
+     $expenses = Expensesetting::where('id','!=',6)->where('organization_id',Auth::user()->organization_id)->get();
 
-     $budgetsalesjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();    
+     $budgetsalesmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();    
 
-     $budgetexpmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalessep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalessep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
 
-     $budgetsalescountjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();    
+     $budgetsalescountmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();    
 
-     $budgetexpcountmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
-     $budgetsalescountdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->count();
+     $budgetsalescountdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->count();
 
-     $budgetexpcountdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->count();
+     $budgetexpcountdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->count();
 
      
       if(Input::get('format') == 'pdf'){
-      $accounts = Account::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+      $accounts = Account::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-      $organization = Organization::find(Confide::user()->organization_id);
+      $organization = Organization::find(Auth::user()->organization_id);
 
       $pdf = PDF::loadView('pdf.erpfinancials.budget', compact('accounts','expenses', 'date', 'organization','budgetsalesjan','budgetexpjan','budgetsalescountjan','budgetexpcountjan','budgetsalesfeb','budgetexpfeb','budgetsalescountfeb','budgetexpcountfeb','budgetsalesmar','budgetsalescountmar','budgetexpmar','budgetexpcountmar','budgetsalesapr','budgetexpapr','budgetsalescountapr','budgetexpcountapr','budgetsalesmay','budgetexpmay','budgetsalescountmay','budgetexpcountmay','budgetsalesjun','budgetexpjun','budgetsalescountjun','budgetexpcountjun','budgetsalesjul','budgetexpjul','budgetsalescountjul','budgetexpcountjul','budgetsalesaug','budgetexpaug','budgetsalescountaug','budgetexpcountaug','budgetsalessep','budgetexpsep','budgetsalescountsep','budgetexpcountsep','budgetsalesoct','budgetexpoct','budgetsalescountoct','budgetexpcountoct','budgetsalesnov','budgetexpnov','budgetsalescountnov','budgetexpcountnov','budgetsalesdec','budgetexpdec','budgetsalescountdec','budgetexpcountdec'))->setPaper('a1')->setOrientation('landscape');
   
       return $pdf->stream('Budget.pdf');
     }else{
 
-     /*$budgetsalesjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     /*$budgetsalesjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpjan = Budget::where('financial_month','Jan')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpfeb = Budget::where('financial_month','Feb')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpmar = Budget::where('financial_month','Mar')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpapr = Budget::where('financial_month','Apr')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpmay = Budget::where('financial_month','May')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpjun = Budget::where('financial_month','Jun')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpjul = Budget::where('financial_month','Jul')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpaug = Budget::where('financial_month','Aug')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalessep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalessep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpsep = Budget::where('financial_month','Sep')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpoct = Budget::where('financial_month','Oct')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpnov = Budget::where('financial_month','Nov')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 
-     $budgetsalesdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id',6)->get();
+     $budgetsalesdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id',6)->get();
 
-     $budgetexpdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Confide::user()->organization_id)->where('expensesetting_id','!=',6)->get();
+     $budgetexpdec = Budget::where('financial_month','Dec')->where('financial_year',Input::get('period'))->where('organization_id',Auth::user()->organization_id)->where('expensesetting_id','!=',6)->get();
 */
-     $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+     $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-     $organization = Organization::find(Confide::user()->organization_id);
+     $organization = Organization::find(Auth::user()->organization_id);
 
      $part = explode("-", Input::get('period'));
               
@@ -12942,10 +12968,10 @@ public function members(){
 
     public function appperiod()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('leavereports.applicationSelect', compact('branches','departments'));
+        return view('leavereports.applicationSelect', compact('branches','departments'));
     }
 
     public function leaveapplications(){
@@ -12959,11 +12985,11 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13044,12 +13070,12 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13130,12 +13156,12 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13217,13 +13243,13 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13308,13 +13334,13 @@ public function members(){
         $apps = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Vacation_Application_Report.pdf');
         }else if(Input::get('branch') != 'All' && Input::get('department') == 'All'){
@@ -13329,9 +13355,9 @@ public function members(){
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Vacation_Application_Report.pdf');
         }else if(Input::get('branch') == 'All' && Input::get('department') != 'All'){
@@ -13346,9 +13372,9 @@ public function members(){
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Vacation_Application_Report.pdf');
         }else if(Input::get('branch') != 'All' && Input::get('department') != 'All'){
@@ -13364,9 +13390,9 @@ public function members(){
                     ->whereBetween('application_date', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Vacation_Application_Report.pdf');
         }
@@ -13375,10 +13401,10 @@ public function members(){
 
     public function rosterperiod()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('leavereports.rosterSelect', compact('branches','departments'));
+        return view('leavereports.rosterSelect', compact('branches','departments'));
     }
 
     public function leaverosters(){
@@ -13397,7 +13423,7 @@ public function members(){
 
         $employee = Employee::find(Input::get('employeeid'));
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Roster Report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for year '.$start, function($excel) use($data,$employee,$start,$organization) {
@@ -13488,9 +13514,9 @@ public function members(){
         $employee = Employee::find(Input::get('employeeid'));
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.rosterReport', compact('apps','organization','employee'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.rosterReport', compact('apps','organization','employee'))->setPaper('a4');
     
         return $pdf->stream('Vacation_Roster_Report_'.$employee->personal_file_number.'_'.$employee->first_name.'_'.$employee->last_name.'.pdf');
         
@@ -13500,10 +13526,10 @@ public function members(){
 
     public function approvedperiod()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('leavereports.approvedSelect',compact('branches','departments'));
+        return view('leavereports.approvedSelect',compact('branches','departments'));
     }
 
     public function approvedleaves(){
@@ -13518,12 +13544,12 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13604,13 +13630,13 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13691,13 +13717,13 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13778,14 +13804,14 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13871,14 +13897,14 @@ public function members(){
         $apps = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Approved_Vacation_Report.pdf');
 
@@ -13890,15 +13916,15 @@ public function members(){
         $apps = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Approved_Vacation_Report.pdf');
 
@@ -13910,15 +13936,15 @@ public function members(){
         $apps = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Approved_Vacation_Report.pdf');
 
@@ -13930,16 +13956,16 @@ public function members(){
         $apps = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Approved_Vacation_Report.pdf');
 
@@ -13950,10 +13976,10 @@ public function members(){
 
     public function rejectedperiod()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        return View::make('leavereports.rejectedSelect',compact('branches','departments'));
+        return view('leavereports.rejectedSelect',compact('branches','departments'));
     }
 
     public function rejectedleaves(){
@@ -13967,11 +13993,11 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14053,12 +14079,12 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14140,12 +14166,12 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get("department"))
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14227,13 +14253,13 @@ public function members(){
         $data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->where('employee.department_id',Input::get("department"))
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14318,13 +14344,13 @@ public function members(){
         $rejs = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
         return $pdf->stream('Rejected_Vacation_Report.pdf');
       }else if(Input::get('branch') != 'All' && Input::get('department') == 'All'){
@@ -14335,14 +14361,14 @@ public function members(){
         $rejs = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
         return $pdf->stream('Rejected_Vacation_Report.pdf');
       }else if(Input::get('branch') == 'All' && Input::get('department') != 'All'){
@@ -14353,14 +14379,14 @@ public function members(){
         $rejs = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
         return $pdf->stream('Rejected_Vacation_Report.pdf');
       }else if(Input::get('branch') != 'All' && Input::get('department') != 'All'){
@@ -14371,15 +14397,15 @@ public function members(){
         $rejs = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
         return $pdf->stream('Rejected_Vacation_Report.pdf');
       }
@@ -14387,11 +14413,11 @@ public function members(){
     }
     public function balanceselect()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        $leaves = Leavetype::where('organization_id',Confide::user()->organization_id)->get();
-        return View::make('leavereports.balanceSelect',compact('leaves','branches','departments'));
+        $leaves = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
+        return view('leavereports.balanceSelect',compact('leaves','branches','departments'));
     }
 
     public function leavebalances(){
@@ -14411,9 +14437,9 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $data= Employee::where('organization_id',Confide::user()->organization_id)->get();
+        $data= Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
@@ -14508,9 +14534,9 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $data= Employee::where('organization_id',Confide::user()->organization_id)->where('branch_id',Input::get('branch'))->get();
+        $data= Employee::where('organization_id',Auth::user()->organization_id)->where('branch_id',Input::get('branch'))->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
@@ -14604,9 +14630,9 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $data= Employee::where('organization_id',Confide::user()->organization_id)->where('department_id',Input::get('department'))->get();
+        $data= Employee::where('organization_id',Auth::user()->organization_id)->where('department_id',Input::get('department'))->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
@@ -14700,9 +14726,9 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $data= Employee::where('organization_id',Confide::user()->organization_id)->where('department_id',Input::get('department'))->where('branch_id',Input::get('branch'))->get();
+        $data= Employee::where('organization_id',Auth::user()->organization_id)->where('department_id',Input::get('department'))->where('branch_id',Input::get('branch'))->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
@@ -14797,11 +14823,11 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $employees= Employee::where('organization_id',Confide::user()->organization_id)->get();
+        $employees= Employee::where('organization_id',Auth::user()->organization_id)->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream($leavetype->name.'_balances_Report.pdf');
       }else if(Input::get('branch') != 'All' && Input::get('department') == 'All'){
@@ -14811,11 +14837,11 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $employees= Employee::where('organization_id',Confide::user()->organization_id)->where('branch_id',Input::get("branch"))->get();
+        $employees= Employee::where('organization_id',Auth::user()->organization_id)->where('branch_id',Input::get("branch"))->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream($leavetype->name.'_balances_Report.pdf');
       }else if(Input::get('branch') == 'All' && Input::get('department') != 'All'){
@@ -14825,11 +14851,11 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $employees= Employee::where('organization_id',Confide::user()->organization_id)->where('department_id',Input::get("department"))->get();
+        $employees= Employee::where('organization_id',Auth::user()->organization_id)->where('department_id',Input::get("department"))->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream($leavetype->name.'_balances_Report.pdf');
       }else if(Input::get('branch') != 'All' && Input::get('department') != 'All'){
@@ -14839,11 +14865,11 @@ public function members(){
 
         $leavetype = Leavetype::find($id);
         
-        $employees= Employee::where('organization_id',Confide::user()->organization_id)->where('branch_id',Input::get("branch"))->where('department_id',Input::get("department"))->get();
+        $employees= Employee::where('organization_id',Auth::user()->organization_id)->where('branch_id',Input::get("branch"))->where('department_id',Input::get("department"))->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream($leavetype->name.'_balances_Report.pdf');
       }
@@ -14852,11 +14878,11 @@ public function members(){
 
     public function leaveselect()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        $leaves = Leavetype::where('organization_id',Confide::user()->organization_id)->get();
-        return View::make('leavereports.leaveSelect',compact('leaves','branches','departments'));
+        $leaves = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
+        return view('leavereports.leaveSelect',compact('leaves','branches','departments'));
     }
 
     public function employeesleave(){
@@ -14874,7 +14900,7 @@ public function members(){
 
          /*$data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->where('leavetype_id','=',$id)
                     ->whereBetween('date_approved', array($start, $end))->get();
@@ -14885,14 +14911,14 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('leaveapplications.status','approved')
                     ->where('approved_start_date','<=',date('Y-m-d'))
                     ->where('approved_end_date','>=',date('Y-m-d'))
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
@@ -14977,7 +15003,7 @@ public function members(){
 
          /*$data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->where('leavetype_id','=',$id)
                     ->whereBetween('date_approved', array($start, $end))->get();
@@ -14988,7 +15014,7 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->where('leaveapplications.status','approved')
                     ->where('approved_start_date','<=',date('Y-m-d'))
@@ -14996,7 +15022,7 @@ public function members(){
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
@@ -15081,7 +15107,7 @@ public function members(){
 
          /*$data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->where('leavetype_id','=',$id)
                     ->whereBetween('date_approved', array($start, $end))->get();
@@ -15092,7 +15118,7 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get("department"))
                     ->where('leaveapplications.status','approved')
                     ->where('approved_start_date','<=',date('Y-m-d'))
@@ -15100,7 +15126,7 @@ public function members(){
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
@@ -15185,7 +15211,7 @@ public function members(){
 
          /*$data = DB::table('leaveapplications')
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->where('leavetype_id','=',$id)
                     ->whereBetween('date_approved', array($start, $end))->get();
@@ -15196,7 +15222,7 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->where('employee.department_id',Input::get("department"))
                     ->where('leaveapplications.status','approved')
@@ -15205,7 +15231,7 @@ public function members(){
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
@@ -15295,16 +15321,16 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('leaveapplications.status','approved')
                     ->where('approved_start_date','<=',date('Y-m-d'))
                     ->where('approved_end_date','>=',date('Y-m-d'))
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream('Employees_on_Vacation_Report.pdf');
 
@@ -15321,7 +15347,7 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->where('leaveapplications.status','approved')
                     ->where('approved_start_date','<=',date('Y-m-d'))
@@ -15329,9 +15355,9 @@ public function members(){
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream('Employees_on_Vacation_Report.pdf');
 
@@ -15348,7 +15374,7 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get("department"))
                     ->where('leaveapplications.status','approved')
                     ->where('approved_start_date','<=',date('Y-m-d'))
@@ -15356,9 +15382,9 @@ public function members(){
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream('Employees_on_Vacation_Report.pdf');
 
@@ -15375,7 +15401,7 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('leavetype_id','=',$id)
-                    ->where('employee.organization_id',Confide::user()->organization_id)
+                    ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->where('employee.department_id',Input::get("department"))
                     ->where('leaveapplications.status','approved')
@@ -15384,9 +15410,9 @@ public function members(){
                     ->get();
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream('Employees_on_Vacation_Report.pdf');
 
@@ -15397,11 +15423,11 @@ public function members(){
 
     public function employeeselect()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        $employees = Employee::where('employee.organization_id',Confide::user()->organization_id)->get();
-        return View::make('leavereports.employeeSelect',compact('employees','branches','departments'));
+        $employees = Employee::where('employee.organization_id',Auth::user()->organization_id)->get();
+        return view('leavereports.employeeSelect',compact('employees','branches','departments'));
     }
 
     public function individualleave(){
@@ -15412,7 +15438,7 @@ public function members(){
 
         $employee = Employee::find($id);
 
-        $data = Leavetype::where('organization_id',Confide::user()->organization_id)->get();
+        $data = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
 
          $name = '';
 
@@ -15423,7 +15449,7 @@ public function members(){
              }
 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
     
   Excel::create('Vacation Report for '.$employee->personal_file_number.' : '.$name, function($excel) use($data,$name,$employee,$organization) {
@@ -15497,11 +15523,11 @@ public function members(){
 
         $employee = Employee::find($id);
 
-        $leavetypes = Leavetype::where('organization_id',Confide::user()->organization_id)->get();
+        $leavetypes = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('leavereports.individualReport', compact('leavetypes','employee','organization'))->setPaper('a4')->setOrientation('potrait');
+        $pdf = PDF::loadView('leavereports.individualReport', compact('leavetypes','employee','organization'))->setPaper('a4');
     
         return $pdf->stream($employee->first_name.'_'.$employee->last_name.'_Vacation_Report.pdf');
         }
@@ -15512,7 +15538,7 @@ public function members(){
      $data = DB::table('employee_allowances')
                   ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
                   ->join('allowances', 'employee_allowances.allowance_id', '=', 'allowances.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->select('personal_file_number','first_name','last_name','allowance_name','allowance_amount')
                   ->get();
      $employees = Employee::all();
@@ -15561,9 +15587,9 @@ public function members(){
 
 public function period_advrem()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $depts = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        return View::make('pdf.remittanceAdvanceSelect',compact('branches','depts'));
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $depts = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        return view('pdf.remittanceAdvanceSelect',compact('branches','depts'));
     }
 
     public function payeAdvRems(){
@@ -15572,7 +15598,7 @@ public function period_advrem()
          $total = DB::table('transact_advances')
         ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
         ->where('financial_month_year' ,'=', Input::get('period'))
-        ->where('employee.organization_id',Confide::user()->organization_id)
+        ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('mode_of_payment' ,'=', 'Bank')
         ->sum('amount');
 
@@ -15580,14 +15606,14 @@ public function period_advrem()
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.bank_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('mode_of_payment' ,'=', 'Bank')
             ->get(); 
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         /*$branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -15809,7 +15835,7 @@ public function period_advrem()
           ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('amount');
 
@@ -15819,13 +15845,13 @@ public function period_advrem()
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('mode_of_payment' ,'=', 'Bank')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16046,7 +16072,7 @@ public function period_advrem()
           ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
           ->where('department_id' ,'=', Input::get('department'))
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('amount');
 
@@ -16056,13 +16082,13 @@ public function period_advrem()
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('department_id' ,'=', Input::get('department'))
             ->where('mode_of_payment' ,'=', 'Bank')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16283,7 +16309,7 @@ public function period_advrem()
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('department_id' ,'=', Input::get('department'))
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('amount');
         
@@ -16294,13 +16320,13 @@ public function period_advrem()
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('department_id' ,'=', Input::get('department'))
             ->where('mode_of_payment' ,'=', 'Bank')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get();
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16525,12 +16551,12 @@ public function period_advrem()
           $total = DB::table('transact_advances')
           ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('amount');
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -16539,11 +16565,11 @@ public function period_advrem()
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('mode_of_payment' ,'=', 'Bank')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16576,12 +16602,12 @@ public function period_advrem()
           ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('amount');
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -16591,11 +16617,11 @@ public function period_advrem()
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('mode_of_payment' ,'=', 'Bank')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16631,7 +16657,7 @@ public function period_advrem()
           ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
           ->where('department_id' ,'=', Input::get('department'))
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('amount');
 
@@ -16643,11 +16669,11 @@ public function period_advrem()
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
             ->where('department_id' ,'=', Input::get('department'))
             ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16681,12 +16707,12 @@ public function period_advrem()
           ->where('branch_id' ,'=', Input::get('branch'))
           ->where('department_id' ,'=', Input::get('department'))
           ->where('mode_of_payment' ,'=', 'Bank')
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
           ->where('financial_month_year' ,'=', Input::get('period'))
           ->sum('amount');
 
         $currencies = DB::table('currencies')
-        ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+        ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -16695,13 +16721,13 @@ public function period_advrem()
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('department_id' ,'=', Input::get('department'))
             ->where('mode_of_payment' ,'=', 'Bank')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -16738,16 +16764,16 @@ public function period_advrem()
 
    public function period_advsummary()
     {
-        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        $depts = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-        return View::make('pdf.summaryAdvanceSelect',compact('branches','depts'));
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $depts = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        return view('pdf.summaryAdvanceSelect',compact('branches','depts'));
     }
 
     public function payAdvSummary(){
         if(Input::get('format') == "excel"){
         if(Input::get('branch') == 'All' && Input::get('department') == 'All'){
          $total = DB::table('transact_advances')
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('amount');
 
@@ -16755,13 +16781,13 @@ public function period_advrem()
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
             ->join('banks', 'employee.banK_id', '=', 'banks.id')
             ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -16914,21 +16940,21 @@ public function period_advrem()
          $total = DB::table('transact_advances')
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('amount');
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
         $data = DB::table('transact_advances')
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
             ->join('branches', 'employee.branch_id', '=', 'branches.id')
             ->where('branch_id' ,'=', Input::get('branch'))
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17080,7 +17106,7 @@ public function period_advrem()
           $total = DB::table('transact_advances')
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('amount');
 
@@ -17088,13 +17114,13 @@ public function period_advrem()
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->get(); 
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first(); 
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17248,7 +17274,7 @@ public function period_advrem()
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
          ->where('department_id' ,'=', Input::get('department'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('amount');
          
@@ -17258,14 +17284,14 @@ public function period_advrem()
          ->join('branches', 'employee.branch_id', '=', 'branches.id')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->get(); 
 
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17419,22 +17445,22 @@ public function period_advrem()
 
         if(Input::get('branch') == 'All' && Input::get('department') == 'All'){
          $total_amount = DB::table('transact_advances')
-         ->where('organization_id',Confide::user()->organization_id)
+         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('amount');
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
         $sums = DB::table('transact_advances')
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17457,25 +17483,25 @@ public function period_advrem()
 
          $total_amount = DB::table('transact_advances')
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('branch_id' ,'=', Input::get('branch'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('amount');
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
         $sums = DB::table('transact_advances')
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
             ->join('branches', 'employee.branch_id', '=', 'branches.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('branch_id' ,'=', Input::get('branch'))
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17499,12 +17525,12 @@ public function period_advrem()
           $total_amount = DB::table('transact_advances')
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('amount');
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -17512,11 +17538,11 @@ public function period_advrem()
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('department_id' ,'=', Input::get('department'))
-          ->where('employee.organization_id',Confide::user()->organization_id)
+          ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17542,14 +17568,14 @@ public function period_advrem()
           $total_amount = DB::table('transact_advances')
          ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->sum('amount');
          
 
         $currencies = DB::table('currencies')
-            ->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
             ->select('shortname')
             ->get();
 
@@ -17558,12 +17584,12 @@ public function period_advrem()
          ->join('branches', 'employee.branch_id', '=', 'branches.id')
          ->join('departments', 'employee.department_id', '=', 'departments.id')
          ->where('branch_id' ,'=', Input::get('branch'))
-         ->where('employee.organization_id',Confide::user()->organization_id)
+         ->where('employee.organization_id',Auth::user()->organization_id)
          ->where('department_id' ,'=', Input::get('department'))
          ->where('financial_month_year' ,'=', Input::get('period'))
          ->get(); 
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", Input::get('period'));
               
@@ -17593,12 +17619,12 @@ public function monthlyrepayments(){
     $loanid=Input::get('member'); 
     if($date!=null && $loanid!=null){
       $scrapdate=Loanrepayment::where('loanaccount_id','=',$loanid)
-      ->where('organization_id',Confide::user()->organization_id)
+      ->where('organization_id',Auth::user()->organization_id)
       ->get();       
-      $organization = Organization::where('id',Confide::user()->organization_id)
+      $organization = Organization::where('id',Auth::user()->organization_id)
       ->get()->first();
       $pdf = PDF::loadView('pdf.monthlyrepayments', compact('date','scrapdate', 'organization'))
-      ->setPaper('a4')->setOrientation('potrait');
+      ->setPaper('a4');
       return $pdf->stream('Monthly Repayment Report.pdf');
     }else{
       return Redirect::back()
@@ -17608,31 +17634,31 @@ public function monthlyrepayments(){
   
   public function creditappraisal($id,$loanid){
     $member = Member::where('id','=',$id)
-          ->where('organization_id',Confide::user()->organization_id)->get()
+          ->where('organization_id',Auth::user()->organization_id)->get()
           ->first();
     $loans= Loanaccount::where('member_id','=',$id)
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('is_disbursed','=',1)
         ->get();    
     $currentloan=Loanaccount::where('id','=',$loanid)
-          ->where('organization_id',Confide::user()->organization_id)
+          ->where('organization_id',Auth::user()->organization_id)
           ->get()->first();   
     $savingaccount=DB::table('savingaccounts')
-          ->where('organization_id',Confide::user()->organization_id)
+          ->where('organization_id',Auth::user()->organization_id)
           ->where('member_id','=',$id)->pluck('account_number');
     $savings=DB::table('savingtransactions')
         ->join('savingaccounts','savingtransactions.savingaccount_id','=','savingaccounts.id')
         ->where('savingaccounts.member_id','=',$id)
         ->where('savingtransactions.type','=','credit')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->sum('savingtransactions.amount');
     $shareaccount=DB::table('shareaccounts')
-          ->where('organization_id',Confide::user()->organization_id)
+          ->where('organization_id',Auth::user()->organization_id)
           ->where('member_id','=',$id)->pluck('account_number');
     $shares=DB::table('sharetransactions')
         ->join('shareaccounts','sharetransactions.shareaccount_id','=','shareaccounts.id')
         ->where('shareaccounts.member_id','=',$id)
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('sharetransactions.type','=','credit')
         ->sum('sharetransactions.amount');    
     $pdf = PDF::loadView('pdf.loanreports.creditappraisal', compact('member', 'loans','savings','savingaccount','shares','shareaccount','currentloan'))->setPaper('a4')->setOrientation('portrait');  
@@ -17838,7 +17864,7 @@ public function monthlyrepayments(){
 
 public function p9form(){
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $employee = Employee::find(Input::get('employeeid'));
 

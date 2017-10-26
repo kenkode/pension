@@ -1,6 +1,21 @@
 <?php
 
-class LeaveapplicationsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Leaveapplication;
+use App\Employee;
+use App\Leavetype;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class LeaveapplicationsController extends Controller {
 
 	/**
 	 * Display a listing of leaveapplications
@@ -9,9 +24,29 @@ class LeaveapplicationsController extends \BaseController {
 	 */
 	public function index()
 	{
-		$leaveapplications = Leaveapplication::all();
-
+		$leaveapplications = Leaveapplication::where('organization_id',Auth::user()->organization_id)->get();
+        Audit::logaudit('Leave Application', 'view', 'viewed leave applications');
 		return Redirect::to('leavemgmt');
+	}
+
+	public function createleave()
+	{
+      $postleave = Input::all();
+      $data = array('name' => $postleave['type'], 
+      	            'days' => $postleave['days'],
+      	            'organization_id' => Auth::user()->organization_id,
+      	            'created_at' => DB::raw('NOW()'),
+      	            'updated_at' => DB::raw('NOW()'));
+      $check = DB::table('leavetypes')->insertGetId( $data );
+
+		if($check > 0){
+         
+		Audit::logaudit('Leavetypes', 'create', 'created leave type '.$postleave['type']);
+        return $check;
+        }else{
+         return 1;
+        }
+      
 	}
 
 	/**
@@ -21,11 +56,11 @@ class LeaveapplicationsController extends \BaseController {
 	 */
 	public function create()
 	{
-		$employees = Employee::all();
+		$employees = Employee::where('organization_id',Auth::user()->organization_id)->where('in_employment','Y')->get();
 
-		$leavetypes = Leavetype::all();
+		$leavetypes = Leavetype::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-		return View::make('leaveapplications.create', compact('employees', 'leavetypes'));
+		return view('leaveapplications.create', compact('employees', 'leavetypes'));
 	}
 
 	/**
@@ -35,16 +70,41 @@ class LeaveapplicationsController extends \BaseController {
 	 */
 	public function store()
 	{
-		$validator = Validator::make($data = Input::all(), Leaveapplication::$rules);
+		$validator = Validator::make($data = Input::all(), Leaveapplication::$rules,Leaveapplication::$messages);
 
 		if ($validator->fails())
 		{
 			return Redirect::back()->withErrors($validator)->withInput();
 		}
 
+		$employee = Employee::find(array_get($data, 'employee_id'));
+
+		$leavetype = Leavetype::find(array_get($data, 'leavetype_id'));
+
+		$start_date = array_get($data, 'applied_start_date');
+		$end_date = array_get($data, 'applied_end_date');
+
+		/*$days_applied = Leaveapplication::getLeaveDays($start_date, $end_date);
+
+		$balance_days = Leaveapplication::getBalanceDays($employee, $leavetype);
+
+
+		if($days_applied > $balance_days){
+
+			return Redirect::back()->with('info', 'The days you have applied are more than your balance. You have '.$balance_days.' days left');
+		}*/
+
+
 		Leaveapplication::createLeaveApplication($data);
 
-		return Redirect::to('leavemgmt');
+		if(Auth::user()->user_type == 'member'){
+
+			return Redirect::to('css/leave');
+		} else {
+            Audit::logaudit('Leave Application', 'create', 'created leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
+			return Redirect::to('leavemgmt')->withFlashMessage('Leave application successfully created!');
+		}
+		
 	}
 
 	/**
@@ -57,7 +117,7 @@ class LeaveapplicationsController extends \BaseController {
 	{
 		$leaveapplication = Leaveapplication::findOrFail($id);
 
-		return View::make('leaveapplications.show', compact('leaveapplication'));
+		return view('leaveapplications.show', compact('leaveapplication'));
 	}
 
 	/**
@@ -70,11 +130,11 @@ class LeaveapplicationsController extends \BaseController {
 	{
 		$leaveapplication = Leaveapplication::find($id);
 
-		$employees = Employee::all();
+		$employees = Employee::where('organization_id',Auth::user()->organization_id)->where("in_employment","Y")->get();
 
-		$leavetypes = Leavetype::all();
+		$leavetypes = Leavetype::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-		return View::make('leaveapplications.edit', compact('leaveapplication', 'employees', 'leavetypes'));
+		return view('leaveapplications.edit', compact('leaveapplication', 'employees', 'leavetypes'));
 	}
 
 	/**
@@ -87,7 +147,7 @@ class LeaveapplicationsController extends \BaseController {
 	{
 		$leaveapplication = Leaveapplication::findOrFail($id);
 
-		$validator = Validator::make($data = Input::all(), Leaveapplication::$rules);
+		$validator = Validator::make($data = Input::all(), Leaveapplication::$rules,Leaveapplication::$messages);
 
 		if ($validator->fails())
 		{
@@ -96,7 +156,12 @@ class LeaveapplicationsController extends \BaseController {
 
 		Leaveapplication::amendLeaveApplication($data, $id);
 
-		return Redirect::to('leavemgmt');
+        $employee = Employee::find($leaveapplication->employee_id);
+        $leavetype = Leavetype::find($leaveapplication->leavetype_id);
+
+		Audit::logaudit('Leave Application', 'update', 'updated leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.Input::get("days").')');
+
+		return Redirect::to('leaveamends')->withFlashMessage('Leave application successfully amended!');
 	}
 
 	/**
@@ -117,7 +182,7 @@ class LeaveapplicationsController extends \BaseController {
 
 		$leaveapplication = Leaveapplication::find($id);
 
-		return View::make('leaveapplications.approve', compact('leaveapplication'));
+		return view('leaveapplications.approve', compact('leaveapplication'));
 
 
 
@@ -130,9 +195,18 @@ class LeaveapplicationsController extends \BaseController {
 
 		$data = Input::all();
 
+		$leaveapplication = Leaveapplication::findOrFail($id);
+
 		Leaveapplication::approveLeaveApplication($data, $id);
 
-		return Redirect::route('leaveapplications.index');
+		$employee = Employee::find($leaveapplication->employee_id);
+        $leavetype = Leavetype::find($leaveapplication->leavetype_id);
+
+		$days = Leaveapplication::getDays($leaveapplication->approved_end_date,$leaveapplication->approved_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
+
+        Audit::logaudit('Leave Application', 'approve', 'approved leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->approved_start_date.' to '.$leaveapplication->approved_end_date.' ('.$days.')');
+
+		return Redirect::to('leaveapprovals')->withFlashMessage('Leave application successfully approved!');
 
 	}
 
@@ -140,14 +214,34 @@ class LeaveapplicationsController extends \BaseController {
 	public function reject($id){
 
 		Leaveapplication::rejectLeaveApplication($id);
-		return Redirect::route('leaveapplications.index');
+
+		$leaveapplication = Leaveapplication::findOrFail($id);
+         
+        $employee = Employee::find($leaveapplication->employee_id);
+        $leavetype = Leavetype::find($leaveapplication->leavetype_id);
+
+		$days = Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
+
+        Audit::logaudit('Leave Application', 'reject', 'rejected leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
+
+		return Redirect::to('leaverejects')->withDeleteMessage('Leave application successfully rejected!');
 
 	}
 
 	public function cancel($id){
 
 		Leaveapplication::cancelLeaveApplication($id);
-		return Redirect::route('leaveapplications.index');
+
+		$leaveapplication = Leaveapplication::findOrFail($id);
+
+        $employee = Employee::find($leaveapplication->employee_id);
+        $leavetype = Leavetype::find($leaveapplication->leavetype_id);
+
+		$days = Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
+
+        Audit::logaudit('Leave Application', 'cancel', 'cancelledd leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
+
+		return Redirect::to('leavemgmt')->withDeleteMessage('Leave application successfully cancelled!');
 
 	}
 
@@ -167,7 +261,7 @@ class LeaveapplicationsController extends \BaseController {
 	{
 		$leaveapplications = Leaveapplication::all();
 
-		return View::make('leaveapplications.approved', compact('leaveapplications'));
+		return view('leaveapplications.approved', compact('leaveapplications'));
 	}
 
 
@@ -175,21 +269,21 @@ class LeaveapplicationsController extends \BaseController {
 	{
 		$leaveapplications = Leaveapplication::all();
 
-		return View::make('leaveapplications.amended', compact('leaveapplications'));
+		return view('leaveapplications.amended', compact('leaveapplications'));
 	}
 
 	public function rejects()
 	{
 		$leaveapplications = Leaveapplication::all();
 
-		return View::make('leaveapplications.rejected', compact('leaveapplications'));
+		return view('leaveapplications.rejected', compact('leaveapplications'));
 	}
 
 	public function cancellations()
 	{
 		$leaveapplications = Leaveapplication::all();
 
-		return View::make('leaveapplications.cancelled', compact('leaveapplications'));
+		return view('leaveapplications.cancelled', compact('leaveapplications'));
 	}
 
 }

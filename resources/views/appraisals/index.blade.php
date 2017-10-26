@@ -1,5 +1,9 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use App\Appraisalquestion;
+?>
 
 <div class="row">
 	<div class="col-lg-12">

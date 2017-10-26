@@ -76,10 +76,11 @@ class NextOfKinsController extends Controller {
 		$kin = new Nextofkin;
 
 		$kin->employee_id=Input::get('employee_id');
-		$kin->name = Input::get('name');
+		$kin->first_name = Input::get('fname');
+		$kin->middle_name = Input::get('mname');
+		$kin->last_name = Input::get('lname');
 		$kin->relationship = Input::get('rship');
 		$kin->contact = Input::get('contact');
-		$kin->id_number = Input::get('id_number');
 		$kin->id_number = Input::get('id_number');
 		$kin->organization_id = Auth::user()->organization_id;
 		$kin->save();
@@ -87,7 +88,7 @@ class NextOfKinsController extends Controller {
 		Audit::logaudit('NextofKins', 'create', 'created: '.$kin->name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
 
-		return Redirect::to('NextOfKins/view/'.$kin->id)->withFlashMessage('Employee`s next of kin successfully created!');
+		return Redirect::to('employee/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully created!');
 	}
 
 	/**

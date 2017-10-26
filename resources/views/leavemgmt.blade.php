@@ -1,5 +1,9 @@
-@extends('layouts.leave')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use App\Leaveapplication;
+?>
 
 <div class="row">
 											
@@ -7,7 +11,21 @@
 											
         		@if (Session::get('notice'))
             <div class="alert alert-info">{{ Session::get('notice') }}</div>
-        @endif				
+        @endif		
+
+        @if (Session::has('flash_message'))
+
+      <div class="alert alert-success">
+      {{ Session::get('flash_message') }}
+     </div>
+    @endif
+
+     @if (Session::has('delete_message'))
+
+      <div class="alert alert-danger">
+      {{ Session::get('delete_message') }}
+     </div>
+    @endif		
 
 	<div class="col-lg-12">
 	<br>
@@ -53,8 +71,9 @@
 
 <td>{{Leaveapplication::getBalanceDays($leaveapplication->employee, $leaveapplication->leavetype)}}</td>
           <td>
-           <a href="{{URL::to('leaveapplications/edit/'.$leaveapplication->id)}}">Amend</a> &nbsp; |
+           <a href="{{URL::to('leaveapplications/edit/'.$leaveapplication->id)}}">Amend</a> 
            @if(Leaveapplication::getBalanceDays($leaveapplication->employee, $leaveapplication->leavetype) >= Leaveapplication::getLeaveDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date))
+           &nbsp; |
           <a href="{{URL::to('leaveapplications/approve/'.$leaveapplication->id)}}">Approve</a> &nbsp;
           @endif
           |&nbsp;<a href="{{URL::to('leaveapplications/reject/'.$leaveapplication->id)}}">Reject</a> &nbsp;|

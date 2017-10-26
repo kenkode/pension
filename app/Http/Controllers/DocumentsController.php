@@ -27,9 +27,9 @@ class DocumentsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create($id)
     {
-        return view('documents.create');
+        return view('documents.create',compact("id"));
     }
 
     /**

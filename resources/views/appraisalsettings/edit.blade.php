@@ -34,6 +34,7 @@ use App\Appraisalcategory;
   {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <style>
+    .select2 {z-index:10 !important; }
     label, input { display:block; }
     input.text { margin-bottom:12px; width:95%; padding: .4em; }
     fieldset { padding:0; border:0; margin-top:25px; }
@@ -137,7 +138,7 @@ use App\Appraisalcategory;
                          value: s,
                          text: name.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -199,7 +200,7 @@ use App\Appraisalcategory;
     <fieldset>
         <div class="form-group">
                         <label for="username">Category <span style="color:red">*</span></label>
-                        <select name="category" id="category" class="form-control">
+                        <select name="category" id="category" class="form-control select2">
                            <option></option>
                             <option value="cnew">Create New</option>
                             @foreach($categories as $category)

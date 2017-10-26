@@ -13,6 +13,7 @@ function asMoney($value) {
 <?php
 use App\Department;
 use App\Branch;
+use App\Appraisalquestion;
 ?>
 
 <br><br>
@@ -600,7 +601,9 @@ use App\Branch;
     <div class="col-lg-12">
 
     <div class="panel panel-default">
-      
+      <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('Appraisals/create')}}">new appraisal</a>
+        </div>
         <div class="panel-body">
 
 
@@ -771,7 +774,9 @@ use App\Branch;
     <div class="col-lg-12">
 
     <div class="panel panel-default">
-      
+       <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('occurences/create')}}">new occurence</a>
+        </div>
         <div class="panel-body">
 
 

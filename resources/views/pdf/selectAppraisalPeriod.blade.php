@@ -1,5 +1,9 @@
-@extends('layouts.emp_ports')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
 	<div class="col-lg-12">
@@ -9,13 +13,17 @@
 </div>	
 </div>
 
+<style type="text/css">
+    .select2 {z-index:10 !important; }
+</style>
+
 
 <div class="row">
 	<div class="col-lg-5">
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +32,7 @@
         @endif
 
 		 <form target="_blank" method="POST" action="{{URL::to('reports/appraisal')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <div class="form-group">
@@ -46,7 +54,7 @@
       
        <div class="form-group">
                         <label for="username">Select: <span style="color:red">*</span></label>
-                        <select required name="employeeid" class="form-control">
+                        <select required name="employeeid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($employees as $employee)
@@ -63,7 +71,7 @@
 
         <div class="form-group">
                         <label for="username">Download as: <span style="color:red">*</span></label>
-                        <select required name="format" class="form-control">
+                        <select required name="format" class="form-control select2">
                             <option></option>
                             <option value="excel"> Excel</option>
                             <option value="pdf"> PDF</option>

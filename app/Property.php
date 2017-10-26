@@ -32,7 +32,7 @@ class Property extends Model {
 
 	public function employee(){
 
-		return $this->belongsTo('Employee');
+		return $this->belongsTo('App\Employee');
 	}
 
 	public static function getIssuer($id){
@@ -42,7 +42,7 @@ class Property extends Model {
             ->where('issued_by', $id)
             ->first();
 
-		return $issuer->username;
+		return $issuer->name;
 	}
 
 	public static function getReceiver($id){
@@ -52,7 +52,7 @@ class Property extends Model {
             ->where('received_by', $id)
             ->first();
 
-		return $receiver->username;
+		return $receiver->name;
 	}
 
 }

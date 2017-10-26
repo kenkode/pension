@@ -1,6 +1,24 @@
 <?php
 
-class OccurencesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Occurence;
+use App\Occurencesetting;
+use App\Employee;
+use App\User;
+use App\Organization;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+use Response;
+
+class OccurencesController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -12,11 +30,11 @@ class OccurencesController extends \BaseController {
 		$occurences = DB::table('employee')
 		          ->join('occurences', 'employee.id', '=', 'occurences.employee_id')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->get();
         Audit::logaudit('Occurences', 'view', 'viewed occurences');
 
-		return View::make('occurences.index', compact('occurences'));
+		return view('occurences.index', compact('occurences'));
 	}
 
 	/**
@@ -28,17 +46,17 @@ class OccurencesController extends \BaseController {
 	{
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('organization_id',Confide::user()->organization_id)
+		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
 		$occurences = Occurencesetting::all();
-		return View::make('occurences.create',compact('employees','occurences'));
+		return view('occurences.create',compact('employees','occurences'));
 	}
 
 	public function createoccurence()
 	{
       $postocc = Input::all();
       $data = array('occurence_type' => $postocc['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('occurencesettings')->insertGetId( $data );
@@ -90,7 +108,7 @@ class OccurencesController extends \BaseController {
             $occurence->doc_path = $name;
         }
 
-        $occurence->organization_id = Confide::user()->organization_id;
+        $occurence->organization_id = Auth::user()->organization_id;
 
 		$occurence->save();
 
@@ -110,7 +128,7 @@ class OccurencesController extends \BaseController {
 	{
 		$occurence = Occurence::findOrFail($id);
 
-		return View::make('occurences.show', compact('occurence'));
+		return view('occurences.show', compact('occurence'));
 	}
 
 	/**
@@ -127,7 +145,7 @@ class OccurencesController extends \BaseController {
 
 		$employees = Employee::all();
 
-		return View::make('occurences.edit', compact('occurence','employees','occurencesettings'));
+		return view('occurences.edit', compact('occurence','employees','occurencesettings'));
 	}
 
 	/**
@@ -185,16 +203,16 @@ class OccurencesController extends \BaseController {
 
 		Audit::logaudit('Occurences', 'delete', 'deleted: '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
 
-		return Redirect::to('employees/view/'.$occurence->employee_id)->withDeleteMessage('Occurence successfully deleted!');
+		return Redirect::to('occurences')->withDeleteMessage('Occurence successfully deleted!');
 	}
 
     public function view($id){
 
 		$occurence = Occurence::find($id);
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('occurences.view', compact('occurence'));
+		return view('occurences.view', compact('occurence'));
 		
 	}
 

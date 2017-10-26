@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -7,6 +7,10 @@ function asMoney($value) {
   return number_format($value, 2);
 }
 
+?>
+
+<?php
+use App\Appraisalquestion;
 ?>
 <div class="row">
 	<div class="col-lg-12">
@@ -24,7 +28,7 @@ function asMoney($value) {
       {{ Session::get('delete_message') }}
      </div>
     @endif
-
+<br><br>
 
 <a class="btn btn-info btn-sm "  href="{{ URL::to('Appraisals/edit/'.$appraisal->id)}}">update details</a>
 
@@ -60,7 +64,7 @@ function asMoney($value) {
       <tr><td><strong>Question: </strong></td><td>{{Appraisalquestion::getQuestion($appraisal->appraisalquestion_id)}}</td></tr>
       <tr><td><strong>Performance: </strong></td><td>{{$appraisal->performance}}</td></tr>
       <tr><td><strong>Score: </strong></td><td>{{$appraisal->rate.' / '.Appraisalquestion::getScore($appraisal->appraisalquestion_id)}}</td></tr>
-      <tr><td><strong>Examiner: </strong></td><td>{{$user->username}}</td></tr>
+      <tr><td><strong>Examiner: </strong></td><td>{{$user->name}}</td></tr>
        <?php
        $d=strtotime($appraisal->appraisaldate);
        ?>

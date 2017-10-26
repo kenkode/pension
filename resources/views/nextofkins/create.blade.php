@@ -1,5 +1,9 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
 	<div class="col-lg-12">
@@ -15,7 +19,7 @@
 
     
 		
-		 @if ($errors->has())
+		 @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,14 +28,24 @@
         @endif
 
 		 <form method="POST" action="{{{ URL::to('NextOfKins') }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $id }}">
 
         <div class="form-group">
-            <label for="username">Kin Name</label>
-            <input class="form-control" placeholder="" type="text" name="name" id="name" value="{{{ Input::old('name') }}}">
+            <label for="username">First Name <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="" type="text" name="fname" id="fname" value="{{{ Input::old('id_number') }}}">
+        </div>
+
+        <div class="form-group">
+            <label for="username">Middle Name</label>
+            <input class="form-control" placeholder="" type="text" name="mname" id="mname" value="{{{ Input::old('id_number') }}}">
+        </div>
+
+        <div class="form-group">
+            <label for="username">last Name <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="" type="text" name="lname" id="lname" value="{{{ Input::old('id_number') }}}">
         </div>
 
 

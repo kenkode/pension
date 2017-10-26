@@ -44,7 +44,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -107,9 +107,9 @@ body {
 
     <div class="content" style='margin-top:-70px;'>
     @if($employee->middle_name != null || $employee->middle_name != '')
-    <div align="center"><strong>Kin`s Report for {{ $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name }}</strong></div><br>
+    <div align="center" style='margin-top:-50px;'><strong>Kin`s Report for {{ $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name }}</strong></div><br>
     @else
-    <div align="center"><strong>Kin`s Report for {{ $employee->first_name.' '.$employee->last_name }}</strong></div><br>
+    <div align="center" style='margin-top:-50px;'><strong>Kin`s Report for {{ $employee->first_name.' '.$employee->last_name }}</strong></div><br>
     @endif
     <table class="table table-bordered" border='1' cellspacing='0' cellpadding='0'>
 
@@ -118,6 +118,7 @@ body {
 
 
         <td width='20'><strong># </strong></td>
+        <td><strong>Name</strong></td>
         <td><strong>Relationship</strong></td>
         <td><strong>Kin Id no.</strong></td>
         <td><strong>kin Contact</strong></td>
@@ -126,7 +127,12 @@ body {
       @foreach($kins as $kin)
       <tr>
        <td td width='20'>{{$i}}</td>
-       
+
+        @if($kin->middle_name != null || $kin->middle_name != '')
+        <td> {{ $kin->first_name.' '.$kin->middle_name.' '.$kin->last_name}}</td>
+        @else
+        <td> {{ $kin->first_name.' '.$kin->last_name}}</td>
+        @endif
         <td> {{ $kin->relationship}}</td>
         <td> {{ $kin->id_number}}</td>
         <td> {{ $kin->contact}}</td>

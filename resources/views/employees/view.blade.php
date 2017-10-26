@@ -13,6 +13,7 @@ function asMoney($value) {
 <?php
 use App\Department;
 use App\Branch;
+use App\Appraisalquestion;
 ?>
 
 <br><br>
@@ -430,6 +431,10 @@ use App\Branch;
           <div class="col-lg-12">
 
     <div class="panel panel-default">
+
+      <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('NextOfKins/create/'.$employee->id)}}">new kin</a>
+        </div>
      
         <div class="panel-body">
 
@@ -447,14 +452,14 @@ use App\Branch;
 
       </thead>
 
-      <tfoot>
+      <!-- <tfoot>
 
         <th>#</th>
         <th>Kin Name</th>
          <th>ID Number</th>
          <th>Relationship</th>
         
-      </tfoot>
+      </tfoot> -->
 
       <tbody>
 
@@ -528,6 +533,9 @@ use App\Branch;
     <div class="col-lg-12">
 
     <div class="panel panel-default">
+      <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('documents/create/'.$id)}}">new employee document</a>
+        </div>
       
         <div class="panel-body">
 
@@ -613,9 +621,11 @@ use App\Branch;
     <div class="col-lg-12">
 
     <div class="panel panel-default">
-     
+     <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('Appraisals/createapp/'.$id)}}">new appraisal</a>
+        </div>
         <div class="panel-body">
-
+    
 
     <table id="appr" width="1000" class="table table-condensed table-bordered table-responsive table-hover">
 
@@ -697,6 +707,9 @@ use App\Branch;
     <div class="col-lg-12">
 
     <div class="panel panel-default">
+      <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('Properties/create')}}">new property</a>
+        </div>
      
         <div class="panel-body">
 
@@ -782,7 +795,9 @@ use App\Branch;
     <div class="col-lg-12">
 
     <div class="panel panel-default">
-     
+       <div class="panel-heading">
+          <a class="btn btn-info btn-sm" href="{{ URL::to('occurences/create')}}">new occurence</a>
+        </div>
         <div class="panel-body">
 
 
@@ -856,43 +871,7 @@ use App\Branch;
 	</div>
 
 
-  <!-- <div role="tabpanel" class="tab-pane" id="benefits">
-
-        <br>
-
-     <div class="row">
-          <div class="col-lg-12">
-
-    
-
-          <div class="row">
-
-
-           <div class="col-lg-6">
-
-             <table class="table table-bordered table-hover">
-           
-      <tr><td><strong>Name: </strong></td><td><strong>Amount</strong></td></tr>
-      @if($count>0)
-      @foreach($benefits as $benefit)
-      <tr><td>{{Benefitsetting::getBenefit($benefit->benefit_id)}}</td>
-      <td>{{asMoney($benefit->amount)}}</td></tr>
-      @endforeach
-
-      @else
-      <tr><td colspan="2" align="center">Not found</td></tr>
-      @endif
-</table>
-</div>
-
-</div>
-   
-
-        
-    </div>
-
-</div>
-</div> -->
+  
 
 </div>
 </div>

@@ -840,7 +840,7 @@ class EmployeesController extends Controller {
 
 	public function view($id){
 
-		$employee = Employee::find($id);
+		$employee = Employee::where('id',$id)->first();
 
 		$appraisals = Appraisal::where('employee_id', $id)->get();
 
@@ -852,13 +852,11 @@ class EmployeesController extends Controller {
 
         $documents = Document::where('employee_id', $id)->get();
 
-        $benefits = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->get();
-
-        $count = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->count();
+        
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
-		return view('employees.view', compact('employee','appraisals','kins','documents','occurences','properties','count','benefits'));
+		return view('employees.view', compact('id','employee','appraisals','kins','documents','occurences','properties'));
 		
 	}
 
@@ -876,13 +874,13 @@ class EmployeesController extends Controller {
 
         $documents = Document::where('employee_id', $id)->get();
 
-        $benefits = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->get();
+        //$benefits = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->get();
 
-        $count = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->count();
+        //$count = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->count();
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
-		return view('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties','count','benefits'));
+		return view('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties'));
 		
 	}
 
