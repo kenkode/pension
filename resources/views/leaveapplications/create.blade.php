@@ -214,9 +214,9 @@ use Illuminate\Support\Facades\Input;
 
 
         <div class="form-group">
-            <label for="username">Leave type</label>
+            <label for="username">Vacation type</label>
             <select class="form-control select2" name="leavetype_id" id="leave">
-            <option> select leave</option>
+            <option> select vacation</option>
             <option value="cnew">Create New</option>
               @foreach($leavetypes as $leavetype)  
                     <option value="{{$leavetype->id}}">{{$leavetype->name}}</option>

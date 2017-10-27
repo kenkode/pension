@@ -187,7 +187,7 @@ use App\Leaveapplication;
     {{ csrf_field() }}
     <fieldset>
       
-      <label for="name">Leave type <span style="color:red">*</span></label>
+      <label for="name">Vacation type <span style="color:red">*</span></label>
       <input type="text" name="type" id="type" value="" class="text ui-widget-content ui-corner-all">
       <label for="name">Days <span style="color:red">*</span></label>
       <input type="text" name="days" id="days" value="" class="text ui-widget-content ui-corner-all">
@@ -212,7 +212,7 @@ use App\Leaveapplication;
 
 
         <div class="form-group">
-            <label for="username">Leave type</label>
+            <label for="username">Vacation type</label>
             <select class="form-control select2" name="leavetype_id" id="leave">
               <option value="cnew">Create New</option>
             @foreach($leavetypes as $leavetype)  

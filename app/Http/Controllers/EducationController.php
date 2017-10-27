@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Education;
+use App\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
 
 class EducationController extends Controller
 {
@@ -15,14 +20,16 @@ class EducationController extends Controller
      */
     public function index()
     {
-       $data['documents']=Education::all();
-         return view('education.index',$data);
+        $educations = Education::all();
+        Audit::logaudit('Education', 'view', 'viewed educations');
+
+        return view('education.index', compact('educations'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new branch
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -30,69 +37,97 @@ class EducationController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created branch in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function store(Request $request)
+    public function store()
     {
-        $path= Controller::showUploadFile($request);
+        $validator = Validator::make($data = Input::all(), Education::$rules,Education::$messages);
 
-        if($file = $request->file('thefile'))$ext=$file->getClientOriginalExtension();else $ext="";
+        if ($validator->fails())
+        {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
 
-        $document = new Education;
-        $insert=$document->create_document($request->name,$request->description,$path,Auth::user()->id,$ext);    
+        $education = new Education;
 
-        
-        return redirect('education');
+        $education->education_name = Input::get('name');
+
+        $education->organization_id = '1';
+
+        $education->save();
+
+        Audit::logaudit('Education', 'create', 'created education '.Input::get("name"));
+
+        return Redirect::route('education.index')->withFlashMessage('Education successfully created!');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified branch.
      *
-     * @param  \App\Education  $education
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
-    public function show(Education $education)
+    public function show($id)
     {
-        //
+        $education = Education::findOrFail($id);
+
+        return view('education.show', compact('education'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the specified branch.
      *
-     * @param  \App\Education  $education
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
-    public function edit(Education $education)
+    public function edit($id)
     {
-        //
+        $education = Education::find($id);
+
+        return view('education.edit', compact('education'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified branch in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Education  $education
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
-    public function update(Request $request, Education $education)
+    public function update($id)
     {
-        //
+        $education = Education::findOrFail($id);
+
+        $validator = Validator::make($data = Input::all(), Education::$rules,Education::$messages);
+
+        if ($validator->fails())
+        {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+
+        $education->education_name = Input::get('name');
+        $education->update();
+
+        Audit::logaudit('Education', 'update', 'updated education '.Input::get("name"));
+
+        return Redirect::route('education.index')->withFlashMessage('Education successfully updated!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified branch from storage.
      *
-     * @param  \App\Education  $education
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
-     public function destroy($id)
+    public function destroy($id)
     {
-        
-         Education::find($id)->delete();
-        return redirect('education');
+        $education = Education::findOrFail($id);
+        Education::destroy($id);
+
+        Audit::logaudit('Education', 'delete', 'deleted education '.$education->education_name);
+
+        return Redirect::route('education.index')->withDeleteMessage('Education successfully deleted!');
     }
 
 }

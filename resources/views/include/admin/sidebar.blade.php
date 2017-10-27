@@ -49,26 +49,26 @@
                         <a href="{{ URL::to('leavemgmt')}}"><i class="fa fa-list fa-fw"></i>Vacation <i class="fa fa-caret-down"></i></a>
                         <ul class="nav">
                         	<li>
-                        <a href="{{ URL::to('leavemgmt') }}"><i class="fa fa-file fa-fw"></i> Leave Applications</a>
+                        <a href="{{ URL::to('leavemgmt') }}"><i class="fa fa-file fa-fw"></i> Vacation Applications</a>
                     </li>
 
                     <li>
-                        <a href="{{ URL::to('leaveamends') }}"><i class="fa fa-edit fa-fw"></i>  Leaves Amended</a>
+                        <a href="{{ URL::to('leaveamends') }}"><i class="fa fa-edit fa-fw"></i>  Vacation Amended</a>
                     </li>
 
                     <li>
-                        <a href="{{ URL::to('leaveapprovals') }}"><i class="fa fa-check fa-fw"></i>  Leaves Approved</a>
+                        <a href="{{ URL::to('leaveapprovals') }}"><i class="fa fa-check fa-fw"></i>  Vacation Approved</a>
                     </li>
 
                     <li>
-                        <a href="{{ URL::to('leaverejects') }}"><i class="fa fa-barcode fa-fw"></i> Leaves Rejected</a>
+                        <a href="{{ URL::to('leaverejects') }}"><i class="fa fa-barcode fa-fw"></i> Vacation Rejected</a>
                     </li>
 
 
                      
 
                    <li>
-                        <a href="{{ URL::to('leavetypes') }}"><i class="fa fa-list fa-fw"></i> Leave Types</a>
+                        <a href="{{ URL::to('leavetypes') }}"><i class="fa fa-list fa-fw"></i> Vacation Types</a>
                     </li>
                    
 
@@ -78,69 +78,7 @@
                         </ul>
                     </li>
 
-                    
-                    
-
                     <li>
-                        <a href="#">
-                            <i class="fa fa-folder-open fa-fw"></i>Reports <i class="fa fa-caret-down"></i>
-                        </a>
-                        <ul class="nav">
-                            <li><a href="{{ URL::to('employee/select') }}">Individual Employee report</a></li>
-                            <li><a href="{{ URL::to('reports/selectEmployeeStatus') }}">Employee List report</a></li>
-                            <li><a href="{{ URL::to('reports/nextofkin/selectEmployee') }}">Next of Kin Report</a> </li>
-                            <li><a href="{{ URL::to('reports/selectEmployeeOccurence') }}">Employee Occurence report </a></li>
-                            <li><a href="{{ URL::to('reports/CompanyProperty/selectPeriod') }}">Company Property report </a></li>
-                            <li><a href="{{ URL::to('reports/Appraisals/selectPeriod') }}">Appraisal report </a></li>
-                            <li><a href="{{ URL::to('leaveReports/selectApplicationPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Vacation Application</a></li>
-                   <li><a href="{{ URL::to('leaveReports/selectRosterPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Vacation Roster</a></li>
-                   <li><a href="{{ URL::to('leaveReports/selectApprovedPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Vacation Approved</a></li>
-                   <li><a href="{{ URL::to('leaveReports/selectRejectedPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Vacation Rejected</a></li>
-                   <li><a href="{{ URL::to('leaveReports/selectLeave') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Vacation Balances</a></li>
-                   <li><a href="{{ URL::to('leaveReports/selectLeaveType') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employees on vacation</a></li>  
-                   <li><a href="{{ URL::to('leaveReports/selectEmployee') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Individual Employee </a></li>  
-                   <li>
-                            <li>
-                        <a href="{{ URL::to('payrollReports/selectPeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Monthly Payslips</a>
-                    </li>
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectSummaryPeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Payroll Summary</a>
-                    </li>
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectRemittancePeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Pay Remittance</a>
-                    </li>
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectEarning') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Earning Report</a>
-                    </li>  
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectAllowance') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Allowance Report</a>
-                    </li>  
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectnontaxableincome') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Non Taxable Income Report</a>
-                    </li>  
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectOvertime') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Overtimes Report</a>
-                    </li>  
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectDeduction') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Deduction Report</a>
-                    </li>  
-
-                    <li>
-                        <a href="{{ URL::to('payrollReports/selectRelief') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Relief Report</a>
-                    </li>  
-                        </ul>
-                    </li>
-
-                    
-                        
-                   <li>
                         <a href="#"><i class="fa fa-credit-card fa-fw"></i>Payroll Management <i class="fa fa-caret-down"></i></a>
                         <ul class="nav">
                             <li><a href="{{ URL::to('other_earnings') }}"><i class="fa fa-credit-card fa-fw"></i>Earnings</a>
@@ -159,23 +97,101 @@
                             </li>
                         </ul>
                     </li> 
+                    
 
- <li>
+                    <li>
+                        <a href="#">
+                            <i class="fa fa-folder-open fa-fw"></i>Reports <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="nav">
+                            <li>
+                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Employee Reports <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
+                            <li><a href="{{ URL::to('employee/select') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Individual Employee report</a></li>
+                            <li><a href="{{ URL::to('reports/selectEmployeeStatus') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employee List report</a></li>
+                            <li><a href="{{ URL::to('reports/nextofkin/selectEmployee') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Next of Kin Report</a> </li>
+                            <li><a href="{{ URL::to('reports/selectEmployeeOccurence') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employee Occurence report </a></li>
+                            <li><a href="{{ URL::to('reports/CompanyProperty/selectPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Company Property report </a></li>
+                            <li><a href="{{ URL::to('reports/Appraisals/selectPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Appraisal report </a></li>
+                            </ul>
+                            </li>
+                            <li>
+                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Vacation Reports <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
+                            <li><a href="{{ URL::to('leaveReports/selectApplicationPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Vacation Application</a></li>
+                   
+                           <li><a href="{{ URL::to('leaveReports/selectApprovedPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Vacation Approved</a></li>
+                           <li><a href="{{ URL::to('leaveReports/selectRejectedPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Vacation Rejected</a></li>
+                           <li><a href="{{ URL::to('leaveReports/selectLeave') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Vacation Balances</a></li>
+                           <li><a href="{{ URL::to('leaveReports/selectLeaveType') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employees on vacation</a></li>  
+                           <li><a href="{{ URL::to('leaveReports/selectEmployee') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Individual Employee </a></li>  
+                           </ul>
+                           </li>
+                           <li>
+                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Payroll Reports <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
+                           <li>
+                           <a href="{{ URL::to('payrollReports/selectPeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Monthly Payslips</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectSummaryPeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Payroll Summary</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectRemittancePeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Pay Remittance</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectEarning') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Earning Report</a>
+                            </li>  
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectAllowance') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Allowance Report</a>
+                            </li>  
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectnontaxableincome') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Non Taxable Income Report</a>
+                            </li>  
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectOvertime') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Overtimes Report</a>
+                            </li>  
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectDeduction') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Deduction Report</a>
+                            </li>  
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectRelief') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Relief Report</a>
+                            </li>  
+                                </ul>
+                            </li>
+                            </ul>
+                            </li>
+           
+
+                       <li>
                         <a href="#"><i class="fa fa-cogs fa-fw"></i>Preferences <i class="fa fa-caret-down"></i></a>
                         <ul class="nav">
-                            <li><a href="{{ URL::to('accounts') }}"><i class="fa fa-cog fa-fw"></i>Accounts Settings</a></li> 
-                            <li><a href="{{ URL::to('migrate') }}"><i class="fa fa-random fa-fw"></i>Data Migration</a></li>
-                            <li><a href="{{ URL::to('organizations') }}"><i class="fa fa-chevron-right fa-fw"></i>Organization Settings</a></li>
+                          <li>
+                           <a href="#"><i class="fa fa-cogs fa-fw"></i>System Settings <i class="fa fa-caret-down"></i></a>
+                            <ul class="nav"> 
+                            <li><a href="{{ URL::to('organizations') }}"><i class="fa fa-building fa-fw"></i>Organization Settings</a></li>
                             <li><a href="{{ URL::to('users') }}"><i class="fa fa-user fa-fw"></i> System Users</a></li>
                             <li><a href="{{ URL::to('roles') }}"><i class="fa fa-bookmark fa-fw"></i> System Roles</a></li> 
                             <li><a href="{{ URL::to('audits') }}"><i class="fa fa-list fa-fw"></i> Audit Trail</a></li>
+                            </ul>
+                           </li>
+                            <li>
+                            <a href="#"><i class="fa fa-cogs fa-fw"></i>HR Settings <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
                             <li><a href="{{ URL::to('branches') }}"><i class="fa fa-chevron-right fa-fw"></i>Branches</a></li>
                             <li><a href="{{ URL::to('departments') }}"><i class="fa fa-chevron-right fa-fw"></i>Departments</a></li>
                             <li><a href="{{ URL::to('banks') }}"><i class="fa fa-chevron-right fa-fw"></i>Banks</a></li>
                             <li><a href="{{ URL::to('bank_branch') }}"><i class="fa fa-chevron-right fa-fw"></i>Bank Branches</a></li>
                             <li><a href="{{ URL::to('leavetypes') }}"><i class="fa fa-chevron-right fa-fw"></i>Leave Types</a></li>
                             <li><a href="{{ URL::to('holidays') }}"><i class="fa fa-chevron-right fa-fw"></i>Holiday Management</a></li>
-                            <li><a href="{{ URL::to('deactives') }}"><i class="fa fa-chevron-right fa-fw"></i>Activate Employee</a></li>
                              <!-- <li><a href="{{ URL::to('benefitsettings') }}"><i class="fa fa-chevron-right fa-fw"></i>Benefit Settings</a></li> -->
                             <li><a href="{{ URL::to('employee_type') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Types</a></li>
                             <li><a href="{{ URL::to('job_group') }}"><i class="fa fa-chevron-right fa-fw"></i>Job Groups</a></li>
@@ -183,27 +199,40 @@
                             <li><a href="{{ URL::to('citizenships') }}"><i class="fa fa-chevron-right fa-fw"></i>Citizenship</a></li>
                             <li><a href="{{ URL::to('appraisalcategories') }}"><i class="fa fa-chevron-right fa-fw"></i>Appraisal Category</a></li>
                             <li><a href="{{ URL::to('AppraisalSettings') }}"><i class="fa fa-chevron-right fa-fw"></i>Appraisal Setting</a></li>
+                            
+                            <li><a href="{{ URL::to('education') }}"><i class="fa fa-chevron-right fa-fw"></i>Education</a></li>
+                            </ul>
+                           </li>
+
+                           <li>
+                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Payroll Settings <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
+                                <li><a href="{{ URL::to('accounts') }}"><i class="fa fa-calculator fa-fw"></i>Accounts Settings</a></li> 
+                            
                             <li>
-                        <a href="{{ URL::to('allowances') }}"><i class="fa fa-chevron-right fa-fw"></i> Allowances</a>
-                    </li>
+                            <a href="{{ URL::to('allowances') }}"><i class="fa fa-list fa-fw"></i> Allowances</a>
+                            </li>
 
-                     <li>
-                        <a href="{{ URL::to('reliefs') }}"><i class="fa fa-list fa-fw"></i> Relief</a>
-                    </li>
+                             <li>
+                                <a href="{{ URL::to('reliefs') }}"><i class="fa fa-list fa-fw"></i> Relief</a>
+                            </li>
 
-                    <li>
-                        <a href="{{ URL::to('deductions') }}"><i class="fa fa-list fa-fw"></i> Deductions</a>
-                    </li>
+                            <li>
+                                <a href="{{ URL::to('deductions') }}"><i class="fa fa-list fa-fw"></i> Deductions</a>
+                            </li>
 
-                    <li>
-                        <a href="{{ URL::to('nssf') }}"><i class="fa fa-list fa-fw"></i> Nssf Rates</a>
-                    </li>
+                            <li>
+                                <a href="{{ URL::to('nssf') }}"><i class="fa fa-list fa-fw"></i> Nssf Rates</a>
+                            </li>
 
-                    <li>
-                        <a href="{{ URL::to('nhif') }}"><i class="fa fa-list fa-fw"></i> Nhif Rates</a>
-                    </li>
-                        </ul>
-                    </li>
+                            <li>
+                                <a href="{{ URL::to('nhif') }}"><i class="fa fa-list fa-fw"></i> Nhif Rates</a>
+                            </li>
+                            </ul>
+                             </li>
+                             <li><a href="{{ URL::to('migrate') }}"><i class="fa fa-random fa-fw"></i>Data Migration</a></li>
+                                </ul>
+                            </li>
 
 <li><a href="{{ url('schemes') }}"><i class="fa fa-pencil"></i> <span class="nav-label"></span>AIU Scheme </a> </li>
 
@@ -224,7 +253,7 @@
 <a href="{{ url('/logout') }}"
     onclick="event.preventDefault();
              document.getElementById('logout-form').submit();">
-    Logout
+    <i class="fa fa-sign-out fa-fw"></i>Logout
 </a>
 
 <form id="logout-form" action="{{ url('/logout') }}" method="POST" style="display: none;">

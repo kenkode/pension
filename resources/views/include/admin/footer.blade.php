@@ -514,9 +514,22 @@ $(function (){$('.daily').datepicker({
 
 $(function(){
 $('.datepicker').datepicker({
-    format: 'dd-M-yyyy',
+    format: 'yyyy-mm-dd',
     startDate: '-60y',
     endDate: '+0d',
+    autoclose: true,
+    orientation: 'bottom'
+});
+});
+
+</script>
+
+<script type="text/javascript">
+
+$(function(){
+$('.datepicker3').datepicker({
+    format: 'yyyy-mm-dd',
+    startDate: '-60y',
     autoclose: true
 });
 });
@@ -524,20 +537,25 @@ $('.datepicker').datepicker({
 </script>
 
 <script type="text/javascript">
+
+$(function(){
+$('.datepicker31').datepicker({
+    format: 'yyyy-mm-dd',
+    autoclose: true
+});
+});
+
+</script>
+
+
+<script type="text/javascript">
 $(function(){
 $('.datepicker1').datepicker({
     format: 'yyyy-mm-dd',
     startDate: '-60y',
     endDate: '-18y',
-    autoclose: true,
-});
-
-$('.expiry').datepicker({
-    format: 'yyyy-mm-dd',
-    startDate: '0y',
     autoclose: true
 });
-
 });
 </script>
 
@@ -547,6 +565,51 @@ $('.datepicker2').datepicker({
     format: "m-yyyy",
     startView: "months", 
     minViewMode: "months",
+    autoclose: true
+});
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker60').datepicker({
+    format: "M-yyyy",
+    startView: "months", 
+    minViewMode: "months",
+    autoclose: true
+});
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker22').datepicker({
+    format: "m-yyyy",
+    startView: "months", 
+    minViewMode: "months",
+    Default: true,
+    autoclose: true
+});
+});
+</script>
+
+
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker21').datepicker({
+    format: "yyyy-mm-dd",
+   
+    autoclose: true
+});
+});
+</script>
+
+<script type="text/javascript">
+$(function(){
+$('.datepicker4').datepicker({
+    format: "yyyy-mm-dd",
+    startDate: '0y',
     autoclose: true
 });
 });
@@ -565,21 +628,50 @@ $('.datepicker42').datepicker({
 
 <script type="text/javascript">
 $(function(){
-$('.datepicker21').datepicker({
+$('.datepicker43').datepicker({
     format: "yyyy-mm-dd",
-   
+    startDate: '-60y',
+    endDate: '0y',
     autoclose: true
 });
 });
 </script>
 
 <script type="text/javascript">
+
 $(function(){
-$('.datepicker28').datepicker({
-    format: "m-yyyy",
-    startView: "months", 
-    minViewMode: "months",
+$('.datepicker40').datepicker({
+    format: 'd/m/yyyy',
+    startDate: '-60y',
+    endDate: '+0d',
     autoclose: true
 });
 });
+
+</script>
+
+<script type="text/javascript">
+$(function(){ 
+
+$('.expiry').datepicker({
+    format: 'yyyy-mm-dd',
+    startDate: '-60y',
+    autoclose: true
+});
+});
+
+</script>
+
+<script type="text/javascript">
+$(function(){ 
+
+$('.year').datepicker({
+    format: " yyyy", // Notice the Extra space at the beginning
+    viewMode: "years", 
+    minViewMode: "years",
+    endDate: '+0d',
+    autoclose: true
+});
+});
+
 </script>

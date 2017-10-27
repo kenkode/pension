@@ -48,7 +48,7 @@
                     <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">{{ Auth::user()->name }}</a>
                     <ul class="dropdown-menu">
                         <li>
-                           <a href="{{ URL::to('users/profile/'.Auth::user()->id) }}">Profile</a>
+                           <a href="{{ URL::to('users/profile/'.Auth::user()->id) }}"><i class="fa fa-user fa-fw"></i> Profile</a>
                        </li>
                         
                         <li class="divider"></li>
@@ -57,7 +57,7 @@
                                         <a href="{{ url('/logout') }}"
                                             onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                                            Logout
+                                            <i class="fa fa-sign-out fa-fw"></i>Logout
                                         </a>
 
                                         <form id="logout-form" action="{{ url('/logout') }}" method="POST" style="display: none;">

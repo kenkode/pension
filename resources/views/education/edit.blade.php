@@ -1,130 +1,71 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="row wrapper border-bottom white-bg page-heading">
-                <div class="col-lg-10">
-                    <h2>Deductions</h2>
-                    <ol class="breadcrumb">
-                        <li>
-                            <a href="index.html">Home</a>
-                        </li>
-                        <li>
-                            <a>Deductions</a>
-                        </li>
-                        <li class="active">
-                            <strong>Edit</strong>
-                        </li>
-                    </ol>
-                </div>
-                <div class="col-lg-2">
+<div class="row">
+	<div class="col-lg-12">
+  <h3>Update Education</h3>
 
-          </div>
+<hr>
+</div>	
 </div>
 
 
-<div class="wrapper wrapper-content animated fadeInRight">
-            <div class="row">
-                <div class="col-lg-12">
-                <div class="ibox float-e-margins">
-                    <div class="ibox-title">
-                        <h5>Edit User</h5>                       
+<div class="row">
+	<div class="col-lg-5">
 
-                        <div class="ibox-tools">
+    
+		
+		@if ( count( $errors ) > 0 )
+        <div class="alert alert-danger">
+            @foreach ($errors->all() as $error)
+                {{ $error }}<br>        
+            @endforeach
+        </div>
+        @endif
 
-                        <a class="btn btn-primary" href="{{ route('users.index') }}"> Back</a>
+		 <form method="POST" action="{{{ URL::to('education/update/'.$education->id) }}}" accept-charset="UTF-8">
+   {{ csrf_field() }}
+    <fieldset>
+        <div class="form-group">
+            <label for="username">Name <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="" type="text" name="name" id="name" value="{{ $education->education_name}}">
+        </div>
 
+        
+        <div class="form-actions form-group">
+        
+          <button type="submit" class="btn btn-primary btn-sm">Update Education</button>
+        </div>
 
-                            <a class="collapse-link">
-                                <i class="fa fa-chevron-up"></i>
-                            </a>
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                <i class="fa fa-wrench"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-user">
-                                <li><a href="#">Config option 1</a>
-                                </li>
-                                <li><a href="#">Config option 2</a>
-                                </li>
-                            </ul>
-                            <a class="close-link">
-                                <i class="fa fa-times"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="ibox-content">
+    </fieldset>
+</form>
+		
 
-
-                                 @if (count($errors) > 0)
-
-    <div class="alert alert-danger">
-
-      <strong>Whoops!</strong> There were some problems with your input.<br><br>
-
-      <ul>
-
-        @foreach ($errors->all() as $error)
-
-          <li>{{ $error }}</li>
-
-        @endforeach
-
-      </ul>
-
-    </div>
-
-  @endif
-
-  {!! Form::model($deduction, ['method' => 'PATCH','route' => ['deductions.update', $deduction->id]]) !!}
-
- <div class="row">
-
-   <input  type="hidden" name="id" value="{{$deduction->id}}"/>
-
- <div class="col-xs-4 col-sm-4 col-md-4">
-     <div class="form-group">
-       <strong>Payroll No:</strong>
-    <input  type="text" name="payroll_no" value="{{$deduction->payroll_no}}" class="form-control" disabled="" />
-   </div>
- </div>
-
-
-<input type="hidden" name="payroll_no" value="{{$deduction->payroll_no}}" class="form-control"/>
-<div class="col-xs-4 col-sm-4 col-md-4">
-     <div class="form-group">
-       <strong>Monthly Deduction:</strong>
-    <input name="monthly_deduction" value=" {{$deduction->monthly_deduction}}" class="form-control"/>
-   </div>
- </div>
-  
-  <div class="col-xs-4 col-sm-4 col-md-4">
-     <div class="form-group">
-       <strong>Comments:</strong>
-    <textarea name="comments" class="form-control">{{$deduction->comments}}</textarea> 
-       </div>
- </div>
-
-
-
-<div class="col-xs-12 col-sm-12 col-md-12 text-center">
-    <button type="submit" class="btn btn-primary">Submit</button>
-</div>
-
-
-</div>
-
-  {!! Form::close() !!}
-  </div><!-- Main row -->
-
-                                   
-
-                    </div>
-                    
-                </div>
-            </div>
-            
   </div>
 
+</div>
 
-@endsection
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@stop

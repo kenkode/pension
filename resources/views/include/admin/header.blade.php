@@ -32,11 +32,11 @@
             </li>
             <!-- Menu Footer-->
             <li class="user-footer">
-              <div class="pull-left">
+              <div class="pull-left"><i class="fa fa-user fa-fw"></i>
                   <a href="{{ route('adminprofile',Auth::user()->id) }}" class="btn btn-default btn-flat">Profile</a>
               </div>
               <div class="pull-right">
-               <a href="{{ url('/logout') }}" class="btn btn-default btn-flat">Sign out</a>
+               <a href="{{ url('/logout') }}" class="btn btn-default btn-flat"><i class="fa fa-sign-out fa-fw"></i>Logout Sign out</a>
               </div>
             </li>
           </ul>

@@ -10,6 +10,10 @@ use App\Organization;
 use App\Occurencesetting;
 use App\Property;
 use App\Audit;
+use App\Branch;
+use App\Department;
+use App\Leaveapplication;
+use App\Leavetype;
 use Illuminate\Http\Request;
 use Redirect;
 use Entrust;
@@ -40,7 +44,7 @@ class ReportsController extends Controller {
 
          $organization = Organization::find(Auth::user()->organization_id);
 
-    
+  Audit::logaudit('Active Employee Report', 'view', 'viewed active employees report list');
   Excel::create('Active Employee Report', function($excel) use($data,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -131,7 +135,7 @@ class ReportsController extends Controller {
 
          $organization = Organization::find(Auth::user()->organization_id);
 
-    
+  Audit::logaudit('Deactive Employee Report', 'view', 'viewed deactivated employees report list');
   Excel::create('Deactivated Employee Report', function($excel) use($data,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -222,6 +226,8 @@ class ReportsController extends Controller {
         $data = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Employee Report', 'view', 'viewed employees report list');
 
         Excel::create('Employee Report', function($excel) use($data,$organization) {
 
@@ -325,6 +331,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Active Employee Report', 'view', 'viewed active employees report list');
+
     $pdf = PDF::loadView('pdf.activeemployee', compact('employees', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Employee List.pdf');
@@ -333,6 +341,8 @@ class ReportsController extends Controller {
     $employees = Employee::where('in_employment','N')->where('organization_id',Auth::user()->organization_id)->get();
 
     $organization = Organization::find(Auth::user()->organization_id);
+
+    Audit::logaudit('Deactive Employee Report', 'view', 'viewed deactivated employees report list');
 
     $pdf = PDF::loadView('pdf.deactiveemployee', compact('employees', 'organization'))->setPaper('a4');
   
@@ -343,6 +353,8 @@ class ReportsController extends Controller {
     $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
     $organization = Organization::find(Auth::user()->organization_id);
+
+    Audit::logaudit('Employee Report', 'view', 'viewed employees report list');
 
     $pdf = PDF::loadView('pdf.employeelist', compact('employees', 'organization'))->setPaper('a4');
   
@@ -372,6 +384,8 @@ class ReportsController extends Controller {
   
     //dd($organization);
 
+    Audit::logaudit('Individual Employee Report', 'view', 'viewed individual employee report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
+
     return $pdf->stream($employee->first_name.' '.$employee->last_name.'.pdf');
     
   }
@@ -379,8 +393,10 @@ class ReportsController extends Controller {
     public function selEmp()
     {
         $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+        $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        return view('pdf.selectEmployee', compact('employees'));
+        return view('pdf.selectEmployee', compact('employees','branches','departments'));
     }
 
     public function occurence(){
@@ -388,16 +404,22 @@ class ReportsController extends Controller {
        if(Input::get('format') == "excel"){
         $id = Input::get('employeeid');
 
+        $from = Input::get("from");
+        
+        $to = Input::get("to");
+
         $employee = Employee::find($id);
 
         $data = DB::table('occurences')
                    ->where('employee_id','=',$id)
+                   ->whereBetween('occurence_date', array($from, $to))
                    ->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Employee Occurence Report', 'view', 'viewed employee occurence report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period between '.$from.' and '.$to);
     
-  Excel::create('Occurence Report', function($excel) use($data,$employee,$organization) {
+  Excel::create('Occurence Report for period between '.$from.' and '.$to, function($excel) use($data,$employee,$organization,$from,$to) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -408,7 +430,7 @@ class ReportsController extends Controller {
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Occurence Report', function($sheet) use($data,$employee,$organization,$objPHPExcel){
+    $excel->sheet('Occurence Report', function($sheet) use($data,$employee,$organization,$objPHPExcel,$from,$to){
 
 
                $sheet->row(1, array(
@@ -433,7 +455,7 @@ class ReportsController extends Controller {
              }
 
               $sheet->row(3, array(
-              'Occurence Report for '.$name
+              'Occurence Report for '.$name.' for period between '.$from.' and '.$to
               ));
 
               $sheet->row(3, function($cell) {
@@ -479,13 +501,20 @@ class ReportsController extends Controller {
 
         $employee = Employee::find($id);
 
+        $from = Input::get("from");
+        
+        $to = Input::get("to"); 
+
         $occurences = DB::table('occurences')
                    ->where('employee_id','=',$id)
+                   ->whereBetween('occurence_date', array($from, $to))
                    ->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
 
-        $pdf = PDF::loadView('pdf.employeeoccurence', compact( 'employee','organization','occurences'))->setPaper('a4');
+        Audit::logaudit('Employee Occurence Report', 'view', 'viewed employee occurence report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period between '.$from.' and '.$to);
+
+        $pdf = PDF::loadView('pdf.employeeoccurence', compact( 'employee','organization','occurences','from','to'))->setPaper('a4');
     
         //dd($organization);
 
@@ -1049,7 +1078,7 @@ class ReportsController extends Controller {
             ->get();
 
          $organization = Organization::find(Auth::user()->organization_id);
-
+   Audit::logaudit('Company Property Report', 'view', 'viewed company property report for period from '.$from.' to '.$to);
     
   Excel::create('Company Property Report', function($excel) use($data,$from,$to,$organization) {
 
@@ -1156,7 +1185,8 @@ class ReportsController extends Controller {
 
          $organization = Organization::find(Auth::user()->organization_id);
 
-    
+  Audit::logaudit('Company Property Report', 'view', 'viewed company property report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period from '.$from.' to '.$to);
+
   Excel::create('Company Property Report', function($excel) use($data,$from,$to,$employee,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -1262,6 +1292,8 @@ class ReportsController extends Controller {
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Company Property Report', 'view', 'viewed company property report for period from '.$from.' to '.$to);
+
         $pdf = PDF::loadView('pdf.property', compact('from','to','organization','properties'))->setPaper('a4');
     
         //dd($organization);
@@ -1285,6 +1317,8 @@ class ReportsController extends Controller {
             ->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Company Property Report', 'view', 'viewed company property report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period from '.$from.' to '.$to);
 
         $pdf = PDF::loadView('pdf.individualproperty', compact( 'from','to','employee','organization','properties'))->setPaper('a4');
     
@@ -1320,6 +1354,7 @@ class ReportsController extends Controller {
 
          $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Employee Appraisal Report', 'view', 'viewed employee appraisal report for period from '.$from.' to '.$to);
     
   Excel::create('Appraisal Report', function($excel) use($data,$from,$to,$organization) {
 
@@ -1416,6 +1451,7 @@ class ReportsController extends Controller {
 
          $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Employee Appraisal Report', 'view', 'viewed employee appraisal report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period from '.$from.' to '.$to);
     
   Excel::create('Appraisal Report', function($excel) use($data,$from,$to,$employee,$organization) {
 
@@ -1509,6 +1545,8 @@ class ReportsController extends Controller {
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Employee Appraisal Report', 'view', 'viewed employee appraisal report period from '.$from.' to '.$to);
+
         $pdf = PDF::loadView('pdf.appraisal', compact('from','to', 'organization','appraisals'))->setPaper('a4');
     
         //dd($organization);
@@ -1535,6 +1573,8 @@ class ReportsController extends Controller {
             ->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Employee Appraisal Report', 'view', 'viewed employee appraisal report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period from '.$from.' to '.$to);
 
         $pdf = PDF::loadView('pdf.individualappraisal', compact( 'from','to','employee','organization','appraisals'))->setPaper('a4');
     
@@ -1568,6 +1608,7 @@ class ReportsController extends Controller {
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Employee Next Of Kin Report', 'view', 'viewed employee next of kin report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
     
   Excel::create('Employee Kin Report', function($excel) use($data,$employee,$organization) {
 
@@ -1664,6 +1705,8 @@ class ReportsController extends Controller {
             ->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Employee Next Of Kin Report', 'view', 'viewed employee next of kin report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
 
         $pdf = PDF::loadView('pdf.kin', compact( 'employee','organization','kins'))->setPaper('a4');
     
@@ -1689,6 +1732,8 @@ class ReportsController extends Controller {
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Employee Next Of Kin Report', 'view', 'viewed employee next of kin report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
+
     
   Excel::create('Employee Kin Report', function($excel) use($data,$employee,$organization) {
 
@@ -1785,6 +1830,8 @@ class ReportsController extends Controller {
             ->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Employee Next Of Kin Report', 'view', 'viewed employee next of kin report for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
 
         $pdf = PDF::loadView('pdf.nextkin', compact( 'employee','organization','kins'))->setPaper('a4');
     
@@ -12991,6 +13038,7 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for period from '.$start.' to '.$end);
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
 
@@ -13074,9 +13122,12 @@ public function members(){
                     ->where('employee.department_id',Input::get('department'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
+        $department = Department::find(Input::get('department'));
+
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for department '.$department->department_name.' for period from '.$start.' to '.$end);
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
 
@@ -13160,9 +13211,11 @@ public function members(){
                     ->where('employee.branch_id',Input::get('branch'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
+        $branch = Branch::find(Input::get('branch'));
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+  Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for branch '.$branch->name.' for period from '.$start.' to '.$end);
     
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
 
@@ -13251,7 +13304,12 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
-    
+    $branch = Branch::find(Input::get('branch'));
+    $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end); 
+
+
   Excel::create('Vacation Application Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -13340,6 +13398,8 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for period from '.$start.' to '.$end); 
+
         $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4');
     
         return $pdf->stream('Vacation_Application_Report.pdf');
@@ -13354,6 +13414,10 @@ public function members(){
                     ->where('employee.branch_id',Input::get('branch'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
+
+        $branch = Branch::find(Input::get('branch'));
+    
+        Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for branch '.$branch->name.' for period from '.$start.' to '.$end); 
 
         $organization = Organization::find(Auth::user()->organization_id);
 
@@ -13371,6 +13435,9 @@ public function members(){
                     ->where('employee.department_id',Input::get('department'))
                     ->whereBetween('application_date', array($start, $end))->get();
 
+      $department = Department::find(Input::get('department'));
+
+      Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for department '.$department->department_name.' for period from '.$start.' to '.$end); 
 
         $organization = Organization::find(Auth::user()->organization_id);
 
@@ -13391,6 +13458,11 @@ public function members(){
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Vacation Application Report', 'view', 'viewed vacation application report for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end); 
 
         $pdf = PDF::loadView('leavereports.applicationReport', compact('apps','organization'))->setPaper('a4');
     
@@ -13545,12 +13617,14 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
+                    ->where('leaveapplications.status','approved')
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+   Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for period from '.$start.' to '.$end); 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
 
@@ -13632,11 +13706,16 @@ public function members(){
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
+                    ->where('leaveapplications.status','approved')
                     ->where('date_approved','<=',date('Y-m-d'))
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+  $branch = Branch::find(Input::get('branch'));
+
+   Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for branch for period from '.$start.' to '.$end);
 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13720,10 +13799,15 @@ public function members(){
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
+                    ->where('leaveapplications.status','approved')
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+  $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for department '.$department->department_name.' for period from '.$start.' to '.$end);
 
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -13808,11 +13892,16 @@ public function members(){
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
+                    ->where('leaveapplications.status','approved')
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+  $branch = Branch::find(Input::get('branch'));
+  $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
     
   Excel::create('Vacation Approved Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
 
@@ -13899,10 +13988,13 @@ public function members(){
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('date_approved','<=',date('Y-m-d'))
+                    ->where('leaveapplications.status','approved')
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
@@ -13919,10 +14011,15 @@ public function members(){
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('date_approved','<=',date('Y-m-d'))
+                    ->where('leaveapplications.status','approved')
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for branch '.$branch->name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
@@ -13939,10 +14036,15 @@ public function members(){
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
+                    ->where('leaveapplications.status','approved')
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for department '.$department->department_name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
@@ -13960,10 +14062,16 @@ public function members(){
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
                     ->where('date_approved','<=',date('Y-m-d'))
+                    ->where('leaveapplications.status','approved')
                     ->whereBetween('date_approved', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Vacation Approved Report', 'view', 'viewed vacation approved report for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.approvedReport', compact('apps','organization'))->setPaper('a4');
     
@@ -13994,10 +14102,13 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for period from '.$start.' to '.$end);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14081,10 +14192,15 @@ public function members(){
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+  
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for branch '.$branch->name.' for period from '.$start.' to '.$end);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14168,10 +14284,15 @@ public function members(){
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get("department"))
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+       $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for department '.$department->department_name.' for period from '.$start.' to '.$end);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14256,10 +14377,16 @@ public function members(){
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get("branch"))
                     ->where('employee.department_id',Input::get("department"))
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
 
     
   Excel::create('Vacation Rejected Report for period between '.$start.' and '.$end, function($excel) use($data,$start,$end,$organization) {
@@ -14345,10 +14472,14 @@ public function members(){
                     ->join('employee', 'leaveapplications.employee_id', '=', 'employee.id')
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
@@ -14363,10 +14494,15 @@ public function members(){
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for branch '.$branch->name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
@@ -14381,10 +14517,15 @@ public function members(){
                     ->join('leavetypes', 'leaveapplications.leavetype_id', '=', 'leavetypes.id')
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.department_id',Input::get('department'))
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for department '.$department->department_name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
@@ -14400,10 +14541,16 @@ public function members(){
                     ->where('employee.organization_id',Auth::user()->organization_id)
                     ->where('employee.branch_id',Input::get('branch'))
                     ->where('employee.department_id',Input::get('department'))
+                    ->where('leaveapplications.status','rejected')
                     ->whereBetween('date_rejected', array($start, $end))->get();
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+  $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('Vacation Rejected Report', 'view', 'viewed vacation rejected report for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.rejectedReport', compact('rejs','organization'))->setPaper('a4');
     
@@ -14441,8 +14588,10 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('vacation balance report for vacation type '.$leavetype->name.'', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for period from '.$start.' to '.$end);
+
     
-  Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
+  Excel::create('vacation balance report', function($excel) use($data,$leavetype,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -14453,7 +14602,7 @@ public function members(){
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Vacation Balance Report', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
+    $excel->sheet('vacation balance report for vacation type '.$leavetype->name.'', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
 
 
                $sheet->row(1, array(
@@ -14469,7 +14618,7 @@ public function members(){
 
               $sheet->mergeCells('A3:E3');
               $sheet->row(3, array(
-              'Vacation Balance Report'
+              'vacation balance report for vacation type '.$leavetype->name.''
               ));
 
               $sheet->row(3, function($cell) {
@@ -14538,8 +14687,12 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+
+  $branch = Branch::find(Input::get('branch'));
+
+   Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for branch '.$branch->name.' for period from '.$start.' to '.$end);
     
-  Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
+  Excel::create('vacation balance report for vacation type '.$leavetype->name.' ', function($excel) use($data,$leavetype,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -14550,7 +14703,7 @@ public function members(){
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Vacation Balance Report', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
+    $excel->sheet('vacation balance report for vacation type '.$leavetype->name.'', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
 
 
                $sheet->row(1, array(
@@ -14566,7 +14719,7 @@ public function members(){
 
               $sheet->mergeCells('A3:E3');
               $sheet->row(3, array(
-              'Vacation Balance Report'
+              'vacation balance report for vacation type '.$leavetype->name.''
               ));
 
               $sheet->row(3, function($cell) {
@@ -14634,8 +14787,13 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for department '.$department->department_name.' for period from '.$start.' to '.$end);
+
     
-  Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
+  Excel::create('vacation balance report for vacation type '.$leavetype->name.' ', function($excel) use($data,$leavetype,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -14646,7 +14804,7 @@ public function members(){
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Vacation Balance Report', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
+    $excel->sheet('vacation balance report for vacation type '.$leavetype->name.'', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
 
 
                $sheet->row(1, array(
@@ -14662,7 +14820,7 @@ public function members(){
 
               $sheet->mergeCells('A3:E3');
               $sheet->row(3, array(
-              'Vacation Balance Report'
+              'vacation balance report for vacation type '.$leavetype->name.''
               ));
 
               $sheet->row(3, function($cell) {
@@ -14730,8 +14888,13 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+   Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
+
     
-  Excel::create('Vacation Balance Report ', function($excel) use($data,$leavetype,$organization) {
+  Excel::create('vacation balance report for vacation type '.$leavetype->name.' ', function($excel) use($data,$leavetype,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -14742,7 +14905,7 @@ public function members(){
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Vacation Balance Report', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
+    $excel->sheet('vacation balance report for vacation type '.$leavetype->name.'', function($sheet) use($data,$leavetype,$organization,$objPHPExcel){
 
 
                $sheet->row(1, array(
@@ -14758,7 +14921,7 @@ public function members(){
 
               $sheet->mergeCells('A3:E3');
               $sheet->row(3, array(
-              'Vacation Balance Report'
+              'vacation balance report for vacation type '.$leavetype->name.''
               ));
 
               $sheet->row(3, function($cell) {
@@ -14827,6 +14990,9 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+
+        Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for period from '.$start.' to '.$end);
+
         $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream($leavetype->name.'_balances_Report.pdf');
@@ -14840,6 +15006,10 @@ public function members(){
         $employees= Employee::where('organization_id',Auth::user()->organization_id)->where('branch_id',Input::get("branch"))->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for branch '.$branch->name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
@@ -14855,6 +15025,10 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for department '.$department->department_name.' for period from '.$start.' to '.$end);
+
         $pdf = PDF::loadView('leavereports.balanceReport', compact('employees','start','end','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream($leavetype->name.'_balances_Report.pdf');
@@ -14866,6 +15040,11 @@ public function members(){
         $leavetype = Leavetype::find($id);
         
         $employees= Employee::where('organization_id',Auth::user()->organization_id)->where('branch_id',Input::get("branch"))->where('department_id',Input::get("department"))->get();
+
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('vacation balance report', 'view', 'viewed vacation balance report for vacation type '.$leavetype->name.' for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
 
         $organization = Organization::find(Auth::user()->organization_id);
 
@@ -14920,8 +15099,10 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Employees on Vacation Report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for period from '.$start.' to '.$end);
+
     
-  Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
+  Excel::create('Employees on Vacation Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -15023,6 +15204,10 @@ public function members(){
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for branch '.$branch->name.' for period from '.$start.' to '.$end);
 
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
@@ -15128,6 +15313,10 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for department '.$department->department_name.' for period from '.$start.' to '.$end);
+
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
 
@@ -15232,6 +15421,11 @@ public function members(){
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
 
     
   Excel::create('Employees on Leaves Report for '.$leavetype->name, function($excel) use($data,$leavetype,$organization) {
@@ -15330,6 +15524,8 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for period from '.$start.' to '.$end);
+
         $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream('Employees_on_Vacation_Report.pdf');
@@ -15356,6 +15552,10 @@ public function members(){
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for branch '.$branch->name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
@@ -15384,6 +15584,11 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for department '.$department->department_name.' for period from '.$start.' to '.$end);
+
         $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
         return $pdf->stream('Employees_on_Vacation_Report.pdf');
@@ -15411,6 +15616,11 @@ public function members(){
 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $branch = Branch::find(Input::get('branch'));
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Employees on Vacation report', 'view', 'viewed employees on vacation report for vacation type '.$leavetype->name.' for branch '.$branch->name.' and department '.$department->department_name.' for period from '.$start.' to '.$end);
 
         $pdf = PDF::loadView('leavereports.employeeReport', compact('emps','leavetype','organization'))->setPaper('a4');
     
@@ -15451,6 +15661,7 @@ public function members(){
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Employee Vacation report', 'view', 'viewed employee vacation report for employee '.$employee->personal_file_number.' : '.$name);
     
   Excel::create('Vacation Report for '.$employee->personal_file_number.' : '.$name, function($excel) use($data,$name,$employee,$organization) {
 
@@ -15523,9 +15734,19 @@ public function members(){
 
         $employee = Employee::find($id);
 
+        $name = '';
+
+             if($employee->middle_name == '' || $employee->middle_name == null){
+               $name= $employee->first_name.' '.$employee->last_name;
+             }else{
+               $name=$employee->first_name.' '.$employee->middle_name.' '.$employee->last_name;
+             }
+
         $leavetypes = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Employee Vacation report', 'view', 'viewed employee vacation report for employee '.$employee->personal_file_number.' : '.$name);
 
         $pdf = PDF::loadView('leavereports.individualReport', compact('leavetypes','employee','organization'))->setPaper('a4');
     

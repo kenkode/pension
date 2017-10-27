@@ -5,7 +5,7 @@ function asMoney($value) {
   return number_format($value, 2);
 }
 }
-
+use App\Leaveapplication;
 ?>
 <html >
 
@@ -45,7 +45,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -68,7 +68,7 @@ body {
        
         <td style="width:150px">
 
-            <img src="{{asset('public/uploads/logo/'.$organization->logo)}}" alt="{{ $organization->logo }}" width="150px"/>
+            <img src="{{asset('uploads/logo/'.$organization->logo)}}" alt="{{ $organization->logo }}" width="150px"/>
     
         </td>
 
@@ -107,9 +107,9 @@ body {
 
 	<div class="content" style='margin-top:-70px;'>
     @if($employee->middle_name != null || $employee->middle_name != '')
-     <div align="center"><strong>Vacation Report for {{$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->middle_name.' '.$employee->last_name}}</strong></div>
+     <div align="center" style='margin-top:-50px;'><strong>Vacation Report for {{$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->middle_name.' '.$employee->last_name}}</strong></div>
     @else
-     <div align="center"><strong>Vacation Report for {{$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name}}</strong></div>
+     <div align="center" style='margin-top:-50px;'><strong>Vacation Report for {{$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name}}</strong></div>
     @endif
    
 <br>

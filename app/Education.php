@@ -6,7 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Education extends Model
 {
-	protected $fillable = [
+
+    public static $rules = [
+    'name' => 'required'
+    ];
+
+public static $messages = array(
+        'name.required'=>'Please insert education name!',
+         );
+
+	/*protected $fillable = [
         'document_name', 'description','path','uploaded_by','type'
     ];
 
@@ -21,5 +30,5 @@ class Education extends Model
         $this->uploaded_by =$uploaded_by;
         $this->type= $ext;
         $this->save();
-    }
+    }*/
 }

@@ -1,6 +1,6 @@
-@extends('layouts.leave_ports')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+{{Html::script('media/jquery-1.8.0.min.js') }}
 
 <script type="text/javascript">
 $(document).ready(function() {
@@ -14,7 +14,7 @@ $(document).ready(function() {
             $('#employeeid').empty(); 
             $.each(data, function(key, element) {
                 
-                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>");
+                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>").trigger("change");
             });
         });
     });
@@ -27,7 +27,7 @@ $(document).ready(function() {
         function(data1) {
             $('#employeeid').empty(); 
             $.each(data1, function(key, element) {
-                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>");
+                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>").trigger("change");
             });
         });
     });
@@ -40,21 +40,28 @@ $(document).ready(function() {
 
 @section('content')
 
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 <div class="row">
-	<div class="col-lg-12">
+    <div class="col-lg-12">
   <h3>Select Period</h3>
 
 <hr>
-</div>	
+</div>  
 </div>
 
+<style type="text/css">
+    .select2 {z-index:10 !important; }
+</style>
 
 <div class="row">
-	<div class="col-lg-5">
+    <div class="col-lg-5">
 
     
-		
-		 @if ($errors->has())
+        
+        @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -63,7 +70,7 @@ $(document).ready(function() {
         @endif
 
 		 <form target="_blank" method="POST" action="{{URL::to('leaveReports/IndividualEmployeeLeave')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <div class="form-group">
@@ -84,7 +91,7 @@ $(document).ready(function() {
 
        <div class="form-group">
                         <label for="username">Select Branch: <span style="color:red">*</span></label>
-                        <select required name="branch" id="branchid" class="form-control">
+                        <select name="branch" id="branchid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($branches as $branch)
@@ -97,7 +104,7 @@ $(document).ready(function() {
 
         <div class="form-group">
                         <label for="username">Select Department: <span style="color:red">*</span></label>
-                        <select required name="department" id="departmentid" class="form-control">
+                        <select name="department" id="departmentid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($departments as $department)
@@ -110,7 +117,7 @@ $(document).ready(function() {
 
         <div class="form-group">
                         <label for="username">Employee:</label>
-                        <select name="employeeid" id="employeeid" class="form-control">
+                        <select name="employeeid" id="employeeid" class="form-control select2">
                             <option></option>
                             @foreach($employees as $employee)
                             <option value="{{$employee->id}}"> {{ $employee->personal_file_number.' : '.$employee->first_name.' '.$employee->middle_name.' '.$employee->last_name }}</option>
@@ -122,7 +129,7 @@ $(document).ready(function() {
 
         <div class="form-group">
                         <label for="username">Download as: <span style="color:red">*</span></label>
-                        <select required name="format" class="form-control">
+                        <select required name="format" class="form-control select2">
                             <option></option>
                             <option value="excel"> Excel</option>
                             <option value="pdf"> PDF</option>

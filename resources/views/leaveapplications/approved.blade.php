@@ -36,7 +36,7 @@
     
     <th>PFN</th>
     <th width="150">Employee</th>
-    <th>Leave Type</th>
+    <th>Vacation Type</th>
     <th>Approval Date</th>
     <th>Start Date</th>
     <th>End Date</th>

@@ -30,7 +30,7 @@
    </tr> 
 
    <tr>
-   <td><strong>Leave Type</strong></td><td>{{$leaveapplication->leavetype->name}}</td>
+   <td><strong>Vacation Type</strong></td><td>{{$leaveapplication->leavetype->name}}</td>
      
    </tr> 
 

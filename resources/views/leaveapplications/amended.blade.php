@@ -38,7 +38,7 @@ use App\Leaveapplication;
     
     <th>PFN</th>
     <th width="150">Employee</th>
-    <th>Leave Type</th>
+    <th>Vacation Type</th>
     <th>Amendment Date</th>
     <th>Start Date</th>
     <th>End Date</th>

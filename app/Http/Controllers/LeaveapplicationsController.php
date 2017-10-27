@@ -25,7 +25,7 @@ class LeaveapplicationsController extends Controller {
 	public function index()
 	{
 		$leaveapplications = Leaveapplication::where('organization_id',Auth::user()->organization_id)->get();
-        Audit::logaudit('Leave Application', 'view', 'viewed leave applications');
+        Audit::logaudit('Vacation Application', 'view', 'viewed vacation applications');
 		return Redirect::to('leavemgmt');
 	}
 
@@ -41,7 +41,7 @@ class LeaveapplicationsController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Leavetypes', 'create', 'created leave type '.$postleave['type']);
+		Audit::logaudit('Leavetypes', 'create', 'created vacation type '.$postleave['type']);
         return $check;
         }else{
          return 1;
@@ -101,8 +101,8 @@ class LeaveapplicationsController extends Controller {
 
 			return Redirect::to('css/leave');
 		} else {
-            Audit::logaudit('Leave Application', 'create', 'created leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
-			return Redirect::to('leavemgmt')->withFlashMessage('Leave application successfully created!');
+            Audit::logaudit('Vacation Application', 'create', 'created vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
+			return Redirect::to('leavemgmt')->withFlashMessage('Vacation application successfully created!');
 		}
 		
 	}
@@ -159,9 +159,9 @@ class LeaveapplicationsController extends Controller {
         $employee = Employee::find($leaveapplication->employee_id);
         $leavetype = Leavetype::find($leaveapplication->leavetype_id);
 
-		Audit::logaudit('Leave Application', 'update', 'updated leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.Input::get("days").')');
+		Audit::logaudit('Vacation Application', 'update', 'updated vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.Input::get("days").')');
 
-		return Redirect::to('leaveamends')->withFlashMessage('Leave application successfully amended!');
+		return Redirect::to('leaveamends')->withFlashMessage('Vacation application successfully amended!');
 	}
 
 	/**
@@ -204,9 +204,9 @@ class LeaveapplicationsController extends Controller {
 
 		$days = Leaveapplication::getDays($leaveapplication->approved_end_date,$leaveapplication->approved_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
 
-        Audit::logaudit('Leave Application', 'approve', 'approved leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->approved_start_date.' to '.$leaveapplication->approved_end_date.' ('.$days.')');
+        Audit::logaudit('Vacation Application', 'approve', 'approved vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->approved_start_date.' to '.$leaveapplication->approved_end_date.' ('.$days.')');
 
-		return Redirect::to('leaveapprovals')->withFlashMessage('Leave application successfully approved!');
+		return Redirect::to('leaveapprovals')->withFlashMessage('Vacation application successfully approved!');
 
 	}
 
@@ -222,9 +222,9 @@ class LeaveapplicationsController extends Controller {
 
 		$days = Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
 
-        Audit::logaudit('Leave Application', 'reject', 'rejected leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
+        Audit::logaudit('Vacation Application', 'reject', 'rejected vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
 
-		return Redirect::to('leaverejects')->withDeleteMessage('Leave application successfully rejected!');
+		return Redirect::to('leaverejects')->withDeleteMessage('Vacation application successfully rejected!');
 
 	}
 
@@ -239,9 +239,9 @@ class LeaveapplicationsController extends Controller {
 
 		$days = Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
 
-        Audit::logaudit('Leave Application', 'cancel', 'cancelledd leave application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' leave type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
+        Audit::logaudit('Vacation Application', 'cancel', 'cancelled vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
 
-		return Redirect::to('leavemgmt')->withDeleteMessage('Leave application successfully cancelled!');
+		return Redirect::to('leavemgmt')->withDeleteMessage('Vacation application successfully cancelled!');
 
 	}
 

@@ -10,15 +10,17 @@ use App\Deduction;
 use App\Relief;
 use App\Bank;
 use App\Leaveapplication;
-use App\ItemTracker;
-use App\Stock;
+use App\Department;
+use App\Branch;
 use App\Notification;
-use App\Driver;
+use App\Jobgroup;
 use App\Vehicle;
 use App\Price;
 use App\TaxOrder;
 use App\Account;
 use App\Accounts;
+use Illuminate\Support\Facades\PHPExcel;
+use Maatwebsite\Excel\Facades\Excel as Excel;
 use Illuminate\Support\Facades\Input;
 
 /*
@@ -57,7 +59,7 @@ Route::group( ['middleware' => 'auth' ], function()
 	Route::get('detailed-employee/{id}', 'UserController@detailed_employee');
 	Route::resource('deductions', 'DeductionsController');
 	Route::resource('statement', 'StatementController');
-	Route::resource('education', 'EducationController');
+	//Route::resource('education', 'EducationController');
 	Route::resource('calendar', 'CalendarController');
 	Route::resource('documents', 'DocumentsController');
 	Route::resource('emails', 'MailController');
@@ -98,10 +100,10 @@ Route::get('/dashboard', function()
 
 Route::get('fpassword', function(){
 
-  return View::make(Config::get('confide::forgot_password_form'));
+  return View::make(Config::get('Auth::forgot_password_form'));
 
 });
-// Confide routes
+// Auth routes
 Route::resource('users', 'UsersController');
 Route::get('users/create', 'UsersController@create');
 Route::get('users/edit/{user}', 'UsersController@edit');
@@ -1251,6 +1253,15 @@ Route::get('employee_type/delete/{id}', 'EmployeeTypeController@destroy');
 Route::get('employee_type/edit/{id}', 'EmployeeTypeController@edit');
 
 /*
+* education type routes
+*/
+
+Route::resource('education', 'EducationController');
+Route::post('education/update/{id}', 'EducationController@update');
+Route::get('education/delete/{id}', 'EducationController@destroy');
+Route::get('education/edit/{id}', 'EducationController@edit');
+
+/*
 * employees routes
 */
 
@@ -1382,7 +1393,23 @@ Route::post('advanceReports/advanceRemittances', 'ReportsController@payeAdvRems'
 Route::get('advanceReports/selectSummaryPeriod', 'ReportsController@period_advsummary');
 Route::post('advanceReports/advanceSummary', 'ReportsController@payAdvSummary');
 
+Route::get('leaveReports/selectApplicationPeriod', 'ReportsController@appperiod');
+Route::post('leaveReports/leaveapplications', 'ReportsController@leaveapplications');
 
+Route::get('leaveReports/selectApprovedPeriod', 'ReportsController@approvedperiod');
+Route::post('leaveReports/approvedleaves', 'ReportsController@approvedleaves');
+
+Route::get('leaveReports/selectRejectedPeriod', 'ReportsController@rejectedperiod');
+Route::post('leaveReports/rejectedleaves', 'ReportsController@rejectedleaves');
+
+Route::get('leaveReports/selectLeave', 'ReportsController@balanceselect');
+Route::post('leaveReports/leaveBalances', 'ReportsController@leavebalances');
+
+Route::get('leaveReports/selectLeaveType', 'ReportsController@leaveselect');
+Route::post('leaveReports/Employeesonleave', 'ReportsController@employeesleave');
+
+Route::get('leaveReports/selectEmployee', 'ReportsController@employeeselect');
+Route::post('leaveReports/IndividualEmployeeLeave', 'ReportsController@individualleave');
 
 
 /*
@@ -3075,7 +3102,7 @@ Route::get('api/dropdown', function(){
 
 Route::get('api/leavetypes', function(){
     $leavetypes = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
-    return $leavetypes->lists('name', 'id');
+    return $leavetypes->pluck('name', 'id');
 });
 
 Route::get('api/site', function(){
@@ -3086,7 +3113,7 @@ Route::get('api/site', function(){
     $site = Site::select('id', 'name')
     ->where('organization_id',Auth::user()->organization_id)
     ->where('period',$sid)
-    ->lists('name', 'id');
+    ->pluck('name', 'id');
     
 
     return $site;
@@ -3095,135 +3122,51 @@ Route::get('api/site', function(){
 Route::get('api/branchemployee', function(){
     $bid = Input::get('option');
     $did = Input::get('deptid');
-    $seltype = Input::get('type');
     $employee = array();
-    $department = Department::where('department_name','Management')
-                  ->where(function($query){
-                         $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Auth::user()->organization_id);
-                 })->first();
 
-    
-    $jgroup = Jobgroup::where(function($query){
-                            $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Auth::user()->organization_id);
-                            })->where('job_group_name','Management')
-                              ->first();
 
     if(($bid == 'All' || $bid == '' || $bid == 0) && ($did == 'All' || $did == '' || $did == 0)){
-    if(Entrust::can('manager_payroll')){
     $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
     ->where('organization_id',Auth::user()->organization_id)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->lists('full_name', 'id');
-    }
+    ->pluck('full_name', 'id');
     }else if(($bid != 'All' || $bid != '' || $bid != 0) && ($did == 'All' || $did == '' || $did == 0)){
-    if(Entrust::can('manager_payroll')){
     $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
     ->where('branch_id',$bid)
     ->where('organization_id',Auth::user()->organization_id)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('branch_id',$bid)
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->lists('full_name', 'id'); 
-    }
+    ->pluck('full_name', 'id');
     }else if(($did != 'All' || $did != '' || $did != 0) && ($bid != 'All' || $bid != '' || $bid != 0) ){
-    if(Entrust::can('manager_payroll')){
     $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
     ->where('branch_id',$bid)
     ->where('organization_id',Auth::user()->organization_id)
     ->where('department_id',$did)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('branch_id',$bid)
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->where('department_id',$did)
-    ->lists('full_name', 'id');
+    ->pluck('full_name', 'id');
     }
-    }else if(($did != 'All' || $did != '' || $did != 0) && ($bid == 'All' || $bid == '' || $bid == 0)){
-    if(Entrust::can('manager_payroll')){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('department_id',$did)
-    ->where('organization_id',Auth::user()->organization_id)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('department_id',$did)
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->lists('full_name', 'id'); 
-    }
-    }
+
     return $employee;
 });
 
 Route::get('api/deptemployee', function(){
     $did = Input::get('option');
     $bid = Input::get('bid');
-    $seltype = Input::get('type');
     $employee = array();
-    $department = Department::where('department_name','Management')
-                  ->where(function($query){
-                         $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Auth::user()->organization_id);
-                 })->first();
-
-
-    $jgroup = Jobgroup::where(function($query){
-                            $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Auth::user()->organization_id);
-                            })->where('job_group_name','Management')
-                              ->first();
 
     if(($did == 'All' || $did == '' || $did == 0) && ($bid == 'All' || $bid == '' || $bid == 0)){
-    if(Entrust::can('manager_payroll')){
     $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
     ->where('organization_id',Auth::user()->organization_id)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->lists('full_name', 'id');
-    }
+    ->pluck('full_name', 'id');
     }else if(($did != 'All' || $did != '' || $did != 0) && ($bid == 'All' || $bid == '' || $bid == 0)){
-    if(Entrust::can('manager_payroll')){
     $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
     ->where('department_id',$did)
     ->where('organization_id',Auth::user()->organization_id)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('department_id',$did)
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->lists('full_name', 'id'); 
-    }
+    ->pluck('full_name', 'id');
     }else if(($did != 'All' || $did != '' || $did != 0) && ($bid != 'All' || $bid != '' || $bid != 0) ){
-    if(Entrust::can('manager_payroll')){
     $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
     ->where('branch_id',$bid)
     ->where('organization_id',Auth::user()->organization_id)
     ->where('department_id',$did)
-    ->lists('full_name', 'id');
-    }else{
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
-    ->where('branch_id',$bid)
-    ->where('organization_id',Auth::user()->organization_id)
-    ->where('job_group_id','!=',$jgroup->id)
-    ->where('department_id',$did)
-    ->lists('full_name', 'id');   
+    ->pluck('full_name', 'id');
     }
-    }
+
     return $employee;
 });
 

@@ -1,21 +1,28 @@
-@extends('layouts.leave_ports')
+@extends('layouts.app')
 @section('content')
 
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 <div class="row">
-	<div class="col-lg-12">
+    <div class="col-lg-12">
   <h3>Select Period</h3>
 
 <hr>
-</div>	
+</div>  
 </div>
 
+<style type="text/css">
+    .select2 {z-index:10 !important; }
+</style>
 
 <div class="row">
-	<div class="col-lg-5">
+    <div class="col-lg-5">
 
     
-		
-		 @if ($errors->has())
+        
+        @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +31,7 @@
         @endif
 
 		 <form target="_blank" method="POST" action="{{URL::to('leaveReports/rejectedleaves')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <div class="form-group">
@@ -45,7 +52,7 @@
 
        <div class="form-group">
                         <label for="username">Select Branch: <span style="color:red">*</span></label>
-                        <select required name="branch" id="branchid" class="form-control">
+                        <select required name="branch" id="branchid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($branches as $branch)
@@ -58,7 +65,7 @@
 
         <div class="form-group">
                         <label for="username">Select Department: <span style="color:red">*</span></label>
-                        <select required name="department" id="departmentid" class="form-control">
+                        <select required name="department" id="departmentid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($departments as $department)
@@ -71,7 +78,7 @@
 
        <div class="form-group">
                         <label for="username">Download as: <span style="color:red">*</span></label>
-                        <select required name="format" class="form-control">
+                        <select required name="format" class="form-control select2">
                             <option></option>
                             <option value="excel"> Excel</option>
                             <option value="pdf"> PDF</option>

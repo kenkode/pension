@@ -1,13 +1,62 @@
 @extends('layouts.app')
 @section('content')
 
+{{Html::script('media/jquery-1.8.0.min.js') }}
+
+<style type="text/css">
+    .select2 {z-index:10 !important; }
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+    $('#branchid').change(function(){
+        $.get("{{ url('api/branchemployee')}}", 
+        { option: $(this).val(),
+          deptid: $('#departmentid').val()
+         }, 
+        function(data) {
+            $('#employeeid').empty(); 
+            $.each(data, function(key, element) {
+                
+                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>").trigger("change");
+            });
+        });
+    });
+
+    $('#departmentid').change(function(){
+        $.get("{{ url('api/deptemployee')}}", 
+        { option: $(this).val(),
+          bid: $('#branchid').val()
+        }, 
+        function(data1) {
+            $('#employeeid').empty(); 
+            $.each(data1, function(key, element) {
+                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>").trigger("change");
+            });
+        });
+    });
+
+  
+
+});
+</script>
+
+
+@section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 <div class="row">
-	<div class="col-lg-12">
-  <h3>Select Employee</h3>
+    <div class="col-lg-12">
+  <h3>Select Period</h3>
 
 <hr>
-</div>	
+</div>  
 </div>
+
 
 
 <div class="row">
@@ -26,9 +75,50 @@
 		 <form target="_blank" method="POST" action="{{URL::to('reports/occurence')}}" accept-charset="UTF-8">
    {{ csrf_field() }}
     <fieldset>
+        <div class="form-group">
+                        <label for="username">From <span style="color:red">*</span></label>
+                        <div class="right-inner-addon ">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                        <input required class="form-control datepicker3" readonly="readonly" placeholder="" type="text" name="from" id="from" value="{{{ Input::old('from') }}}">
+                    </div>
+       </div>
+
+            <div class="form-group">
+                        <label for="username">To <span style="color:red">*</span></label>
+                        <div class="right-inner-addon ">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                        <input required class="form-control datepicker3" readonly="readonly" placeholder="" type="text" name="to" id="to" value="{{{ Input::old('to') }}}">
+                    </div>
+       </div>
+
+       <div class="form-group">
+                        <label for="username">Select Branch: <span style="color:red">*</span></label>
+                        <select required name="branch" id="branchid" class="form-control select2">
+                            <option></option>
+                            <option value="All">All</option>
+                            @foreach($branches as $branch)
+                            <option value="{{$branch->id }}"> {{ $branch->name }}</option>
+                            @endforeach
+
+                        </select>
+                
+        </div>
+
+        <div class="form-group">
+                        <label for="username">Select Department: <span style="color:red">*</span></label>
+                        <select name="department" id="departmentid" class="form-control select2">
+                            <option></option>
+                            <option value="All">All</option>
+                            @foreach($departments as $department)
+                            <option value="{{$department->id }}"> {{ $department->department_name }}</option>
+                            @endforeach
+
+                        </select>
+                
+        </div>
             <div class="form-group">
                         <label for="username">Select:</label>
-                        <select name="employeeid" class="form-control select2" required>
+                        <select name="employeeid" id="employeeid" class="form-control select2">
                             <option></option>
                             @foreach($employees as $employee)
                              @if($employee->middle_name != null || $employee->middle_name != '')

@@ -5,7 +5,7 @@ function asMoney($value) {
   return number_format($value, 2);
 }
 }
-
+use App\Leaveapplication;
 ?>
 <html >
 
@@ -45,7 +45,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -68,7 +68,7 @@ body {
        
         <td style="width:150px">
 
-            <img src="{{asset('public/uploads/logo/'.$organization->logo)}}" alt="{{ $organization->logo }}" width="150px"/>
+            <img src="{{asset('uploads/logo/'.$organization->logo)}}" alt="{{ $organization->logo }}" width="150px"/>
     
         </td>
 
@@ -106,7 +106,7 @@ body {
 
 <br>
 	<div class="content" style='margin-top:-70px;'>
-   <div align="center"><strong>Employees on Vacations Report</strong></div>
+   <div align="center" style='margin-top:-50px;'><strong>Employees on Vacations Report</strong></div>
 <br>
     <table class="table table-bordered" border='1' cellspacing='0' cellpadding='0'>
 
