@@ -32,16 +32,20 @@ use Illuminate\Support\Facades\Input;
    {{ csrf_field() }}
     <fieldset>
 
-            <input class="form-control" placeholder="" type="hidden" name="employee" id="employee" value="{{$id}}">
+      <div class="form-group">
+            <label for="username">Employee</label>
+            <input class="form-control" readonly placeholder="" type="text" name="ename" id="ename" value="{{Session::get('ename')}}">
+        </div>
+       <input class="form-control" placeholder="" type="hidden" name="employee_id" id="employee" value="{{Session::get('eid')}}">
 
        <div class="form-group">
                         <label for="username">Document</label><span style="color:red">*</span><br>
-                        <input class="img" placeholder="" type="file" name="path" id="path" value="{{{ Input::old('path') }}}">
+                        <input class="img" placeholder="" type="file" name="path" id="path" value="{{{ Input::old('path') }}}" required="">
                     </div>
 
         <div class="form-group">
             <label for="username">Document Name <span style="color:red">*</span> </label><br>
-            <input class="form-control" placeholder="" type="text" name="type" id="type" value="{{{ Input::old('type') }}}">
+            <input class="form-control" placeholder="" type="text" name="type" id="type" value="{{{ Input::old('type') }}}" required="">
         </div>
 
         <div class="form-group">

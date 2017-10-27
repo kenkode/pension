@@ -3,6 +3,7 @@
 
 <?php
 use App\Appraisalquestion;
+Session::put( 'page', 'appraisal');
 ?>
 
 <div class="row">

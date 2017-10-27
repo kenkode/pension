@@ -251,6 +251,8 @@ width:100px;
 
             <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $appraisal->employee->id}}"> 
 
+            <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}">
+
         <div class="form-group">
                         <label for="username">Appraisal <span style="color:red">*</span></label>
                         <select name="appraisal_id" id="appraisal_id" class="form-control select2">

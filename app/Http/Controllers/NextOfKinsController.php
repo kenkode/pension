@@ -47,15 +47,14 @@ class NextOfKinsController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function create($id)
+	public function create()
 	{  
-		$id = $id;
 
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
 		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
-		return view('nextofkins.create', compact('employees','id'));
+		return view('nextofkins.create', compact('employees'));
 	}
 
 	/**
@@ -82,13 +81,12 @@ class NextOfKinsController extends Controller {
 		$kin->relationship = Input::get('rship');
 		$kin->contact = Input::get('contact');
 		$kin->id_number = Input::get('id_number');
-		$kin->organization_id = Auth::user()->organization_id;
 		$kin->save();
 
-		Audit::logaudit('NextofKins', 'create', 'created: '.$kin->name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
+		Audit::logaudit('NextofKins', 'create', 'created kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
 
-		return Redirect::to('employee/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully created!');
+		return Redirect::to('employees/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully created!');
 	}
 
 	/**
@@ -143,9 +141,34 @@ class NextOfKinsController extends Controller {
 
 		$kin->update();
 
-		Audit::logaudit('NextofKins', 'update', 'updated: '.$kin->name.' for '.Employee::getEmployeeName($kin->employee_id));
+		Audit::logaudit('NextofKins', 'update', 'updated kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName($kin->employee_id));
 
-		return Redirect::to('NextOfKins/view/'.$id)->withFlashMessage('Employee`s next of kin successfully updated!');
+		return Redirect::to('employees/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully updated!');
+	}
+
+	public function kinupdate($id)
+	{
+		$kin = Nextofkin::findOrFail(Input::get('kin_id'));
+
+		$validator = Validator::make($data = Input::all(), Nextofkin::$rules,Nextofkin::$messages);
+
+		if ($validator->fails())
+		{
+			return Redirect::back()->withErrors($validator)->withInput();
+		}
+        
+		$kin->first_name = Input::get('fname');
+		$kin->middle_name = Input::get('mname');
+		$kin->last_name = Input::get('lname');
+		$kin->relationship = Input::get('rship');
+		$kin->contact = Input::get('contact');
+		$kin->id_number = Input::get('id_number');
+
+		$kin->update();
+
+		Audit::logaudit('NextofKins', 'update', 'updated kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName($kin->employee_id));
+
+		return Redirect::to('employees/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully updated!');
 	}
 
 	/**
@@ -158,7 +181,7 @@ class NextOfKinsController extends Controller {
 	{
 		$kin = Nextofkin::findOrFail($id);
 		Nextofkin::destroy($id);
-		Audit::logaudit('NextofKins', 'delete', 'deleted: '.$kin->name.' for '.Employee::getEmployeeName($kin->employee_id));
+		Audit::logaudit('NextofKins', 'delete', 'deleted kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName($kin->employee_id));
 
 		return Redirect::to('employees/view/'.$kin->employee_id)->withDeleteMessage('Employee`s next of kin successfully deleted!');
 	}

@@ -200,6 +200,13 @@ use Illuminate\Support\Facades\Input;
 		 <form method="POST" action="{{{ URL::to('occurences') }}}" accept-charset="UTF-8" enctype="multipart/form-data">
    {{ csrf_field() }}
     <fieldset>
+      @if(Session::has('eid') && Session::get('page') == "employee")
+       <div class="form-group">
+            <label for="username">Employee</label>
+            <input class="form-control" readonly placeholder="" type="text" name="ename" id="ename" value="{{Session::get('ename')}}">
+        </div>
+       <input class="form-control" placeholder="" type="hidden" name="employee" id="employee" value="{{Session::get('eid')}}">
+       @else
       <div class="form-group">
                         <label for="username">Employee <span style="color:red">*</span></label>
                         <select name="employee" class="form-control select2">
@@ -210,7 +217,9 @@ use Illuminate\Support\Facades\Input;
                         </select>
                 
                     </div>   
-
+       @endif
+       <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}"> 
+       
         <div class="form-group">
             <label for="username">Occurence Brief <span style="color:red">*</span> </label>
             <input class="form-control" placeholder="" type="text" name="brief" id="brief" value="{{{ Input::old('brief') }}}">

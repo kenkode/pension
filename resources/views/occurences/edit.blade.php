@@ -203,6 +203,8 @@
        
       <input class="form-control" placeholder="" type="hidden" readonly name="employee" id="employee" value="{{ $occurence->employee->id }}"> 
 
+      <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}"> 
+
         <div class="form-group">
                         <label for="username">Occurence Type: <span style="color:red">*</span></label>
                         <select name="type" id="type" class="form-control select2">

@@ -14,7 +14,7 @@ use App\Department;
 use App\Branch;
 use App\Notification;
 use App\Jobgroup;
-use App\Vehicle;
+use App\Appraisalquestion;
 use App\Price;
 use App\TaxOrder;
 use App\Account;

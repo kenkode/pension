@@ -1,6 +1,11 @@
 @extends('layouts.app')
 @section('content')
 
+<?php
+use App\Appraisalquestion;
+Session::put( 'page', 'occurence');
+?>
+
 <div class="row">
 	<div class="col-lg-12">
   <h3>Employee Occurences</h3>

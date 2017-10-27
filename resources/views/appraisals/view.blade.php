@@ -33,9 +33,11 @@ use App\Appraisalquestion;
 <a class="btn btn-info btn-sm "  href="{{ URL::to('Appraisals/edit/'.$appraisal->id)}}">update details</a>
 
 <a class="btn btn-danger btn-sm "  href="{{URL::to('Appraisals/delete/'.$appraisal->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s appraisal?'))">Delete</a>
-
+@if(Session::get('page') == "employee")
+<a class="btn btn-success btn-sm "  href="{{ URL::to('employees/view/'.$appraisal->employee_id)}}">Go Back</a>
+@else
 <a class="btn btn-success btn-sm "  href="{{ URL::to('Appraisals')}}">Go Back</a>
-
+@endif
 <hr>
 </div>	
 </div>

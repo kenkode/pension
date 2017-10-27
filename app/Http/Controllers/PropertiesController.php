@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
 use Response;
+use Session;
 
 class PropertiesController extends Controller {
 
@@ -91,10 +92,13 @@ class PropertiesController extends Controller {
 		}
 		$property->save();
 
-		Audit::logaudit('Properties', 'create', 'created: '.$property->name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
+		Audit::logaudit('Properties', 'create', 'created property '.$property->name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
-
+        if(Input::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$property->employee_id)->withFlashMessage('Company property successfully created!');
+        }else{
 		return Redirect::to('Properties/view/'.$property->id)->withFlashMessage('Company property successfully created!');
+	}
 	}
 
 	/**
@@ -167,9 +171,13 @@ class PropertiesController extends Controller {
 
 		$property->update();
 
-		Audit::logaudit('Properties', 'update', 'updated: '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
-
+		Audit::logaudit('Properties', 'update', 'updated property '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
+ 
+        if(Input::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$property->employee_id)->withFlashMessage('Company property successfully updated!');
+        }else{
 		return Redirect::to('Properties/view/'.$id)->withFlashMessage('Company Property successfully updated!');
+	}
 	}
 
 	/**
@@ -184,9 +192,13 @@ class PropertiesController extends Controller {
 		
 		Property::destroy($id);
 
-		Audit::logaudit('Properties', 'delete', 'deleted: '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
+		Audit::logaudit('Properties', 'delete', 'deleted property '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
 
+        if(Session::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$property->employee_id)->withDeleteMessage('Company Property successfully deleted!');
+        }else{
 		return Redirect::to('Properties')->withDeleteMessage('Company Property successfully deleted!');
+	}
 	}
     
     public function view($id){

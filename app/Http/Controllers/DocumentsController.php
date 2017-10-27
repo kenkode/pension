@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use App\Document;
 use Illuminate\Http\Request;
 use Auth;
+use App\Audit;
+use App\Employee;
+use Redirect;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
 
 class DocumentsController extends Controller
 {
@@ -27,9 +32,9 @@ class DocumentsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create($id)
+    public function create()
     {
-        return view('documents.create',compact("id"));
+        return view('documents.create');
     }
 
     /**
@@ -40,12 +45,35 @@ class DocumentsController extends Controller
      */
     public function store(Request $request)
     {
-        $path= Controller::showUploadFile($request);
+        /*$path= Controller::showUploadFile($request);
 
-        Document::create(array('document_name'=>$request->name,'owner_id'=>Auth::user()->id,'year'=>$request->year,'path'=>$path));    
+        Document::create(array('document_name'=>$request->name,'owner_id'=>Auth::user()->id,'year'=>$request->year,'path'=>$path));  */  
+
+        $document= new Document;
+        $file = Input::file('path');
+        
+        $document->employee_id = Input::get('employee_id');
+
+            $name = time().'-'.$file->getClientOriginalName();
+            $file = $file->move('uploads/employees/documents/', $name);
+            $input['file'] = '/uploads/employees/documents/'.$name;
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $document->document_path = $name;
+            $document->document_name = Input::get('type').'.'.$extension;
+        
+
+        $document->description = Input::get('desc');
+
+        /*$document->from_date = Input::get('fdate')[$j];
+
+        $document->expiry_date = Input::get('edate')[$j];*/
+
+        $document->save();
+
+       Audit::logaudit('Documents', 'create', 'created document '.Input::get('type').' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
         
-        return redirect('documents');
+        return Redirect::to('employees/view/'.$document->employee_id)->withFlashMessage('Employee`s document successfully created!');
     }
 
     /**
@@ -54,46 +82,96 @@ class DocumentsController extends Controller
      * @pa3ee4ram  \App\Documents  $documents
      * @return \Illuminate\Http\Response
      */
-    public function show(Documents $document)
+    public function show($id)
     {
-        //
+        $document = Document::findOrFail($id);
+
+        return view('documents.show', compact('document'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the specified branch.
      *
-     * @param  \App\Documents  $documents
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
-    public function edit(Documents $document)
+    public function edit($id)
     {
-        //
+        $document = Document::find($id);
+
+        return view('documents.edit', compact('document'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified branch in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Documents  $documents
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
-    public function update(Request $request, Documents $document)
+    public function update($id)
     {
-        //
+        $document = Document::findOrFail($id);
+
+        $validator = Validator::make($data = Input::all(), Document::rolesUpdate(), Document::$messsages);
+
+        if ($validator->fails())
+        {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+        
+        if ( Input::hasFile('path')) {
+
+            $file = Input::file('path');
+            $name = time().'-'.$file->getClientOriginalName();
+            $file = $file->move('uploads/employees/documents/', $name);
+            $input['file'] = '/uploads/employees/documents/'.$name;
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $document->document_path = $name;
+            $document->document_name = Input::get('type').'.'.$extension;
+        }else{
+            $name = Input::get('curpath');
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $document->document_path = $name;
+            $document->document_name = Input::get('type').'.'.$extension;
+
+        }
+
+        $document->description = Input::get('desc');
+
+        $document->update();
+
+        Audit::logaudit('Documents', 'update', 'updated document '.$document->document_name.' for '.Employee::getEmployeeName($document->employee_id));
+
+        return Redirect::to('employees/view/'.$document->employee_id)->withFlashMessage('Employee Document successfully updated!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified branch from storage.
      *
-     * @param  \App\Documents  $documents
-     * @return \Illuminate\Http\Response
+     * @param  int  $id
+     * @return Response
      */
     public function destroy($id)
     {
-        Document::find($id)->delete();
+        $document = Document::findOrFail($id);
+        $file= public_path(). "/uploads/employees/documents/".$document->document_path;
+        
+        Document::destroy($id);
+        
+        unlink($file);
 
-        return redirect('documents');
+        Audit::logaudit('Documents', 'delete', 'deleted document '.$document->document_name.' for '.Employee::getEmployeeName($document->employee_id));
+
+        return Redirect::to('employees/view/'.$document->employee_id)->withDeleteMessage('Employee Document successfully deleted!');
     }
+
+    public function getDownload($id){
+        //PDF file is stored under project/public/download/info.pdf
+        $document = Document::findOrFail($id);
+        $file= public_path(). "/uploads/employees/documents/".$document->document_path;
+        
+        return Response::download($file, $document->document_name);
+}
 
    
 }

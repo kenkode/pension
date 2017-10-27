@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
 use Response;
+use Session;
 
 class OccurencesController extends Controller {
 
@@ -64,7 +65,7 @@ class OccurencesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Occurencesettings', 'create', 'created: '.$postocc['name']);
+		Audit::logaudit('Occurencesettings', 'create', 'created occurence '.$postocc['name']);
         return $check;
         }else{
          return 1;
@@ -112,10 +113,13 @@ class OccurencesController extends Controller {
 
 		$occurence->save();
 
-		Audit::logaudit('Occurences', 'create', 'created: '.$occurence->occurence_brief.' for '.Employee::getEmployeeName(Input::get('employee')));
+		Audit::logaudit('Occurences', 'create', 'created occurence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName(Input::get('employee')));
 
-
+        if(Input::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$occurence->employee_id)->withFlashMessage('Occurence successfully created!');
+        }else{
 		return Redirect::to('occurences/view/'.$occurence->id)->withFlashMessage('Occurence successfully created!');
+	}
 	}
 
 	/**
@@ -185,9 +189,13 @@ class OccurencesController extends Controller {
 
 		$occurence->update();
 
-		Audit::logaudit('Occurences', 'update', 'updated: '.$occurence->occurence_brief.' for '.Employee::getEmployeeName(Input::get('employee')));
+		Audit::logaudit('Occurences', 'update', 'updated occurence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName(Input::get('employee')));
 
+        if(Input::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$occurence->employee_id)->withFlashMessage('Occurence successfully updated!');
+        }else{
 		return Redirect::to('occurences/view/'.$id)->withFlashMessage('Occurence successfully updated!');
+	}
 	}
 
 	/**
@@ -201,9 +209,13 @@ class OccurencesController extends Controller {
 		$occurence = Occurence::findOrFail($id);
 		Occurence::destroy($id);
 
-		Audit::logaudit('Occurences', 'delete', 'deleted: '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
+		Audit::logaudit('Occurences', 'delete', 'deleted occurence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
 
+        if(Session::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$occurence->employee_id)->withDeleteMessage('Occurence successfully deleted!');
+        }else{
 		return Redirect::to('occurences')->withDeleteMessage('Occurence successfully deleted!');
+	}
 	}
 
     public function view($id){

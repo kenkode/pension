@@ -16,15 +16,14 @@ class Document extends Model {
 	*/
 
 public static $rules = [
-        'member' => 'required',
+        'type' => 'required',
 		'path' => 'required'
 	];
 
  public static function rolesUpdate()
     {
         return array(
-        'member' => 'required',
-		'path' => 'required'
+        'type' => 'required'
         );
     }
 

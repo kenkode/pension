@@ -53,6 +53,14 @@ use Illuminate\Support\Facades\Input;
    {{ csrf_field() }}
     <fieldset>
 
+
+       @if(Session::has('eid') && Session::get('page') == "employee")
+       <div class="form-group">
+            <label for="username">Employee</label>
+            <input class="form-control" readonly placeholder="" type="text" name="ename" id="ename" value="{{Session::get('ename')}}">
+        </div>
+       <input class="form-control" placeholder="" type="hidden" name="employee_id" id="employee" value="{{Session::get('eid')}}">
+       @else
        <div class="form-group">
                         <label for="username">Employee <span style="color:red">*</span></label>
                         <select name="employee_id" class="form-control select2">
@@ -63,8 +71,9 @@ use Illuminate\Support\Facades\Input;
                         </select>
                 
                     </div>   
-                
-                         
+       @endif
+       <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}">
+                          
         <div class="form-group">
             <label for="username">Property Name<span style="color:red">*</span></label>
             <input class="form-control" placeholder="" type="text" name="name" id="name" value="{{{ Input::old('name') }}}">

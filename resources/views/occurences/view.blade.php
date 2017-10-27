@@ -28,8 +28,11 @@ use App\Occurencesetting;
 <br><br>
 <a class="btn btn-info btn-sm "  href="{{ URL::to('occurences/edit/'.$occurence->id)}}">update details</a>
 <a class="btn btn-danger btn-sm " href="{{URL::to('occurences/delete/'.$occurence->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s occurence?'))">Delete</a>
+@if(Session::get('page') == "employee")
+<a class="btn btn-success btn-sm "  href="{{ URL::to('employees/view/'.$occurence->employee_id)}}">Go Back</a>
+@else
 <a class="btn btn-success btn-sm "  href="{{ URL::to('occurences')}}">Go Back</a>
-
+@endif
 <hr>
 </div>	
 </div>

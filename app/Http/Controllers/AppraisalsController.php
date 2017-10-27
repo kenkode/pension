@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
+use Session;
 
 class AppraisalsController extends Controller {
 
@@ -78,7 +79,7 @@ class AppraisalsController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Appraisalquestions', 'create', 'created: '.$postapp['question']);
+		Audit::logaudit('Appraisalquestions', 'create', 'created appraisal question '.$postapp['question']);
         return $check;
         }else{
          return 1;
@@ -120,10 +121,13 @@ class AppraisalsController extends Controller {
 
 		$appraisal->save();
 
-		Audit::logaudit('Employee Appraisal', 'create', 'created: '.$appraisal->question.' for '.Employee::getEmployeeName(Input::get('employee_id')));
+		Audit::logaudit('Employee Appraisal', 'create', 'created appraisal '.$appraisal->question.' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
-
+        if(Input::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$appraisal->employee_id)->withFlashMessage('Employee Appraisal successfully created!');
+        }else{
 		return Redirect::to('Appraisals/view/'.$appraisal->id)->withFlashMessage('Employee Appraisal successfully created!');
+	    }
 	}
 
 	/**
@@ -185,10 +189,13 @@ class AppraisalsController extends Controller {
 
 		$appraisal->update();
 
-		Audit::logaudit('Appraisal Question', 'update', 'updated: '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
+		Audit::logaudit('Appraisal Question', 'update', 'updated appraisal '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
 
-
+        if(Input::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$appraisal->employee_id)->withFlashMessage('Employee Appraisal successfully updated!');
+        }else{
 		return Redirect::to('Appraisals/view/'.$id)->withFlashMessage('Employee Appraisal successfully updated!');
+	    }
 	}
 
 	/**
@@ -203,10 +210,13 @@ class AppraisalsController extends Controller {
 		
 		Appraisal::destroy($id);
 
-		Audit::logaudit('Employee Appraisal', 'delete', 'deleted: '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
-
-
+		Audit::logaudit('Employee Appraisal', 'delete', 'deleted appraisal '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
+        
+        if(Session::get('page') == 'employee'){
+        return Redirect::to('employees/view/'.$appraisal->employee_id)->withDeleteMessage('Employee Appraisal successfully deleted!');
+        }else{
 		return Redirect::to('Appraisals')->withDeleteMessage('Employee Appraisal successfully deleted!');
+	}
 	}
 
 	public function view($id){

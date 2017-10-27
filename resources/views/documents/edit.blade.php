@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -15,7 +15,7 @@
 
     
         
-         @if ($errors->has())
+        @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,11 +24,9 @@
         @endif
 
          <form method="POST" action="{{{ URL::to('documents/update/'.$document->id) }}}" accept-charset="UTF-8" enctype="multipart/form-data">
-   
+   {{ csrf_field() }}
     <fieldset>
-    <input class="form-control" placeholder="" type="hidden" name="employee" id="employee" readonly value="{{ $document->employee->id }}">
-                      
-
+    
     <div class="form-group">
                         <label for="username">Current Document</label><span style="color:red">*</span><br>
                         <input readonly class="form-control" placeholder="" type="text" name="curpath" value="{{ $document->document_path }}">

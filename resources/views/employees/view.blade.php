@@ -7,6 +7,9 @@
 function asMoney($value) {
   return number_format($value, 2);
 }
+  Session::put( 'eid', $employee->id);
+  Session::put( 'page', 'employee');
+  Session::put( 'ename', $employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
 
 ?>
 
@@ -14,12 +17,130 @@ function asMoney($value) {
 use App\Department;
 use App\Branch;
 use App\Appraisalquestion;
+use Illuminate\Support\Facades\Input;
 ?>
 
 <br><br>
 <div class="row">
 	<div class="col-lg-12">
 
+    <div class="modal fade" id="newkin" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">New Kin</h4>
+      </div>
+      <div class="modal-body">
+
+@if ( count( $errors ) > 0 )
+        <div class="alert alert-danger">
+            @foreach ($errors->all() as $error)
+                {{ $error }}<br>        
+            @endforeach
+        </div>
+        @endif
+
+     <form method="POST" action="{{{ URL::to('NextOfKins') }}}" accept-charset="UTF-8">
+   {{ csrf_field() }}
+    <fieldset>
+
+        <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $id }}">
+
+        <div class="form-group">
+            <label for="username">First Name <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="" type="text" name="fname" id="fname" value="{{{ Input::old('id_number') }}}" required="">
+        </div>
+
+        <div class="form-group">
+            <label for="username">Middle Name</label>
+            <input class="form-control" placeholder="" type="text" name="mname" id="mname" value="{{{ Input::old('id_number') }}}" >
+        </div>
+
+        <div class="form-group">
+            <label for="username">last Name <span style="color:red">*</span></label>
+            <input class="form-control" placeholder="" type="text" name="lname" id="lname" value="{{{ Input::old('id_number') }}}" required="">
+        </div>
+
+
+        <div class="form-group">
+            <label for="username">ID Number</label>
+            <input class="form-control" placeholder="" type="text" name="id_number" id="id_number" value="{{{ Input::old('id_number') }}}">
+        </div>
+        
+        <div class="form-group">
+            <label for="username">Relationship </label>
+            <input class="form-control" placeholder="" type="text" name="rship" id="rship" value="{{{ Input::old('rship') }}}">
+        </div>
+
+        <div class="form-group">
+            <label for="username">Contact </label>
+            <textarea class="form-control" name="contact" id="contact">{{{ Input::old('contact') }}}</textarea>
+        </div>
+        
+        
+        <div class="form-actions form-group">
+        
+          <button type="submit" class="btn btn-primary btn-sm">Create Kin</button>
+        </div>
+
+    </fieldset>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newdocument" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">New Document</h4>
+      </div>
+      <div class="modal-body">
+
+
+@if ( count( $errors ) > 0 )
+        <div class="alert alert-danger">
+            @foreach ($errors->all() as $error)
+                {{ $error }}<br>        
+            @endforeach
+        </div>
+        @endif
+
+     <form method="POST" action="{{{ URL::to('documents') }}}" accept-charset="UTF-8" enctype="multipart/form-data">
+   {{ csrf_field() }}
+    <fieldset>
+
+            <input class="form-control" placeholder="" type="hidden" name="employee" id="employee" value="{{$id}}">
+
+       <div class="form-group">
+                        <label for="username">Document</label><span style="color:red">*</span><br>
+                        <input class="img" placeholder="" type="file" name="path" id="path" value="{{{ Input::old('path') }}}" required="">
+                    </div>
+
+        <div class="form-group">
+            <label for="username">Document Name <span style="color:red">*</span> </label><br>
+            <input class="form-control" placeholder="" type="text" name="type" id="type" value="{{{ Input::old('type') }}}" required="">
+        </div>
+
+        <div class="form-group">
+            <label for="username">Description </label><br>
+            <textarea name="desc" class="form-control" id="desc">{{{ Input::old('desc') }}}</textarea>
+        </div>
+
+        <div class="form-actions form-group">
+        
+          <button type="submit" class="btn btn-primary btn-sm">Upload Document</button>
+        </div>
+
+    </fieldset>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <a class="btn btn-info btn-sm "  href="{{ URL::to('employees/edit/'.$employee->id)}}">update details</a>
 <a class="btn btn-danger btn-sm " href="{{URL::to('employees/deactivate/'.$employee->id)}}" onclick="return (confirm('Are you sure you want to deactivate this employee?'))">Deactivate</a>
@@ -433,7 +554,7 @@ use App\Appraisalquestion;
     <div class="panel panel-default">
 
       <div class="panel-heading">
-          <a class="btn btn-info btn-sm" href="{{ URL::to('NextOfKins/create/'.$employee->id)}}">new kin</a>
+          <a class="btn btn-info btn-sm" href="{{ URL::to('NextOfKins/create')}}">new kin</a>
         </div>
      
         <div class="panel-body">
@@ -493,7 +614,7 @@ use App\Appraisalquestion;
           
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('NextOfKins/view/'.$kin->id)}}">View</a></li>   
-                   
+                    <li><a href="{{URL::to('NextOfKins/edit/'.$kin->id)}}">Update</a></li>
                     <li><a href="{{URL::to('NextOfKins/delete/'.$kin->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s kin?'))">Delete</a></li>
                      
 
@@ -534,7 +655,7 @@ use App\Appraisalquestion;
 
     <div class="panel panel-default">
       <div class="panel-heading">
-          <a class="btn btn-info btn-sm" href="{{ URL::to('documents/create/'.$id)}}">new employee document</a>
+          <a class="btn btn-info btn-sm" href="{{ URL::to('documents/create')}}">new employee document</a>
         </div>
       
         <div class="panel-body">
@@ -582,8 +703,8 @@ use App\Appraisalquestion;
           
                   <ul class="dropdown-menu" role="menu">
                   <!-- <li><a target="blank" href="{{asset('/public/uploads/employees/documents/'.$document->document_path) }}">Download</a></li> -->
-                    <li><a href='{{asset("public/uploads/employees/documents/".$document->document_path)}}'>Download</a></li> 
-                   
+                    <li><a href='{{asset("uploads/employees/documents/".$document->document_path)}}'>Download</a></li> 
+                    <li><a href="{{URL::to('documents/edit/'.$document->id)}}">Update</a></li>
                     <li><a href="{{URL::to('documents/delete/'.$document->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s document?'))">Delete</a></li>
                     
                   </ul>
@@ -622,7 +743,7 @@ use App\Appraisalquestion;
 
     <div class="panel panel-default">
      <div class="panel-heading">
-          <a class="btn btn-info btn-sm" href="{{ URL::to('Appraisals/createapp/'.$id)}}">new appraisal</a>
+          <a class="btn btn-info btn-sm" href="{{ URL::to('Appraisals/create')}}">new appraisal</a>
         </div>
         <div class="panel-body">
     
@@ -669,7 +790,7 @@ use App\Appraisalquestion;
           
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('Appraisals/view/'.$appraisal->id)}}">View</a></li> 
-                   
+                    <li><a href="{{URL::to('Appraisals/edit/'.$appraisal->id)}}">Update</a></li>
                     <li><a href="{{URL::to('Appraisals/delete/'.$appraisal->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s appraisal?'))">Delete</a></li>
                     
                   </ul>
@@ -753,7 +874,7 @@ use App\Appraisalquestion;
           
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('Properties/view/'.$property->id)}}">View</a></li> 
-                   
+                    <li><a href="{{URL::to('Properties/edit/'.$property->id)}}">Update</a></li>
                     <li><a href="{{URL::to('Properties/delete/'.$property->id)}}" onclick="return (confirm('Are you sure you want to delete this property?'))">Delete</a></li>
                     
                   </ul>
@@ -837,8 +958,8 @@ use App\Appraisalquestion;
           
                   <ul class="dropdown-menu" role="menu">
                     <li><a href="{{URL::to('occurences/view/'.$occurence->id)}}">View</a></li>
-
-                    <li><a href="{{URL::to('occurences/download/'.$occurence->id)}}">Download</a></li>
+                     <li><a href="{{asset('public/uploads/employees/documents/'.$occurence->doc_path)}}">Download</a></li>
+                    <li><a href="{{URL::to('occurences/edit/'.$occurence->id)}}">Update</a></li>
                    
                     <li><a href="{{URL::to('occurences/delete/'.$occurence->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s occurence?'))">Delete</a></li>
                     

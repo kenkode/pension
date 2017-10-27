@@ -7,6 +7,11 @@ function asMoney($value) {
 
 ?>
 
+<?php
+use App\Appraisalquestion;
+Session::put( 'page', 'property');
+?>
+
 @extends('layouts.app')
 @section('content')
 

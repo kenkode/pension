@@ -249,7 +249,14 @@ width:100px;
 		 <form method="POST" action="{{{ URL::to('Appraisals') }}}" accept-charset="UTF-8">
    {{ csrf_field() }}
         <fieldset>
-         <div class="form-group">
+       @if(Session::has('eid') && Session::get('page') == "employee")
+       <div class="form-group">
+            <label for="username">Employee</label>
+            <input class="form-control" readonly placeholder="" type="text" name="ename" id="ename" value="{{Session::get('ename')}}">
+        </div>
+       <input class="form-control" placeholder="" type="hidden" name="employee_id" id="employee" value="{{Session::get('eid')}}">
+       @else
+        <div class="form-group">
                         <label for="username">Employee <span style="color:red">*</span></label>
                         <select name="employee_id" class="form-control select2">
                            <option></option>
@@ -259,9 +266,9 @@ width:100px;
                         </select>
                 
                     </div>   
-                
-                    
-
+       @endif
+       <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}">
+        
         <div class="form-group">
                         <label for="username">Appraisal <span style="color:red">*</span></label>
                         <select name="appraisal_id" id="appraisal_id" class="form-control select2">

@@ -57,7 +57,9 @@ console.log($("#issuedby").val());
 
     <fieldset>
          <input class="form-control" placeholder="" type="hidden" readonly name="retby" id="retby" value="{{Auth::user()->name}}">
-        <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $property->employee->id }}">  
+        <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $property->employee->id }}"> 
+
+        <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}"> 
 
         <div class="form-group">
             <label for="username">Property Name<span style="color:red">*</span></label>
@@ -122,7 +124,7 @@ console.log($("#issuedby").val());
         <div class="form-group">
             <label for="username">Received By </label>
             @if($property->state==1)
-            <input class="form-control" readonly placeholder="" type="text" name="receivedby" id="receivedby" value="{{ $retuser->username }}" >
+            <input class="form-control" readonly placeholder="" type="text" name="receivedby" id="receivedby" value="{{ $retuser->name }}" >
             @else
             <input class="form-control" readonly placeholder="" type="text" name="receivedby" id="receivedby" >
             @endif

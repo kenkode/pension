@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Input;
 
     
 		
-		 @if ( count( $errors ) > 0 )
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -31,7 +31,11 @@ use Illuminate\Support\Facades\Input;
    {{ csrf_field() }}
     <fieldset>
 
-        <input class="form-control" placeholder="" type="hidden" readonly name="employee_id" id="employee_id" value="{{ $id }}">
+       <div class="form-group">
+            <label for="username">Employee</label>
+            <input class="form-control" readonly placeholder="" type="text" name="ename" id="ename" value="{{Session::get('ename')}}">
+        </div>
+       <input class="form-control" placeholder="" type="hidden" name="employee_id" id="employee" value="{{Session::get('eid')}}">
 
         <div class="form-group">
             <label for="username">First Name <span style="color:red">*</span></label>
