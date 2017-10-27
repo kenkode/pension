@@ -33,9 +33,15 @@ class OccurencesController extends Controller {
 		          ->where('in_employment','=','Y')
 		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->get();
-        Audit::logaudit('Occurences', 'view', 'viewed occurences');
+
+		if ( !Entrust::can('view_occurrence') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Audit::logaudit('Occurrences', 'view', 'viewed occurrences');
 
 		return view('occurences.index', compact('occurences'));
+	}
 	}
 
 	/**
@@ -50,7 +56,12 @@ class OccurencesController extends Controller {
 		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
 		$occurences = Occurencesetting::all();
+		if ( !Entrust::can('create_occurrence') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('occurences.create',compact('employees','occurences'));
+	}
 	}
 
 	public function createoccurence()
@@ -149,7 +160,13 @@ class OccurencesController extends Controller {
 
 		$employees = Employee::all();
 
+		if ( !Entrust::can('update_occurrence') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('occurences.edit', compact('occurence','employees','occurencesettings'));
+	}
 	}
 
 	/**
@@ -207,6 +224,10 @@ class OccurencesController extends Controller {
 	public function destroy($id)
 	{
 		$occurence = Occurence::findOrFail($id);
+		if ( !Entrust::can('delete_occurrence') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Occurence::destroy($id);
 
 		Audit::logaudit('Occurences', 'delete', 'deleted occurence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
@@ -216,6 +237,7 @@ class OccurencesController extends Controller {
         }else{
 		return Redirect::to('occurences')->withDeleteMessage('Occurence successfully deleted!');
 	}
+    }
 	}
 
     public function view($id){
@@ -223,8 +245,12 @@ class OccurencesController extends Controller {
 		$occurence = Occurence::find($id);
 
 		$organization = Organization::find(Auth::user()->organization_id);
-
+        if ( !Entrust::can('view_occurrence') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('occurences.view', compact('occurence'));
+	}
 		
 	}
 

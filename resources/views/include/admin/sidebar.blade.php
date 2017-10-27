@@ -37,10 +37,10 @@
                             <li><a href="{{ URL::to('employees') }}"><i class="fa fa-chevron-right fa-fw"></i>Manage Employees </a></li>
                             <li><a href="{{ URL::to('Appraisals') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Appraisal</a></li>
                             <li><a href="{{ URL::to('occurences') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Occurrence </a></li>
+                            <li><a href="{{ URL::to('Properties') }}"><i class="fa fa-chevron-right fa-fw"></i>Company Property </a></li>
                             <li><a href="{{ URL::to('deactives') }}"><i class="fa fa-chevron-right fa-fw"></i>Activate Employee</a></li>
                             <li><a target="_blank" href="{{ URL::to('EmployeeForm') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Detail Form</a></li>
                             <li><a href="{{ URL::to('payrollReports/selectPeriod') }}"><i class="fa fa-chevron-right fa-fw"></i>Payslips</a></li>
-                            <li><a href="{{ URL::to('Properties') }}"><i class="fa fa-users fa-fw"></i>Company Property </a></li>
                         </ul>   
                     </li>
 
@@ -67,14 +67,14 @@
 
                      
 
-                   <li>
+                   <!-- <li>
                         <a href="{{ URL::to('leavetypes') }}"><i class="fa fa-list fa-fw"></i> Vacation Types</a>
                     </li>
                    
 
                    <li>
                         <a href="{{ URL::to('holidays') }}"><i class="fa fa-random fa-fw"></i> Holiday Management</a>
-                    </li>
+                    </li> -->
                         </ul>
                     </li>
 

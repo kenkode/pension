@@ -77,7 +77,7 @@
 
           <td>
            <a href="{{URL::to('leaveapplications/edit/'.$leaveapplication->id)}}">Amend</a> &nbsp; |
-          <a href="{{URL::to('leaveapplications/cancel/'.$leaveapplication->id)}}">Cancel</a>
+          <a href="{{URL::to('leaveapplications/cancel/'.$leaveapplication->id)}}" onclick="return (confirm('Are you sure you want to cancel this vacation?'))">Cancel</a>
           </td>
 
            </tr>

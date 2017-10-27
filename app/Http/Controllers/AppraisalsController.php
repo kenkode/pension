@@ -38,9 +38,15 @@ class AppraisalsController extends Controller {
 		          ->select('appraisals.id','appraisalquestion_id','first_name','middle_name','last_name','question','performance','appraisals.rate')
 		          ->get();
 
+		if ( !Entrust::can('view_appraisal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Appraisals', 'view', 'viewed appraisals');
 
 		return view('appraisals.index', compact('appraisals'));
+	}
 	}
 
 	/**
@@ -56,7 +62,13 @@ class AppraisalsController extends Controller {
 		          ->get();
 		$appraisals = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
 		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+
+		if ( !Entrust::can('create_appraisal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('appraisals.create',compact('employees','appraisals','categories'));
+	}
 	}
 
 	public function createapp($id)
@@ -155,7 +167,12 @@ class AppraisalsController extends Controller {
 		$appraisalqs = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
 		$user = User::find($appraisal->examiner);
                 $categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('update_appraisal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('appraisals.edit', compact('appraisal','appraisalqs','user','categories'));
+	}
 	}
 
 	/**
@@ -207,6 +224,11 @@ class AppraisalsController extends Controller {
 	public function destroy($id)
 	{
 		$appraisal = Appraisal::findOrFail($id);
+
+		if ( !Entrust::can('delete_appraisal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		
 		Appraisal::destroy($id);
 
@@ -217,6 +239,7 @@ class AppraisalsController extends Controller {
         }else{
 		return Redirect::to('Appraisals')->withDeleteMessage('Employee Appraisal successfully deleted!');
 	}
+    }
 	}
 
 	public function view($id){
@@ -227,7 +250,13 @@ class AppraisalsController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+		if ( !Entrust::can('view_appraisal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('appraisals.view', compact('appraisal','user'));
+	}
 		
 	}
 

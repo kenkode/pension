@@ -81,8 +81,8 @@ use App\Leaveapplication;
           <td>
            <a href="{{URL::to('leaveapplications/edit/'.$leaveapplication->id)}}">Amend</a> &nbsp; |
           <a href="{{URL::to('leaveapplications/approve/'.$leaveapplication->id)}}">Approve</a> &nbsp;
-          |&nbsp;<a href="{{URL::to('leaveapplications/reject/'.$leaveapplication->id)}}">Reject</a> &nbsp;|
-          <a href="{{URL::to('leaveapplications/cancel/'.$leaveapplication->id)}}">Cancel</a>
+          |&nbsp;<a href="{{URL::to('leaveapplications/reject/'.$leaveapplication->id)}}" onclick="return (confirm('Are you sure you want to reject this vacation?'))">Reject</a> &nbsp;|
+          <a href="{{URL::to('leaveapplications/cancel/'.$leaveapplication->id)}}" onclick="return (confirm('Are you sure you want to cancel this vacation?'))">Cancel</a>
           </td>
 
            </tr>

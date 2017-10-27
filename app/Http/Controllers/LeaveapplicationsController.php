@@ -25,8 +25,13 @@ class LeaveapplicationsController extends Controller {
 	public function index()
 	{
 		$leaveapplications = Leaveapplication::where('organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('view_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Vacation Application', 'view', 'viewed vacation applications');
 		return Redirect::to('leavemgmt');
+	}
 	}
 
 	public function createleave()
@@ -59,8 +64,12 @@ class LeaveapplicationsController extends Controller {
 		$employees = Employee::where('organization_id',Auth::user()->organization_id)->where('in_employment','Y')->get();
 
 		$leavetypes = Leavetype::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
-
+        if ( !Entrust::can('create_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('leaveapplications.create', compact('employees', 'leavetypes'));
+	}
 	}
 
 	/**
@@ -133,8 +142,12 @@ class LeaveapplicationsController extends Controller {
 		$employees = Employee::where('organization_id',Auth::user()->organization_id)->where("in_employment","Y")->get();
 
 		$leavetypes = Leavetype::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
-
+        if ( !Entrust::can('amend_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('leaveapplications.edit', compact('leaveapplication', 'employees', 'leavetypes'));
+	}
 	}
 
 	/**
@@ -182,7 +195,13 @@ class LeaveapplicationsController extends Controller {
 
 		$leaveapplication = Leaveapplication::find($id);
 
+		if ( !Entrust::can('approve_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('leaveapplications.approve', compact('leaveapplication'));
+	}
 
 
 
@@ -213,7 +232,11 @@ class LeaveapplicationsController extends Controller {
 
 	public function reject($id){
 
-		Leaveapplication::rejectLeaveApplication($id);
+		if ( !Entrust::can('reject_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Leaveapplication::rejectLeaveApplication($id);
 
 		$leaveapplication = Leaveapplication::findOrFail($id);
          
@@ -221,16 +244,19 @@ class LeaveapplicationsController extends Controller {
         $leavetype = Leavetype::find($leaveapplication->leavetype_id);
 
 		$days = Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
-
         Audit::logaudit('Vacation Application', 'reject', 'rejected vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
 
 		return Redirect::to('leaverejects')->withDeleteMessage('Vacation application successfully rejected!');
-
+    }
 	}
 
 	public function cancel($id){
 
-		Leaveapplication::cancelLeaveApplication($id);
+		if ( !Entrust::can('cancel_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Leaveapplication::cancelLeaveApplication($id);
 
 		$leaveapplication = Leaveapplication::findOrFail($id);
 
@@ -238,11 +264,10 @@ class LeaveapplicationsController extends Controller {
         $leavetype = Leavetype::find($leaveapplication->leavetype_id);
 
 		$days = Leaveapplication::getDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date,$leaveapplication->is_weekend,$leaveapplication->is_holiday)+1;
-
         Audit::logaudit('Vacation Application', 'cancel', 'cancelled vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->applied_start_date.' to '.$leaveapplication->applied_end_date.' ('.$days.')');
 
 		return Redirect::to('leavemgmt')->withDeleteMessage('Vacation application successfully cancelled!');
-
+    }
 	}
 
 	public function redeem(){
@@ -261,22 +286,37 @@ class LeaveapplicationsController extends Controller {
 	{
 		$leaveapplications = Leaveapplication::all();
 
+		if ( !Entrust::can('view_approved_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('leaveapplications.approved', compact('leaveapplications'));
+	}
 	}
 
 
 	public function amended()
 	{
 		$leaveapplications = Leaveapplication::all();
-
+        
+        if ( !Entrust::can('view_amended_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('leaveapplications.amended', compact('leaveapplications'));
+	}
 	}
 
 	public function rejects()
 	{
 		$leaveapplications = Leaveapplication::all();
-
+        if ( !Entrust::can('view_rejected_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('leaveapplications.rejected', compact('leaveapplications'));
+	}
 	}
 
 	public function cancellations()

@@ -34,9 +34,15 @@ class PropertiesController extends Controller {
 		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
 
+		if ( !Entrust::can('view_property') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Properties', 'view', 'viewed company properties');
 
 		return view('properties.index', compact('properties'));
+	}
 	}
 
 	/**
@@ -51,7 +57,13 @@ class PropertiesController extends Controller {
 		          ->where('in_employment','=','Y')
 		          ->where('organization_id',Auth::user()->organization_id)
 		          ->get();
+        if ( !Entrust::can('create_property') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('properties.create', compact('employees','currency'));
+	}
 	}
 
 	/**
@@ -131,7 +143,12 @@ class PropertiesController extends Controller {
         $retuser = User::findOrFail($property->received_by);
 		}
 
+        if ( !Entrust::can('update_property') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('properties.edit', compact('currency','property','user','retuser'));
+	}
 	}
 
 	/**
@@ -189,6 +206,11 @@ class PropertiesController extends Controller {
 	public function destroy($id)
 	{
 		$property = Property::findOrFail($id);
+
+		if ( !Entrust::can('delete_property') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		
 		Property::destroy($id);
 
@@ -199,6 +221,7 @@ class PropertiesController extends Controller {
         }else{
 		return Redirect::to('Properties')->withDeleteMessage('Company Property successfully deleted!');
 	}
+    }
 	}
     
     public function view($id){
@@ -213,7 +236,13 @@ class PropertiesController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+		if ( !Entrust::can('view_property') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('properties.view', compact('property','user','retuser'));
+	}
 		
 	}
 

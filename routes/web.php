@@ -100,7 +100,7 @@ Route::get('/dashboard', function()
 
 Route::get('fpassword', function(){
 
-  return View::make(Config::get('Auth::forgot_password_form'));
+  return view(Config::get('Auth::forgot_password_form'));
 
 });
 // Auth routes
@@ -147,7 +147,7 @@ Route::get('roles/delete/{id}', 'RolesController@destroy');
 
 Route::get('import', function(){
 
-    return View::make('import');
+    return view('import');
 });
 
 
@@ -158,7 +158,7 @@ Route::get('system', function(){
 
     $organization = Organization::find(1);
 
-    return View::make('system.index', compact('organization'));
+    return view('system.index', compact('organization'));
 });
 
 });
@@ -170,7 +170,7 @@ Route::get('license', function(){
 
     $organization = Organization::find(1);
 
-    return View::make('system.license', compact('organization'));
+    return view('system.license', compact('organization'));
 });
 
 /**
@@ -301,8 +301,12 @@ Route::post('createLeave', 'LeaveapplicationsController@createleave');
 Route::get('leaveapprovals', function(){
 
   $leaveapplications = Leaveapplication::all();
-
-  return View::make('leaveapplications.approved', compact('leaveapplications'));
+if ( !Entrust::can('view_approved_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+  return view('leaveapplications.approved', compact('leaveapplications'));
+}
 
 } );
 
@@ -311,8 +315,13 @@ Route::group(['before' => 'amend_application'], function() {
 Route::get('leaveamends', function(){
 
   $leaveapplications = Leaveapplication::all();
+  if ( !Entrust::can('view_amended_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 
-  return View::make('leaveapplications.amended', compact('leaveapplications'));
+  return view('leaveapplications.amended', compact('leaveapplications'));
+}
 
 } );
 
@@ -323,9 +332,12 @@ Route::group(['before' => 'reject_application'], function() {
 Route::get('leaverejects', function(){
 
   $leaveapplications = Leaveapplication::all();
-
-  return View::make('leaveapplications.rejected', compact('leaveapplications'));
-
+  if ( !Entrust::can('view_rejected_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+  return view('leaveapplications.rejected', compact('leaveapplications'));
+}
 } );
 
 });
@@ -334,7 +346,7 @@ Route::group(['before' => 'manage_settings'], function() {
 
 Route::get('migrate', function(){
 
-    return View::make('migration');
+    return view('migration');
 
 });
 
@@ -1337,12 +1349,12 @@ Route::get('employees/delete/{id}', 'EmployeesController@destroy');
 
 Route::get('payrollReports', function(){
 
-    return View::make('employees.payrollreports');
+    return view('employees.payrollreports');
 });
 
 Route::get('statutoryReports', function(){
 
-    return View::make('employees.statutoryreports');
+    return view('employees.statutoryreports');
 });
 
 Route::get('email/payslip', 'payslipEmailController@index');
@@ -1424,7 +1436,7 @@ Route::get('payrollmgmt', function(){
 
      $employees = Employee::all();
 
-  return View::make('payrollmgmt', compact('employees'));
+  return view('payrollmgmt', compact('employees'));
 
 });
 
@@ -1436,7 +1448,7 @@ Route::get('leavemgmt', function(){
 
   $leaveapplications = Leaveapplication::all();
 
-  return View::make('leavemgmt', compact('leaveapplications'));
+  return view('leavemgmt', compact('leaveapplications'));
 
 });
 
@@ -1445,7 +1457,7 @@ Route::get('leavemgmt', function(){
 
 Route::get('import', function(){
 
-    return View::make('import');
+    return view('import');
 });
 
 
@@ -1456,7 +1468,7 @@ Route::get('license/activate/{id}', 'OrganizationsController@activate_license_fo
 Route::get('portal', function(){
 
     $members = DB::table('members')->where('is_active', '=', TRUE)->get();
-    return View::make('css.members', compact('members'));
+    return view('css.members', compact('members'));
 });
 
 Route::get('portal/activate/{id}', 'MembersController@activateportal');
@@ -1481,7 +1493,7 @@ Route::get('seedmail', function(){
 
 Route::get('mail', function(){
   $mail = Mailsender::find(1);  
-  return View::make('system.mail', compact('mail'));
+  return view('system.mail', compact('mail'));
 
 });
 
@@ -1624,8 +1636,12 @@ Route::get('deactives', function(){
 
   $employees = Employee::getDeactiveEmployee();
 
-  return View::make('employees.activate', compact('employees'));
-
+  if ( !Entrust::can('view_deactive_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
+  return view('employees.activate', compact('employees'));
+}
 } );
 });
 Route::group(['before' => 'loggedin'], function() {
@@ -1663,13 +1679,13 @@ Route::get('EmployeeForm', function(){
 
 Route::get('hrdashboard', array('before' => 'loggedin', function(){
   $employees = Employee::getActiveEmployee();
-  return View::make('hrdashboard',compact('employees'));
+  return view('hrdashboard',compact('employees'));
 
 }));
 
 Route::get('payrolldashboard', array('before' => 'loggedin', function(){
   
-  return View::make('payrolldashboard');
+  return view('payrolldashboard');
 
 }));
 
@@ -1755,7 +1771,7 @@ Route::post('createNewAccount', 'PayrollController@createaccount');
 
 Route::get('payrollcalculator', function(){
   $currency = Currency::find(1);
-  return View::make('payroll.payroll_calculator',compact('currency'));
+  return view('payroll.payroll_calculator',compact('currency'));
 
 });
 
@@ -1786,25 +1802,25 @@ Route::get('employees/delete/{id}', 'EmployeesController@destroy');
 Route::group(['before' => 'loggedin'], function() {
 Route::get('advanceReports', function(){
 
-    return View::make('employees.advancereports');
+    return view('employees.advancereports');
 });
 
 
 Route::get('payrollReports', function(){
 
-    return View::make('employees.payrollreports');
+    return view('employees.payrollreports');
 });
 
 Route::get('statutoryReports', function(){
 
-    return View::make('employees.statutoryreports');
+    return view('employees.statutoryreports');
 });
 
 Route::get('payrollReports/selectYear', function(){
     $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
-    return View::make('pdf.p9Select',compact('employees','branches','departments'));
+    return view('pdf.p9Select',compact('employees','branches','departments'));
 });
 
 Route::get('email/payslip', 'payslipEmailController@index');
@@ -1814,7 +1830,7 @@ Route::post('email/payslip/employees', 'payslipEmailController@sendEmail');
 
 Route::get('reports/employees', array('before' => 'loggedin', function(){
     
-    return View::make('reports');
+    return view('reports');
 }));
 
 Route::get('itax/download', 'ReportsController@getDownload');
@@ -1884,7 +1900,7 @@ Route::get('payrollmgmt', function(){
 
      $employees = Employee::getActiveEmployee();
 
-  return View::make('payrollmgmt', compact('employees'));
+  return view('payrollmgmt', compact('employees'));
 
 });
 
@@ -1896,7 +1912,7 @@ Route::get('leavemgmt', function(){
  
   $leaveapplications = Leaveapplication::where('organization_id',Auth::user()->organization_id)->get();
 
-  return View::make('leavemgmt', compact('leaveapplications'));
+  return view('leavemgmt', compact('leaveapplications'));
 
 });
 

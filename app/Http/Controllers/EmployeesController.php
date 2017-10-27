@@ -41,9 +41,15 @@ class EmployeesController extends Controller {
 		
 		$employees = Employee::getActiveEmployee();
 
+    if ( !Entrust::can('view_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
+
 		 Audit::logaudit('Employees', 'view', 'viewed employee list');
 
 		return view('employees.index', compact('employees'));
+  }
 	}
 
     public function createcitizenship()
@@ -57,7 +63,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Citizenships', 'create', 'created: '.$postcitizen['name']);
+		Audit::logaudit('Citizenships', 'create', 'created citizenship '.$postcitizen['name']);
         return $check;
         }else{
          return 1;
@@ -76,7 +82,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Educations', 'create', 'created: '.$posteducation['name']);
+		Audit::logaudit('Educations', 'create', 'created education '.$posteducation['name']);
         return $check;
         }else{
          return 1;
@@ -96,7 +102,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Banks', 'create', 'created: '.$postbank['name']);
+		Audit::logaudit('Banks', 'create', 'created bank '.$postbank['name']);
         return $check;
         }else{
          return 1;
@@ -117,7 +123,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Bank Branches', 'create', 'created: '.$postbankbranch['name']);
+		Audit::logaudit('Bank Branches', 'create', 'created bank branch '.$postbankbranch['name']);
         return $check;
         }else{
          return 1;
@@ -136,7 +142,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Banks', 'create', 'created: '.$postbranch['name']);
+		Audit::logaudit('Banks', 'create', 'created branch '.$postbranch['name']);
         return $check;
         }else{
          return 1;
@@ -157,7 +163,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Departments', 'create', 'created: '.$postdept['name']);
+		Audit::logaudit('Departments', 'create', 'created department '.$postdept['name']);
         return $check;
         }else{
          return 1;
@@ -176,7 +182,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Employee Types', 'create', 'created: '.$posttype['name']);
+		Audit::logaudit('Employee Types', 'create', 'created employee type '.$posttype['name']);
         return $check;
         }else{
          return 1;
@@ -195,7 +201,7 @@ class EmployeesController extends Controller {
 
 		if($check > 0){
          
-		Audit::logaudit('Job Groups', 'create', 'created: '.$postgroup['name']);
+		Audit::logaudit('Job Groups', 'create', 'created job group '.$postgroup['name']);
         return $check;
         }else{
          return 1;
@@ -235,7 +241,12 @@ class EmployeesController extends Controller {
       $pfn = preg_replace('/\D/', '', $pfn);
       
     }
+    if ( !Entrust::can('create_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
 		return view('employees.create', compact('currency','citizenships','pfn','branches','departments','etypes','jgroups','banks','bbranches','educations'));
+  }
 	}
   }
 
@@ -422,7 +433,7 @@ class EmployeesController extends Controller {
       }
 		$employee->save();
 
-    Audit::logaudit('Employee', 'create', 'created: '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
+    Audit::logaudit('Employee', 'create', 'created employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
     $insertedId = $employee->id;
 
@@ -444,7 +455,7 @@ class EmployeesController extends Controller {
 
         $kin->save();
 
-        Audit::logaudit('NextofKins', 'create', 'created: '.Input::get('kin_first_name')[$i].' for '.Employee::getEmployeeName($insertedId));
+        Audit::logaudit('NextofKins', 'create', 'created next of kin '.Input::get('kin_first_name')[$i].' for '.Employee::getEmployeeName($insertedId));
        }
      }
 
@@ -474,7 +485,7 @@ class EmployeesController extends Controller {
 
         $document->save();
 
-       Audit::logaudit('Documents', 'create', 'created: '.Input::get('doc_name')[$j].' for '.Employee::getEmployeeName($insertedId));
+       Audit::logaudit('Documents', 'create', 'created document '.Input::get('doc_name')[$j].' for '.Employee::getEmployeeName($insertedId));
        $j=$j+1;
        }
        }
@@ -542,7 +553,13 @@ class EmployeesController extends Controller {
     $countk = Nextofkin::where('employee_id',$id)->count();
     $countd = Document::where('employee_id',$id)->count();
     $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+    if ( !Entrust::can('update_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
 		return view('employees.edit', compact('currency','countk','countd','docs','kins','citizenships','contract','branches','educations','departments','etypes','jgroups','banks','bbranches','employee'));
+  }
 	}
 
 	/**
@@ -729,7 +746,7 @@ class EmployeesController extends Controller {
 
 		$employee->update();
 
-		 Audit::logaudit('Employee', 'update', 'updated: '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
+		 Audit::logaudit('Employee', 'update', 'updated employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
     Nextofkin::where('employee_id', $id)->delete();
     for($i=0;$i<count(Input::get('kin_first_name'));$i++){
@@ -745,7 +762,7 @@ class EmployeesController extends Controller {
 
         $kin->save();
 
-        Audit::logaudit('NextofKins', 'create', 'created: '.Input::get('kin_first_name')[$i].' for '.Employee::getEmployeeName($id));
+        Audit::logaudit('NextofKins', 'create', 'created Next of kin '.Input::get('kin_first_name')[$i].' for '.Employee::getEmployeeName($id));
        }
      }
 
@@ -779,7 +796,7 @@ class EmployeesController extends Controller {
 
         $document->save();
 
-       Audit::logaudit('Documents', 'create', 'created: '.Input::get('doc_name')[$j].' for '.Employee::getEmployeeName($id));
+       Audit::logaudit('Documents', 'create', 'created document '.Input::get('doc_name')[$j].' for '.Employee::getEmployeeName($id));
        $j=$j+1;
        }
        }
@@ -803,39 +820,57 @@ class EmployeesController extends Controller {
 	{
 
 		$employee = Employee::findOrFail($id);
+
+    if ( !Entrust::can('delete_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
 		
 		Employee::destroy($id);
 
-		 Audit::logaudit('Employee', 'delete', 'deleted: '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
+		 Audit::logaudit('Employee', 'delete', 'deleted employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
 
 		return Redirect::route('employees.index')->withDeleteMessage('Employee successfully deleted!');
+  }
 	}
 
 	public function deactivate($id)
 	{
 
 		$employee = Employee::findOrFail($id);
+
+    if ( !Entrust::can('deactivate_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
 		
 		DB::table('employee')->where('id',$id)->update(array('in_employment'=>'N'));
 
-		Audit::logaudit('Employee', 'deactivate', 'deactivated: '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
+		Audit::logaudit('Employee', 'deactivate', 'deactivated employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
 
 		return Redirect::route('employees.index')->withDeleteMessage('Employee successfully deactivated!');
+  }
 	}
 
 	public function activate($id)
 	{
 
 		$employee = Employee::findOrFail($id);
+
+    if ( !Entrust::can('activate_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
 		
 		DB::table('employee')->where('id',$id)->update(array('in_employment'=>'Y'));
 
-		Audit::logaudit('Employee', 'activate', 'activated: '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
+		Audit::logaudit('Employee', 'activate', 'activated employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
 
 		return Redirect::to('deactives')->withFlashMessage($employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name.' successfully activated!');
+  }
 	}
 
 	public function view($id){
@@ -856,7 +891,15 @@ class EmployeesController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+    if ( !Entrust::can('view_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
+
+    Audit::logaudit('Employee', 'view', 'viewed employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
+
 		return view('employees.view', compact('id','employee','appraisals','kins','documents','occurences','properties'));
+  }
 		
 	}
 
@@ -880,7 +923,13 @@ class EmployeesController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+    if ( !Entrust::can('view_deactive_employee') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
+    Audit::logaudit('Employee', 'view', 'viewed employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 		return view('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties'));
+  }
 		
 	}
 
