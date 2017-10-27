@@ -1,6 +1,19 @@
 <?php
 
-class NonTaxablesController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Nontaxable;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class NonTaxablesController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,11 +22,16 @@ class NonTaxablesController extends \BaseController {
 	 */
 	public function index()
 	{
-		$nontaxables = Nontaxable::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-
+		$nontaxables = Nontaxable::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        
+        if ( !Entrust::can('view_nontaxable_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Audit::logaudit('Nontaxables', 'view', 'viewed non taxable income list ');
 
-		return View::make('nontaxables.index', compact('nontaxables'));
+		return view('nontaxables.index', compact('nontaxables'));
+	}
 	}
 
 	/**
@@ -23,7 +41,12 @@ class NonTaxablesController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('nontaxables.create');
+		if ( !Entrust::can('create_nontaxable_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		return view('nontaxables.create');
+	}
 	}
 
 	/**
@@ -44,7 +67,7 @@ class NonTaxablesController extends \BaseController {
 
 		$nontaxable->name = Input::get('name');
 
-                $nontaxable->organization_id = Confide::user()->organization_id;
+                $nontaxable->organization_id = Auth::user()->organization_id;
 
 		$nontaxable->save();
 
@@ -63,7 +86,7 @@ class NonTaxablesController extends \BaseController {
 	{
 		$nontaxable = Nontaxable::findOrFail($id);
 
-		return View::make('nontaxables.show', compact('nontaxable'));
+		return view('nontaxables.show', compact('nontaxable'));
 	}
 
 	/**
@@ -75,8 +98,12 @@ class NonTaxablesController extends \BaseController {
 	public function edit($id)
 	{
 		$nontaxable = Nontaxable::find($id);
-
-		return View::make('nontaxables.edit', compact('nontaxable'));
+        if ( !Entrust::can('update_nontaxable_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		return view('nontaxables.edit', compact('nontaxable'));
+	}
 	}
 
 	/**
@@ -113,9 +140,16 @@ class NonTaxablesController extends \BaseController {
 	public function destroy($id)
 	{
 		$nontaxable = Nontaxable::findOrFail($id);
+		if ( !Entrust::can('delete_nontaxable_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		$nontax  = DB::table('employeenontaxables')->where('nontaxable_id',$id)->count();
+		$tnontax  = DB::table('transact_nontaxables')->where('nontaxable_id',$id)->count();
 		if($nontax>0){
 			return Redirect::route('nontaxables.index')->withDeleteMessage('Cannot delete this non taxable income because its assigned to an employee(s)!');
+		}else if($tnontax>0){
+			return Redirect::route('nontaxables.index')->withDeleteMessage('Cannot delete this non taxable income because its assigned to a payroll transaction(s)!');
 		}else{
 		
 		Nontaxable::destroy($id);
@@ -124,6 +158,7 @@ class NonTaxablesController extends \BaseController {
 
 		return Redirect::route('nontaxables.index')->withDeleteMessage('Non taxable income successfully deleted!');
 	}
+  }
 
  }
 

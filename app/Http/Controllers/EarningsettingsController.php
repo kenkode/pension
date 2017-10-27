@@ -1,6 +1,19 @@
 <?php
 
-class EarningsettingsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Earningsetting;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class EarningsettingsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -9,13 +22,16 @@ class EarningsettingsController extends \BaseController {
 	 */
 	public function index()
 	{
-		$earnings = Earningsetting::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+		$earnings = Earningsetting::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        
+        if ( !Entrust::can('view_earning_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Audit::logaudit('EarningSettings', 'view', 'viewed allowances');
 
-
-		return View::make('earningsettings.index', compact('earnings'));
+		return view('earningsettings.index', compact('earnings'));
+	}
 	}
 
 	/**
@@ -25,7 +41,12 @@ class EarningsettingsController extends \BaseController {
 	 */
 	public function create()
 	{
-		return View::make('earningsettings.create');
+		if ( !Entrust::can('create_earning_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		return view('earningsettings.create');
+	}
 	}
 
 	/**
@@ -46,7 +67,7 @@ class EarningsettingsController extends \BaseController {
 
 		$earning->earning_name = Input::get('name');
 
-                $earning->organization_id = Confide::user()->organization_id;
+                $earning->organization_id = Auth::user()->organization_id;
 
 		$earning->save();
 
@@ -66,7 +87,7 @@ class EarningsettingsController extends \BaseController {
 	{
 		$earning = Earningsetting::findOrFail($id);
 
-		return View::make('earningsettings.show', compact('earning'));
+		return view('earningsettings.show', compact('earning'));
 	}
 
 	/**
@@ -79,7 +100,13 @@ class EarningsettingsController extends \BaseController {
 	{
 		$earning = Earningsetting::find($id);
 
-		return View::make('earningsettings.edit', compact('earning'));
+		if ( !Entrust::can('update_earning_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
+		return view('earningsettings.edit', compact('earning'));
+	}
 	}
 
 	/**
@@ -116,9 +143,17 @@ class EarningsettingsController extends \BaseController {
 	public function destroy($id)
 	{
 		$earning = Earningsetting::findOrFail($id);
+
+		if ( !Entrust::can('delete_earning_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		$earn  = DB::table('earnings')->where('earning_id',$id)->count();
+		$tearn  = DB::table('transact_earnings')->where('earningsetting_id',$id)->count();
 		if($earn>0){
 			return Redirect::route('earningsettings.index')->withDeleteMessage('Cannot delete this earning because its assigned to an employee(s)!');
+		}else if($tearn>0){
+			return Redirect::route('earningsettings.index')->withDeleteMessage('Cannot delete this earning because its assigned to a payroll transaction(s)!');
 		}else{
 		
 		Earningsetting::destroy($id);
@@ -127,6 +162,7 @@ class EarningsettingsController extends \BaseController {
 
 		return Redirect::route('earningsettings.index')->withDeleteMessage('Earning type successfully deleted!');
 	}
+}
 }
 
 }

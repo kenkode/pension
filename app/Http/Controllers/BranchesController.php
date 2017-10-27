@@ -24,9 +24,15 @@ class BranchesController extends Controller {
 	{
 		$branches = Branch::all();
 
+		if ( !Entrust::can('view_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Branch', 'view', 'viewed branches');
 
 		return view('branches.index', compact('branches'));
+	}
 	}
 
 	/**
@@ -36,7 +42,12 @@ class BranchesController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('branches.create');
+	}
 	}
 
 	/**
@@ -86,7 +97,13 @@ class BranchesController extends Controller {
 	{
 		$branch = Branch::find($id);
 
+		if ( !Entrust::can('update_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('branches.edit', compact('branch'));
+	}
 	}
 
 	/**
@@ -122,11 +139,22 @@ class BranchesController extends Controller {
 	public function destroy($id)
 	{
 		$branch = Branch::findOrFail($id);
-		Branch::destroy($id);
+
+		if ( !Entrust::can('delete_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $br  = DB::table('employee')->where('branch_id',$id)->count();
+		if($br>0){
+			return Redirect::route('branches.index')->withDeleteMessage('Cannot delete this branch because its assigned to an employee(s)!');
+		}else{
+        Branch::destroy($id);
 
 		Audit::logaudit('Branch', 'delete', 'deleted branch '.$branch->name);
 
 		return Redirect::route('branches.index')->withDeleteMessage('Branch successfully deleted!');
 	}
+	}
+}
 
 }

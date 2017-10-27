@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Input;
 
 <div class="row">
 	<div class="col-lg-12">
-  <h3>New Occurence</h3>
+  <h3>New Occurrence</h3>
 
 <hr>
 </div>	
@@ -183,7 +183,7 @@ use Illuminate\Support\Facades\Input;
    {{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <div id="dialog-form" title="Create new occurence type">
-  <p class="validateTips">Please insert Occurence Type.</p>
+  <p class="validateTips">Please insert Occurrence Type.</p>
  
   <form id="form">
     {{ csrf_field() }}
@@ -221,13 +221,13 @@ use Illuminate\Support\Facades\Input;
        <input class="form-control" placeholder="" type="hidden" name="page" id="page" value="{{Session::get('page')}}"> 
        
         <div class="form-group">
-            <label for="username">Occurence Brief <span style="color:red">*</span> </label>
+            <label for="username">Occurrence Brief <span style="color:red">*</span> </label>
             <input class="form-control" placeholder="" type="text" name="brief" id="brief" value="{{{ Input::old('brief') }}}">
         </div>
        
 
         <div class="form-group">
-                        <label for="username">Occurence Type: <span style="color:red">*</span></label>
+                        <label for="username">Occurrence Type: <span style="color:red">*</span></label>
                         <select name="type" id="type" class="form-control select2">
                            <option></option>
                            <option value="cnew">Create New</option>
@@ -239,7 +239,7 @@ use Illuminate\Support\Facades\Input;
                     </div>     
         
         <div class="form-group">
-            <label for="username">Occurence Narrative </label>
+            <label for="username">Occurrence Narrative </label>
             <textarea class="form-control" name="narrative">{{{ Input::old('narrative') }}}</textarea>
         </div>
 
@@ -249,7 +249,7 @@ use Illuminate\Support\Facades\Input;
                     </div>
 
         <div class="form-group">
-                        <label for="username">Occurence Date <span style="color:red">*</span></label>
+                        <label for="username">Occurrence Date <span style="color:red">*</span></label>
                         <div class="right-inner-addon ">
                         <i class="glyphicon glyphicon-calendar"></i>
                         <input class="form-control occdate"  readonly="readonly" placeholder="" type="text" name="date" id="date" value="{{{ Input::old('date') }}}">
@@ -270,7 +270,7 @@ $('.occdate').datepicker({
 
         <div class="form-actions form-group">
         
-          <button type="submit" class="btn btn-primary btn-sm">Create Occurence</button>
+          <button type="submit" class="btn btn-primary btn-sm">Create Occurrence</button>
         </div>
         <br><br><br>
     </fieldset>

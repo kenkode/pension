@@ -3,7 +3,7 @@
 
 <div class="row">
     <div class="col-lg-12">
-  <h3>Update Occurence Type</h3>
+  <h3>Update Occurrence Type</h3>
 
 <hr>
 </div>  
@@ -27,14 +27,14 @@
    {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
-            <label for="username">Occurence Type<span style="color:red">*</span> </label>
+            <label for="username">Occurrence Type<span style="color:red">*</span> </label>
             <input class="form-control" placeholder="" type="text" name="type" id="type" value="{{ $occurence->occurence_type }}">
         </div>
         
         
         <div class="form-actions form-group">
         
-          <button type="submit" class="btn btn-primary btn-sm">Update Occurence Type</button>
+          <button type="submit" class="btn btn-primary btn-sm">Update Occurrence Type</button>
         </div>
 
     </fieldset>

@@ -10,6 +10,7 @@ use Redirect;
 use Entrust;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
+use DB;
 
 class EducationController extends Controller
 {
@@ -21,9 +22,15 @@ class EducationController extends Controller
     public function index()
     {
         $educations = Education::all();
+
+        if ( !Entrust::can('view_education') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Education', 'view', 'viewed educations');
 
         return view('education.index', compact('educations'));
+    }
     }
 
     /**
@@ -33,7 +40,12 @@ class EducationController extends Controller
      */
     public function create()
     {
+        if ( !Entrust::can('create_education') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('education.create');
+    }
     }
 
     /**
@@ -86,7 +98,13 @@ class EducationController extends Controller
     {
         $education = Education::find($id);
 
+        if ( !Entrust::can('update_education') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
         return view('education.edit', compact('education'));
+    }
     }
 
     /**
@@ -123,11 +141,22 @@ class EducationController extends Controller
     public function destroy($id)
     {
         $education = Education::findOrFail($id);
+
+        if ( !Entrust::can('delete_education') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $ed  = DB::table('employee')->where('education_type_id',$id)->count();
+        if($ed > 0){
+            return Redirect::route('education.index')->withDeleteMessage('Cannot delete this education because its assigned to an employee(s)!');
+        }else{
         Education::destroy($id);
 
         Audit::logaudit('Education', 'delete', 'deleted education '.$education->education_name);
 
         return Redirect::route('education.index')->withDeleteMessage('Education successfully deleted!');
     }
+}
+}
 
 }

@@ -23,9 +23,15 @@ class JobGroupController extends Controller {
 	public function index()
 	{
 		$jgroups = JGroup::all();
+
+		if ( !Entrust::can('view_job_group') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Job Group', 'view', 'viewed job groups');
 
 		return view('job_group.index', compact('jgroups'));
+	}
 	}
 
 	/**
@@ -35,7 +41,12 @@ class JobGroupController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_job_group') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('job_group.create');
+	}
 	}
 
 	/**
@@ -87,7 +98,13 @@ class JobGroupController extends Controller {
 	{
 		$jgroup = JGroup::find($id);
 
+		if ( !Entrust::can('update_job_group') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('job_group.edit', compact('jgroup'));
+	}
 	}
 
 	/**
@@ -124,11 +141,22 @@ class JobGroupController extends Controller {
 	public function destroy($id)
 	{
 		$jgroup = JGroup::findOrFail($id);
+
+		if ( !Entrust::can('delete_job_group') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $jg  = DB::table('employee')->where('job_group_id',$id)->count();
+		if($jg>0){
+			return Redirect::route('job_group.index')->withDeleteMessage('Cannot delete this job group because its assigned to an employee(s)!');
+		}else{
 		JGroup::destroy($id);
 
 		Audit::logaudit('Job Group', 'delete', 'deleted job group '.$jgroup->job_group_name);
 
 		return Redirect::route('job_group.index')->withDeleteMessage('Job Group successfully deleted!');
+	}
+    }
 	}
 
 }

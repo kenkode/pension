@@ -23,8 +23,12 @@ class NssfController extends Controller {
 	public function index()
 	{
 		$nrates = DB::table('social_security')->where('income_from', '!=', 0.00)->get();
-
+        if ( !Entrust::can('view_nssf') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('nssf.index', compact('nrates'));
+	}
 	}
 
 	/**
@@ -34,7 +38,12 @@ class NssfController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_nssf') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('nssf.create');
+	}
 	}
 
 	/**
@@ -94,8 +103,12 @@ class NssfController extends Controller {
 	public function edit($id)
 	{
 		$nrate = NssfRates::find($id);
-
+        if ( !Entrust::can('update_nssf') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('nssf.edit', compact('nrate'));
+	}
 	}
 
 	/**
@@ -141,11 +154,17 @@ class NssfController extends Controller {
 	public function destroy($id)
 	{
 		$nrate = NssfRates::findOrFail($id);
+
+		if ( !Entrust::can('delete_nssf') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		NssfRates::destroy($id);
 
 		Audit::logaudit('NSSF Rates', 'delete', 'deleted NSSF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' employee amount '.$nrate->ss_amount_employee.' employer amount '.$nrate->ss_amount_employer.' tier '.$nrate->tier);
 
 		return Redirect::route('nssf.index')->withDeleteMessage('NSSF Rate successfully deleted!');
+	}
 	}
 
 }

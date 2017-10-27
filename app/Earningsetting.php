@@ -1,6 +1,10 @@
 <?php
 
-class Earningsetting extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Earningsetting extends Model {
 /*
 	use \Traits\Encryptable;
 
@@ -25,12 +29,12 @@ public static $rules = [
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 	public function earning(){
 
-		return $this->belongsTo('Earning');
+		return $this->belongsTo('App\Earning');
 	}
 
 }

@@ -36,7 +36,7 @@
                             <li><a href="{{ URL::to('employees/create') }}"><i class="fa fa-chevron-right fa-fw"></i>New Employee</a></li>
                             <li><a href="{{ URL::to('employees') }}"><i class="fa fa-chevron-right fa-fw"></i>Manage Employees </a></li>
                             <li><a href="{{ URL::to('Appraisals') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Appraisal</a></li>
-                            <li><a href="{{ URL::to('occurences') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Occurence </a></li>
+                            <li><a href="{{ URL::to('occurences') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Occurrence </a></li>
                             <li><a href="{{ URL::to('deactives') }}"><i class="fa fa-chevron-right fa-fw"></i>Activate Employee</a></li>
                             <li><a target="_blank" href="{{ URL::to('EmployeeForm') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Detail Form</a></li>
                             <li><a href="{{ URL::to('payrollReports/selectPeriod') }}"><i class="fa fa-chevron-right fa-fw"></i>Payslips</a></li>
@@ -110,7 +110,7 @@
                             <li><a href="{{ URL::to('employee/select') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Individual Employee report</a></li>
                             <li><a href="{{ URL::to('reports/selectEmployeeStatus') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employee List report</a></li>
                             <li><a href="{{ URL::to('reports/nextofkin/selectEmployee') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Next of Kin Report</a> </li>
-                            <li><a href="{{ URL::to('reports/selectEmployeeOccurence') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employee Occurence report </a></li>
+                            <li><a href="{{ URL::to('reports/selectEmployeeOccurence') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employee Occurrence report </a></li>
                             <li><a href="{{ URL::to('reports/CompanyProperty/selectPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Company Property report </a></li>
                             <li><a href="{{ URL::to('reports/Appraisals/selectPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Appraisal report </a></li>
                             </ul>
@@ -190,17 +190,16 @@
                             <li><a href="{{ URL::to('departments') }}"><i class="fa fa-chevron-right fa-fw"></i>Departments</a></li>
                             <li><a href="{{ URL::to('banks') }}"><i class="fa fa-chevron-right fa-fw"></i>Banks</a></li>
                             <li><a href="{{ URL::to('bank_branch') }}"><i class="fa fa-chevron-right fa-fw"></i>Bank Branches</a></li>
-                            <li><a href="{{ URL::to('leavetypes') }}"><i class="fa fa-chevron-right fa-fw"></i>Leave Types</a></li>
-                            <li><a href="{{ URL::to('holidays') }}"><i class="fa fa-chevron-right fa-fw"></i>Holiday Management</a></li>
                              <!-- <li><a href="{{ URL::to('benefitsettings') }}"><i class="fa fa-chevron-right fa-fw"></i>Benefit Settings</a></li> -->
                             <li><a href="{{ URL::to('employee_type') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Types</a></li>
                             <li><a href="{{ URL::to('job_group') }}"><i class="fa fa-chevron-right fa-fw"></i>Job Groups</a></li>
-                            <li><a href="{{ URL::to('occurencesettings') }}"><i class="fa fa-chevron-right fa-fw"></i>Occurence Settings</a></li>
+                            <li><a href="{{ URL::to('occurencesettings') }}"><i class="fa fa-chevron-right fa-fw"></i>Occurrence Settings</a></li>
                             <li><a href="{{ URL::to('citizenships') }}"><i class="fa fa-chevron-right fa-fw"></i>Citizenship</a></li>
+                            <li><a href="{{ URL::to('education') }}"><i class="fa fa-chevron-right fa-fw"></i>Education</a></li>
                             <li><a href="{{ URL::to('appraisalcategories') }}"><i class="fa fa-chevron-right fa-fw"></i>Appraisal Category</a></li>
                             <li><a href="{{ URL::to('AppraisalSettings') }}"><i class="fa fa-chevron-right fa-fw"></i>Appraisal Setting</a></li>
-                            
-                            <li><a href="{{ URL::to('education') }}"><i class="fa fa-chevron-right fa-fw"></i>Education</a></li>
+                            <li><a href="{{ URL::to('leavetypes') }}"><i class="fa fa-chevron-right fa-fw"></i>Leave Types</a></li>
+                            <li><a href="{{ URL::to('holidays') }}"><i class="fa fa-chevron-right fa-fw"></i>Holiday Management</a></li>
                             </ul>
                            </li>
 
@@ -212,6 +211,14 @@
                             <li>
                             <a href="{{ URL::to('allowances') }}"><i class="fa fa-list fa-fw"></i> Allowances</a>
                             </li>
+
+                            <li>
+                            <a href="{{ URL::to('earningsettings') }}"><i class="fa fa-list fa-fw"></i> Earning</a>
+                            </li>
+                    
+                            <li>
+                           <a href="{{ URL::to('nontaxables') }}"><i class="fa fa-list fa-fw"></i> Non Taxable Income</a>
+                           </li>
 
                              <li>
                                 <a href="{{ URL::to('reliefs') }}"><i class="fa fa-list fa-fw"></i> Relief</a>

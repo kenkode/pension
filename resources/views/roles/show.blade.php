@@ -40,6 +40,9 @@ function asMoney($value) {
    <div class="row">
 
 <div class="col-lg-12">
+  <a class="btn btn-info btn-sm "  href="{{URL::to('roles/edit/'.$role->id)}}">update Role</a>
+<a class="btn btn-success btn-sm " href="{{URL::to('roles')}}">Go Back</a>
+<hr>
   <br>
 
 

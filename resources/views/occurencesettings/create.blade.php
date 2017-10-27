@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Input;
 
 <div class="row">
 	<div class="col-lg-12">
-  <h3>New Occurence Type</h3>
+  <h3>New Occurrence Type</h3>
 
 <hr>
 </div>	
@@ -31,14 +31,14 @@ use Illuminate\Support\Facades\Input;
    {{ csrf_field() }}
     <fieldset>
         <div class="form-group">
-            <label for="username">Occurence Type<span style="color:red">*</span> </label>
+            <label for="username">Occurrence Type<span style="color:red">*</span> </label>
             <input class="form-control" placeholder="" type="text" name="type" id="type" value="{{{ Input::old('type') }}}">
         </div>
         
         
         <div class="form-actions form-group">
         
-          <button type="submit" class="btn btn-primary btn-sm">Create Occurence Type</button>
+          <button type="submit" class="btn btn-primary btn-sm">Create Occurrence Type</button>
         </div>
 
     </fieldset>

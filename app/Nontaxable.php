@@ -1,6 +1,10 @@
 <?php
 
-class Nontaxable extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Nontaxable extends Model {
 
 public static $rules = [
 		'name' => 'required'
@@ -15,12 +19,12 @@ public static $messages = array(
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
 
 	public function employeenontaxable(){
 
-		return $this->belongTo('Employeenontaxable');
+		return $this->belongTo('App\Employeenontaxable');
 	}
 
 }

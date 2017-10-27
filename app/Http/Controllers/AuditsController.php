@@ -22,9 +22,14 @@ class AuditsController extends Controller {
 	public function index()
 	{
 		$audits = Audit::all();
+		if ( !Entrust::can('manage_audit') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Audit Trails', 'view', 'viewed audit trails');
 
 		return view('audits.index', compact('audits'));
+	}
 	}
 
 	/**

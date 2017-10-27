@@ -22,8 +22,13 @@ class NhifController extends Controller {
 	public function index()
 	{
 		$nrates = DB::table('hospital_insurance')->where('income_from', '!=', 0.00)->get();
+		if ( !Entrust::can('view_nhif') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('NHIF Rates', 'view', 'viewed NHIF Rates ');
 		return view('nhif.index', compact('nrates'));
+	}
 	}
 
 	/**
@@ -33,7 +38,12 @@ class NhifController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_nhif') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('nhif.create');
+	}
 	}
 
 	/**
@@ -89,8 +99,12 @@ class NhifController extends Controller {
 	public function edit($id)
 	{
 		$nrate = NhifRates::find($id);
-
+        if ( !Entrust::can('update_nhif') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('nhif.edit', compact('nrate'));
+	}
 	}
 
 	/**
@@ -133,11 +147,16 @@ class NhifController extends Controller {
 	{
 		$nrate = NhifRates::findOrFail($id);
 
+        if ( !Entrust::can('delete_nhif') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		NhifRates::destroy($id);
 
 		Audit::logaudit('NHIF Rates', 'delete', 'deleted NHIF Rates income from '.$nrate->income_from.' to '.$nrate->income_to.' amount '.$nrate->hi_amount);
 
 		return Redirect::route('nhif.index')->withDeleteMessage('NHIF Rate successfully deleted!');
+	}
 	}
 
 }

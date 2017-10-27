@@ -23,9 +23,15 @@ class ReliefsController extends Controller {
 	public function index()
 	{
 		$reliefs = Relief::all();
+
+		if ( !Entrust::can('view_relief') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Audit::logaudit('Relief', 'view', 'viewed reliefs');
 
 		return view('reliefs.index', compact('reliefs'));
+	}
 	}
 
 	/**
@@ -35,7 +41,12 @@ class ReliefsController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_relief') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('reliefs.create');
+	}
 	}
 
 	/**
@@ -88,7 +99,12 @@ class ReliefsController extends Controller {
 	{
 		$relief = Relief::find($id);
 
+        if ( !Entrust::can('update_relief') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('reliefs.edit', compact('relief'));
+	}
 	}
 
 	/**
@@ -125,11 +141,24 @@ class ReliefsController extends Controller {
 	public function destroy($id)
 	{
 		$relief = Relief::findOrFail($id);
+		if ( !Entrust::can('update_relief') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $rel  = DB::table('employee_relief')->where('relief_id',$id)->count();
+        $trel  = DB::table('transact_reliefs')->where('relief_id',$id)->count();
+		if($rel>0){
+			return Redirect::route('reliefs.index')->withDeleteMessage('Cannot delete this relief because its assigned to an employee(s)!');
+		}else if($trel>0){
+			return Redirect::route('reliefs.index')->withDeleteMessage('Cannot delete this relief because its assigned to a payroll transaction(s)!');
+		}else{
 		Relief::destroy($id);
 
 		Audit::logaudit('Relief', 'delete', 'deleted relief '.$relief->relief_name);
 
 		return Redirect::route('reliefs.index')->withDeleteMessage('Relief successfully deleted!');
 	}
+	}
+}
 
 }

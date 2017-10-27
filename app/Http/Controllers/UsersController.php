@@ -31,9 +31,13 @@ class UsersController extends Controller
     public function index(){
 
         $users = User::all();
-
+        if ( !Entrust::can('view_user') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Users', 'view', 'viewed system users');
         return view('users.index')->with('users', $users);
+    }
     }
 
 
@@ -56,8 +60,12 @@ class UsersController extends Controller
               ->where("user_id",$user->id)
               ->select("roles.id")
               ->first();
-
+        if ( !Entrust::can('update_user') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('users.edituser',compact('user','roles','r'));
+    }
     }
 
 
@@ -109,7 +117,12 @@ class UsersController extends Controller
     public function create()
     {
         $roles = Role::all();
+        if ( !Entrust::can('create_user') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('users.create', compact('roles'));
+    }
     }
 
     /**
@@ -326,9 +339,15 @@ class UsersController extends Controller
         $user->confirmed = 1;
         $user->save();
 
+        if ( !Entrust::can('activate_user') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
         Audit::logaudit('Users', 'activate', 'activated user '.$user->name);
 
         return Redirect::to('users')->withFlashMessage("User successfully activated!");
+    }
     }
 
 
@@ -344,9 +363,15 @@ class UsersController extends Controller
         $user->confirmed = 0;
         $user->save();
 
+        if ( !Entrust::can('deactivate_user') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
         Audit::logaudit('Users', 'deactivate', 'deactivated user '.$user->name);
 
         return Redirect::to('users')->withDeleteMessage("User successfully deactivated!");
+    }
     }
 
 
@@ -358,12 +383,19 @@ class UsersController extends Controller
     public function destroy($user){
 
         $user = User::find($user);
+
+        if ( !Entrust::can('delete_user') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
         DB::table("assigned_roles")->where("user_id",$user->id)->delete();  
         $user->delete();
 
         Audit::logaudit('Users', 'delete', 'deleted user '.$user->name);
 
         return Redirect::to('users')->withDeleteMessage("User successfully deleted!");
+    }
     }
 
 

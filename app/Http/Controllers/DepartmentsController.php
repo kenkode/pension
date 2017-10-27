@@ -24,9 +24,15 @@ class DepartmentsController extends Controller {
 	{
 		$departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
+		if ( !Entrust::can('view_department') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Departments', 'view', 'viewed departments');
 
 		return view('departments.index', compact('departments'));
+	}
 	}
 
 	/**
@@ -36,7 +42,12 @@ class DepartmentsController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_department') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('departments.create');
+	}
 	}
 
 	/**
@@ -53,6 +64,15 @@ class DepartmentsController extends Controller {
 			return Redirect::back()->withErrors($validator)->withInput();
 		}
 
+		$code = Input::get('code');
+		$code_exists = DB::table('departments')->where('codes', '=', $code)->count();
+
+		if($code_exists >= 1){
+
+			return Redirect::back()->withErrors(array('error'=>'The Department code already exists'))->withInput();
+		}
+		else {
+
 		$department = new Department;
 
 		$department->codes = Input::get('code');
@@ -66,6 +86,7 @@ class DepartmentsController extends Controller {
         Audit::logaudit('Department', 'create', 'created: '.$department->department_name);
 
 		return Redirect::route('departments.index')->withFlashMessage('Department successfully updated!');
+	}
 	}
 
 	/**
@@ -91,7 +112,12 @@ class DepartmentsController extends Controller {
 	{
 		$department = Department::find($id);
 
+        if ( !Entrust::can('update_department') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('departments.edit', compact('department'));
+	}
 	}
 
 	/**
@@ -111,6 +137,14 @@ class DepartmentsController extends Controller {
 			return Redirect::back()->withErrors($validator)->withInput();
 		}
 
+		$code = Input::get('code');
+		$original_code = DB::table('departments')->where('id', '!=', $department->id)->where('codes', $code)->count();
+
+		if($original_code > 0) {
+
+			return Redirect::back()->withErrors(array('error'=>'The Department code already exists'))->withInput();
+		}else {
+
 		$department->codes = Input::get('code');
 
 		$department->department_name = Input::get('name');
@@ -120,6 +154,7 @@ class DepartmentsController extends Controller {
 
 		return Redirect::route('departments.index')->withFlashMessage('Department successfully updated!');
 	}
+    }
 
 	/**
 	 * Remove the specified branch from storage.
@@ -130,15 +165,20 @@ class DepartmentsController extends Controller {
 	public function destroy($id)
 	{
 		$department = Department::findOrFail($id);
+		if ( !Entrust::can('view_department') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         $dept  = DB::table('employee')->where('department_id',$id)->count();
 		if($dept>0){
-			return Redirect::route('departments.index')->withDeleteMessage('Cannot delete this departments because its assigned to an employee(s)!');
+			return Redirect::route('departments.index')->withDeleteMessage('Cannot delete this department because its assigned to an employee(s)!');
 		}else{
 		Department::destroy($id);
 
         Audit::logaudit('Department', 'delete', 'deleted: '.$department->department_name);
 		return Redirect::route('departments.index')->withDeleteMessage('Deduction successfully deleted!');
 	}
+}
 
 }
 

@@ -24,11 +24,15 @@ class CitizenshipController extends Controller {
 	{
 		$citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        
+        if ( !Entrust::can('view_citizenship') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Audit::logaudit('Citizenships', 'view', 'viewed citizenships');
 
 
 		return view('citizenship.index', compact('citizenships'));
+	}
 	}
 
 	/**
@@ -38,7 +42,12 @@ class CitizenshipController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_citizenship') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('citizenship.create');
+	}
 	}
 
 	/**
@@ -92,7 +101,13 @@ class CitizenshipController extends Controller {
 	{
 		$citizenship = Citizenship::find($id);
 
+		if ( !Entrust::can('update_citizenship') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('citizenship.edit', compact('citizenship'));
+	}
 	}
 
 	/**
@@ -129,6 +144,10 @@ class CitizenshipController extends Controller {
 	public function destroy($id)
 	{
 		$citizenship = Citizenship::findOrFail($id);
+		if ( !Entrust::can('delete_citizenship') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		$citizen  = DB::table('employee')->where('citizenship_id',$id)->count();
 		if($citizen > 0){
 			return Redirect::route('citizenships.index')->withDeleteMessage('Cannot delete this citizenship because its assigned to an employee(s)!');
@@ -138,6 +157,7 @@ class CitizenshipController extends Controller {
 		Audit::logaudit('Citizenships', 'delete', 'deleted citizenship '.$citizenship->name);
 
 		return Redirect::route('citizenships.index')->withDeleteMessage('Citizenship successfully deleted!');
+	}
 	}
   }
 

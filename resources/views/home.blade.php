@@ -12,6 +12,10 @@
   
       <div class="wrapper wrapper-content">
 
+        @if (Session::get('notice'))
+        <div class="alert alert-info">{{ Session::get('notice') }}</div>
+        @endif
+
         @if(Controller::role()=='Human Resource')
         <div class="row">
                     <div class="col-lg-3">

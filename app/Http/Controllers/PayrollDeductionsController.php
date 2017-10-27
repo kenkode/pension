@@ -24,9 +24,15 @@ class PayrollDeductionsController extends Controller {
 	{
 		$deductions = Deduction::all();
 
+		if ( !Entrust::can('view_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Deductions', 'view', 'viewed deduction list ');
 
 		return view('deductions.index', compact('deductions'));
+	}
 	}
 
 	/**
@@ -36,7 +42,12 @@ class PayrollDeductionsController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('deductions.create');
+	}
 	}
 
 	/**
@@ -89,7 +100,13 @@ class PayrollDeductionsController extends Controller {
 	{
 		$deduction = Deduction::find($id);
 
+		if ( !Entrust::can('update_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('deductions.edit', compact('deduction'));
+	}
 	}
 
 	/**
@@ -126,13 +143,27 @@ class PayrollDeductionsController extends Controller {
 	public function destroy($id)
 	{
 		$deduction = Deduction::findOrFail($id);
-		
+
+		if ( !Entrust::can('delete_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		$ded  = DB::table('employee_deductions')->where('deduction_id',$id)->count();
+        $tded  = DB::table('transact_deductions')->where('deduction_id',$id)->count();
+		if($ded>0){
+			return Redirect::route('deductions.index')->withDeleteMessage('Cannot delete this deduction because its assigned to an employee(s)!');
+		}else if($tded>0){
+			return Redirect::route('deductions.index')->withDeleteMessage('Cannot delete this deduction because its assigned to a payroll transaction(s)!');
+		}else{
 		Deduction::destroy($id);
 
 		Audit::logaudit('Deductions', 'delete', 'deleted deduction '.$deduction->deduction_name);
 
+
 		return Redirect::route('deductions.index')->withDeleteMessage('Deduction successfully deleted!');
 	}
+	}
+}
 
 }
 

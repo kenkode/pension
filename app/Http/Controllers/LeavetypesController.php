@@ -23,9 +23,15 @@ class LeavetypesController extends Controller {
 	public function index()
 	{
 		$leavetypes = Leavetype::all();
+
+		if ( !Entrust::can('view_leave_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Leave Type', 'view', 'viewed leave types');
 
 		return view('leavetypes.index', compact('leavetypes'));
+	}
 	}
 
 	/**
@@ -35,7 +41,12 @@ class LeavetypesController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_leave_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('leavetypes.create');
+	}
 	}
 
 	/**
@@ -82,7 +93,13 @@ class LeavetypesController extends Controller {
 	{
 		$leavetype = Leavetype::find($id);
 
+		if ( !Entrust::can('update_leave_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('leavetypes.edit', compact('leavetype'));
+	}
 	}
 
 	/**
@@ -118,11 +135,22 @@ class LeavetypesController extends Controller {
 	public function destroy($id)
 	{
 		$leavetype = Leavetype::findOrFail($id);
+
+		if ( !Entrust::can('delete_leave_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $lt  = DB::table('leaveapplications')->where('leavetype_id',$id)->count();
+		if($lt>0){
+			return Redirect::route('leavetypes.index')->withDeleteMessage('Cannot delete this leave type because its assigned to leaveapplication(s)!');
+		}else{
 		Leavetype::destroy($id);
 
 		Audit::logaudit('Leave Type', 'delete', 'deleted leave type '.$leavetype->name);
 
 		return Redirect::route('leavetypes.index')->withDeleteMessage('Leave type successfully deleted!');
 	}
+}
+}
 
 }

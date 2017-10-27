@@ -25,11 +25,16 @@ class OccurencesettingsController extends Controller {
 	{
 		$occurences = Occurencesetting::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
+       if ( !Entrust::can('view_occurrence_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         
-		Audit::logaudit('Occurencesettings', 'view', 'viewed occurence settings');
+		Audit::logaudit('Occurencesettings', 'view', 'viewed occurrence settings');
 
 
 		return view('occurencesettings.index', compact('occurences'));
+	}
 	}
 
 	/**
@@ -39,7 +44,12 @@ class OccurencesettingsController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_occurrence_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('occurencesettings.create');
+	}
 	}
 
 	/**
@@ -64,10 +74,10 @@ class OccurencesettingsController extends Controller {
 
 		$occurence->save();
 
-		Audit::logaudit('Occurencesettings', 'create', 'created occurence setting '.$occurence->occurence_type);
+		Audit::logaudit('Occurencesettings', 'create', 'created occurrence setting '.$occurence->occurence_type);
 
 
-		return Redirect::route('occurencesettings.index')->withFlashMessage('Occurence type successfully created!');
+		return Redirect::route('occurencesettings.index')->withFlashMessage('Occurrence type successfully created!');
 	}
 
 	/**
@@ -93,7 +103,12 @@ class OccurencesettingsController extends Controller {
 	{
 		$occurence = Occurencesetting::find($id);
 
+        if ( !Entrust::can('update_occurrence_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('occurencesettings.edit', compact('occurence'));
+	}
 	}
 
 	/**
@@ -116,9 +131,9 @@ class OccurencesettingsController extends Controller {
 		$occurence->occurence_type = Input::get('type');
 		$occurence->update();
 
-		Audit::logaudit('Occurencesettings', 'update', 'updated occurence setting '.$occurence->occurence_type);
+		Audit::logaudit('Occurencesettings', 'update', 'updated occurrence setting '.$occurence->occurence_type);
 
-		return Redirect::route('occurencesettings.index')->withFlashMessage('Occurence type successfully updated!');
+		return Redirect::route('occurencesettings.index')->withFlashMessage('Occurrence type successfully updated!');
 	}
 
 	/**
@@ -130,16 +145,21 @@ class OccurencesettingsController extends Controller {
 	public function destroy($id)
 	{
 		$occurence = Occurencesetting::findOrFail($id);
+		if ( !Entrust::can('view_occurrence_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		$occ = DB::table('occurences')->where('occurencesetting_id',$id)->count();
 		if($occ>0){
-			return Redirect::route('occurencesettings.index')->withDeleteMessage('Cannot delete this occurence type because its assigned to an employee occurence(s)!');
+			return Redirect::route('occurencesettings.index')->withDeleteMessage('Cannot delete this occurrence type because its assigned to an employee occurence(s)!');
 		}else{
 		Occurencesetting::destroy($id);
 
-		Audit::logaudit('Occurencesettings', 'delete', 'deleted occurence setting '.$occurence->occurence_type);
+		Audit::logaudit('Occurencesettings', 'delete', 'deleted occurrence setting '.$occurence->occurence_type);
 
-		return Redirect::route('occurencesettings.index')->withDeleteMessage('Occurence type successfully deleted!');
+		return Redirect::route('occurencesettings.index')->withDeleteMessage('Occurrence type successfully deleted!');
 	}
+}
 }
 
 }

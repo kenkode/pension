@@ -24,9 +24,15 @@ class BanksController extends Controller {
 	{
 		$banks = Bank::all();
 
+		if ( !Entrust::can('view_bank') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Banks', 'view', 'viewed banks');
 
 		return view('banks.index', compact('banks'));
+	}
 	}
 
 	/**
@@ -36,7 +42,12 @@ class BanksController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_bank') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('banks.create');
+	}
 	}
 
 	/**
@@ -91,7 +102,13 @@ class BanksController extends Controller {
 	{
 		$bank = Bank::find($id);
 
+		if ( !Entrust::can('update_bank') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('banks.edit', compact('bank'));
+	}
 	}
 
 	/**
@@ -128,11 +145,22 @@ class BanksController extends Controller {
 	public function destroy($id)
 	{
 		$bank = Bank::findOrFail($id);
+
+		if ( !Entrust::can('delete_bank') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $bn  = DB::table('employee')->where('bank_id',$id)->count();
+		if($bn>0){
+			return Redirect::route('banks.index')->withDeleteMessage('Cannot delete this bank because its assigned to an employee(s)!');
+		}else{
 		Bank::destroy($id);
 
 		Audit::logaudit('Banks', 'delete', 'deleted bank '.$bank->bank_code.' - '.$bank->bank_name);
 
 		return Redirect::route('banks.index')->withDeleteMessage('Bank successfully deleted!');
+	}
+    }
 	}
 
 }

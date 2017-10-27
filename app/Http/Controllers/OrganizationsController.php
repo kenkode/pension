@@ -37,10 +37,16 @@ class OrganizationsController extends Controller {
 		$bbranches_db = DB::table('bank_branches')
 		->get();
 		$organization = DB::table('organizations')->where('id', '=', 1)->first();
+		if ( Entrust::can('manage_organization') ) // Checks the current user
+        {
 
 		Audit::logaudit('Organization', 'view', 'viewed organization details');
 
 		return view('organizations.index', compact('organization','banks','bbranches','banks_db','bbranches_db'));
+
+	    }else{
+		return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+	    }
 	
 	}
 

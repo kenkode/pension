@@ -23,9 +23,14 @@ class EmployeeTypeController extends Controller {
 	public function index()
 	{
 		$etypes = EType::all();
+		if ( !Entrust::can('view_employee_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Employee Type', 'view', 'viewed employee types');
 
 		return view('employee_type.index', compact('etypes'));
+	}
 	}
 
 	/**
@@ -35,7 +40,12 @@ class EmployeeTypeController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_employee_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('employee_type.create');
+	}
 	}
 
 	/**
@@ -88,7 +98,13 @@ class EmployeeTypeController extends Controller {
 	{
 		$etype = EType::find($id);
 
+		if ( !Entrust::can('update_employee_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('employee_type.edit', compact('etype'));
+	}
 	}
 
 	/**
@@ -125,11 +141,22 @@ class EmployeeTypeController extends Controller {
 	public function destroy($id)
 	{
 		$etype = EType::findOrFail($id);
+
+		if ( !Entrust::can('delete_employee_type') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $et  = DB::table('employee')->where('type_id',$id)->count();
+		if($et>0){
+			return Redirect::route('employee_type.index')->withDeleteMessage('Cannot delete this employee type because its assigned to an employee(s)!');
+		}else{
 		EType::destroy($id);
 
 		Audit::logaudit('Employee Type', 'delete', 'deleted employee type '.$etype->employee_type_name);
 
 		return Redirect::route('employee_type.index')->withDeleteMessage('Employee type successfully deleted!');
+	}
+	}
 	}
 
 }

@@ -24,11 +24,15 @@ class AppraisalCategoryController extends Controller {
 	{
 		$categories = Appraisalcategory::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
-        
+        if ( !Entrust::can('view_appraisal_category') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Audit::logaudit('Appraisalcategories', 'view', 'viewed appraisal categories');
 
 
 		return view('appraisalcategories.index', compact('categories'));
+	}
 	}
 
 	/**
@@ -38,7 +42,12 @@ class AppraisalCategoryController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_appraisal_category') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('appraisalcategories.create');
+	}
 	}
 
 	/**
@@ -92,7 +101,13 @@ class AppraisalCategoryController extends Controller {
 	{
 		$category = Appraisalcategory::find($id);
 
+		if ( !Entrust::can('update_appraisal_category') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('appraisalcategories.edit', compact('category'));
+	}
 	}
 
 	/**
@@ -130,6 +145,11 @@ class AppraisalCategoryController extends Controller {
 	{
 		$category = Appraisalcategory::findOrFail($id);
 
+		if ( !Entrust::can('delete_appraisal_category') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		$app  = DB::table('appraisalquestions')->where('appraisalcategory_id',$id)->count();
 		if($app>0){
 			return Redirect::route('appraisalcategories.index')->withDeleteMessage('Cannot delete this appraisal category because its assigned to appraisal question(s)!');
@@ -140,6 +160,7 @@ class AppraisalCategoryController extends Controller {
 
 		return Redirect::route('appraisalcategories.index')->withDeleteMessage('Appraisal category successfully deleted!');
 	}
+ }
  }
 
 }

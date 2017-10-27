@@ -32,14 +32,16 @@
 				<table id="users" class="display compact table table-bordered table-striped" cellspacing="0" width="100%">
 					<thead>
 						
-						
+						<th>#</th>
 						<th>Role</th>
 						<th></th>
 						
 					</thead>
-					<tbody>
+					<tbody><?php $i =1;?>
               			 @foreach($roles as $role)
               			 <tr>
+
+                      <td>{{ $i }}</td>
                			
                			<td>{{ $role->name }}</td>
                			
@@ -55,12 +57,13 @@
     								<li><a href="{{URL::to('roles/edit/'.$role->id)}}">Edit</a></li>
 
     								
-    								<li><a href="{{URL::to('roles/destroy/'.$role->id)}}">Delete</a></li>
+    								<!-- <li><a href="{{URL::to('roles/destroy/'.$role->id)}}">Delete</a></li> -->
   								</ul>
 							</div>
 
                			</td>
                		</tr>
+                  <?php $i++;?>
                			@endforeach
 
  

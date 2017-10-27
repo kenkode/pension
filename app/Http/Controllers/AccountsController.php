@@ -24,11 +24,15 @@ class AccountsController extends Controller {
 	{
 		$accounts = DB::table('accounts')->orderBy('code', 'asc')->get();
 
+		if ( !Entrust::can('view_account') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Accounts', 'view', 'view chart of accounts');
 
 		return view('accounts.index', compact('accounts'));
-
-
+        }
 		
 	}
 
@@ -39,7 +43,12 @@ class AccountsController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_account') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('accounts.create');
+	}
 	}
 
 	/**
@@ -114,9 +123,13 @@ class AccountsController extends Controller {
 	{
 		$account = Account::find($id);
 
-
+        if ( !Entrust::can('update_account') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 
 		return view('accounts.edit', compact('account'));
+	}
 	}
 
 	/**
@@ -177,6 +190,14 @@ class AccountsController extends Controller {
 
 		$account = Account::findOrFail($id);
 
+		if ( !Entrust::can('delete_account') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $acc  = DB::table('transact')->where('account_id',$id)->count();
+		if($acc>0){
+			return Redirect::route('accounts.index')->withDeleteMessage('Cannot delete this account because its assigned to payroll(s)!');
+		}else{
 		Account::destroy($id);
 
 
@@ -184,6 +205,8 @@ class AccountsController extends Controller {
 
 
 		return Redirect::route('accounts.index')->withDeleteMessage('Account successfully deleted!');
+	}
+    }
 	}
 
 }

@@ -24,11 +24,15 @@ class AllowancesController extends Controller {
 	{
 		$allowances = Allowance::all();
 
-		
+	   if ( !Entrust::can('view_allowance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
        Audit::logaudit('Allowance', 'view', 'viewed allowances');
 
 
 		return view('allowances.index', compact('allowances'));
+	}
 	}
 
 	/**
@@ -38,7 +42,12 @@ class AllowancesController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_allowance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('allowances.create');
+	}
 	}
 
 	/**
@@ -91,8 +100,12 @@ class AllowancesController extends Controller {
 	public function edit($id)
 	{
 		$allowance = Allowance::find($id);
-
+        if ( !Entrust::can('update_allowance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('allowances.edit', compact('allowance'));
+	}
 	}
 
 	/**
@@ -129,11 +142,25 @@ class AllowancesController extends Controller {
 	public function destroy($id)
 	{
 		$allowance = Allowance::findOrFail($id);
+
+		if ( !Entrust::can('delete_allowance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $alw  = DB::table('employee_allowances')->where('allowance_id',$id)->count();
+        $talw  = DB::table('transact_allowances')->where('allowance_id',$id)->count();
+		if($alw>0){
+			return Redirect::route('allowances.index')->withDeleteMessage('Cannot delete this allowance because its assigned to an employee(s)!');
+		}else if($talw>0){
+			return Redirect::route('allowances.index')->withDeleteMessage('Cannot delete this allowance because its assigned to a payroll transaction(s)!');
+		}else{
 		Allowance::destroy($id);
 
 		Audit::logaudit('Allowances', 'delete', 'deleted allowance '.$allowance->allowance_name);
 
 		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully deleted!');
 	}
+	}
+}
 
 }

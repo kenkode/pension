@@ -25,9 +25,15 @@ class BankBranchController extends Controller {
 	{
 		$bbranches = BBranch::all();
 
+		if ( !Entrust::can('view_bank_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Bank Branch', 'view', 'view bank branches');
 
 		return view('bank_branch.index', compact('bbranches'));
+	}
 	}
 
 	/**
@@ -38,7 +44,12 @@ class BankBranchController extends Controller {
 	public function create()
 	{
 		$banks = Bank::all();
+		if ( !Entrust::can('create_bank_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('bank_branch.create',compact('banks'));
+	}
 	}
 
 	/**
@@ -96,7 +107,12 @@ class BankBranchController extends Controller {
 		$bbranch = BBranch::find($id);
 		$banks = Bank::all();
 
+        if ( !Entrust::can('update_bank_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('bank_branch.edit', compact('bbranch','banks'));
+	}
 	}
 
 	/**
@@ -135,11 +151,22 @@ class BankBranchController extends Controller {
 	public function destroy($id)
 	{
 		$bbranch = BBranch::findOrFail($id);
+
+		if ( !Entrust::can('delete_bank_branch') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $bb  = DB::table('employee')->where('bank_branch_id',$id)->count();
+		if($bb>0){
+			return Redirect::route('bank_branch.index')->withDeleteMessage('Cannot delete this bank branch because its assigned to an employee(s)!');
+		}else{
 		BBranch::destroy($id);
 
 		Audit::logaudit('Bank Branch', 'delete', 'deleted bank branch '.$bbranch->branch_code.' - '.$bbranch->bank_branch_name); 
 
 		return Redirect::route('bank_branch.index')->withDeleteMessage('Bank Branch successfully deleted!');
 	}
+	}
+    }
 
 }

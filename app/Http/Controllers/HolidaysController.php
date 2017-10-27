@@ -24,9 +24,15 @@ class HolidaysController extends Controller {
 	public function index()
 	{
 		$holidays = Holiday::all();
+
+		if ( !Entrust::can('view_holiday') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Holiday', 'view', 'viewed holidays');
 
 		return view('holidays.index', compact('holidays'));
+	}
 	}
 
 	/**
@@ -36,7 +42,12 @@ class HolidaysController extends Controller {
 	 */
 	public function create()
 	{
+		if ( !Entrust::can('create_holiday') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('holidays.create');
+	}
 	}
 
 	/**
@@ -83,7 +94,13 @@ class HolidaysController extends Controller {
 	{
 		$holiday = Holiday::find($id);
 
+		if ( !Entrust::can('update_holiday') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		return view('holidays.edit', compact('holiday'));
+	}
 	}
 
 	/**
@@ -119,10 +136,15 @@ class HolidaysController extends Controller {
 	{
 
 		$holiday = Holiday::findOrFail($id);
+		if ( !Entrust::can('delete_holiday') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Holiday::destroy($id);
 		Audit::logaudit('Holiday', 'update', 'updated holiday '.$holiday->name);
 
 		return Redirect::route('holidays.index')->withDeleteMessage('Holiday successfully deleted!');
+	}
 	}
 
 }

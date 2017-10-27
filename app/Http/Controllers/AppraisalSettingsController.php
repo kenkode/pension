@@ -26,9 +26,15 @@ class AppraisalSettingsController extends Controller {
 	{
 		$appraisals = Appraisalquestion::where('organization_id',Auth::user()->organization_id)->get();
 
+		if ( !Entrust::can('view_appraisal_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		Audit::logaudit('Appraisal Settings', 'view', 'viewed appraisal settings');
 
 		return view('appraisalsettings.index', compact('appraisals'));
+	}
 	}
 
 	/**
@@ -39,8 +45,14 @@ class AppraisalSettingsController extends Controller {
 	public function create()
 	{
 		$categories = Appraisalcategory::all();
+
+		if ( !Entrust::can('create_appraisal_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('appraisalsettings.create',compact('categories'));
 	}
+    }
 
 	public function createcategory()
 	{
@@ -116,7 +128,13 @@ class AppraisalSettingsController extends Controller {
 	{
 		$appraisal = Appraisalquestion::find($id);
         $categories = Appraisalcategory::all();
+
+		if ( !Entrust::can('update_appraisal_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('appraisalsettings.edit', compact('appraisal','categories'));
+	}
 	}
 
 	/**
@@ -160,6 +178,12 @@ class AppraisalSettingsController extends Controller {
 	{
 		$appraisal = Appraisalquestion::findOrFail($id);
 
+
+		if ( !Entrust::can('delete_appraisal_setting') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+
 		$app  = DB::table('appraisals')->where('appraisalquestion_id',$id)->count();
 		if($app>0){
 			return Redirect::route('AppraisalSettings.index')->withDeleteMessage('Cannot delete this appraisal question because its assigned to appraisal(s)!');
@@ -171,6 +195,7 @@ class AppraisalSettingsController extends Controller {
 
 		return Redirect::route('AppraisalSettings.index')->withDeleteMessage('Appraisal Settings successfully deleted!');
 	   }
+	}
    }
 
 }

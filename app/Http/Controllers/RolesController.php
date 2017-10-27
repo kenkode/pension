@@ -29,9 +29,15 @@ class RolesController extends Controller
     public function index(){
 
         $roles = Role::all();
+
+        if ( !Entrust::can('view_role') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         Audit::logaudit('Roles', 'view', 'viewed system roles');
 
         return view('roles.index')->with('roles', $roles);
+    }
     }
 
 
@@ -47,8 +53,14 @@ class RolesController extends Controller
         foreach ($role->perms()->get() as $p) {
             $roleperm[] = $p->name;
         }
+
+        if ( !Entrust::can('update_role') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         
        return view('roles.edit', compact('role', 'permissions', 'categories', 'roleperm'));
+   }
     }
 
 
@@ -87,8 +99,12 @@ class RolesController extends Controller
         $categories = DB::table('permissions')->select('category')->distinct()->get();
         $permissions = Permission::all();
         
-        
+        if ( !Entrust::can('create_role') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('roles.create', compact('permissions', 'categories'));
+    }
     }
 
     /**
@@ -152,8 +168,14 @@ class RolesController extends Controller
         foreach ($role->perms()->get() as $p) {
             $roleperm[] = $p->name;
         }
+
+        if ( !Entrust::can('view_role') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         
        return view('roles.show', compact('role', 'permissions', 'categories', 'roleperm'));
+    }
     }
 
 
