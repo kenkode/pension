@@ -1,6 +1,23 @@
 <?php
 
-class EarningsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Earningsetting;
+use App\Earnings;
+use App\Employee;
+use App\Organization;
+use App\Currency;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class EarningsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -13,14 +30,18 @@ class EarningsController extends \BaseController {
 		          ->join('earnings', 'employee.id', '=', 'earnings.employee_id')
 		          ->join('earningsettings', 'earnings.earning_id', '=', 'earningsettings.id')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->select('earnings.id','first_name','middle_name','last_name','earnings_amount','earning_name')
 		          ->get();
-
+        if ( !Entrust::can('view_earning') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		Audit::logaudit('Earnings', 'view', 'viewed earnings');
 
 
-		return View::make('other_earnings.index', compact('earnings'));
+		return view('other_earnings.index', compact('earnings'));
+	}
 	}
 
 	/**
@@ -33,18 +54,23 @@ class EarningsController extends \BaseController {
 		
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->get();
-		$earnings = Earningsetting::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('other_earnings.create',compact('employees','earnings','currency'));
+		$earnings = Earningsetting::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+		if ( !Entrust::can('create_earning') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		return view('other_earnings.create',compact('employees','earnings','currency'));
+	}
 	}
 
 	public function createearning()
 	{
       $postearning = Input::all();
       $data = array('earning_name' => $postearning['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('earningsettings')->insertGetId( $data );
@@ -52,7 +78,7 @@ class EarningsController extends \BaseController {
 
 		if($check > 0){
          
-		Audit::logaudit('Earningsettings', 'create', 'created: '.$postearning['name']);
+		Audit::logaudit('Earningsettings', 'create', 'created earning type '.$postearning['name']);
         return $check;
         }else{
          return 1;
@@ -125,7 +151,9 @@ class EarningsController extends \BaseController {
 
 		$earning->save();
 
-		Audit::logaudit('Earnings', 'create', 'created: '.$earning->earnings_name.' for '.Employee::getEmployeeName(Input::get('employee')));
+        $type = Earningsetting::find($earning->earning_id);
+
+		Audit::logaudit('Earnings', 'create', 'created earning type '.$type->earning_name.' for '.Employee::getEmployeeName(Input::get('employee')));
 
 
 		return Redirect::route('other_earnings.index')->withFlashMessage('Earning successfully created!');
@@ -141,7 +169,7 @@ class EarningsController extends \BaseController {
 	{
 		$earning = Earnings::findOrFail($id);
 
-		return View::make('other_earnings.show', compact('earning'));
+		return view('other_earnings.show', compact('earning'));
 	}
 
 	/**
@@ -155,13 +183,19 @@ class EarningsController extends \BaseController {
 		$earning = DB::table('employee')
 		          ->join('earnings', 'employee.id', '=', 'earnings.employee_id')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->where('earnings.id','=',$id)
 		          ->first();
 
 	   $earningsettings = Earningsetting::all();
-       $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('other_earnings.edit', compact('earning','employees','earningsettings','currency'));
+       $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+       if ( !Entrust::can('update_earning') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		return view('other_earnings.edit', compact('earning','employees','earningsettings','currency'));
+	}
 	}
 
 	/**
@@ -227,8 +261,8 @@ class EarningsController extends \BaseController {
 	    }
 
 		$earning->update();
-
-		Audit::logaudit('Earnings', 'update', 'updated: '.$earning->earnings_name.' for '.Employee::getEmployeeName($earning->employee_id));
+        $type = Earningsetting::find($earning->earning_id);
+		Audit::logaudit('Earnings', 'update', 'updated earning type '.$type->earning_name.' for '.Employee::getEmployeeName($earning->employee_id));
 
 		return Redirect::route('other_earnings.index')->withFlashMessage('Earning successfully updated!');
 	}
@@ -242,22 +276,42 @@ class EarningsController extends \BaseController {
 	public function destroy($id)
 	{
 		$earning = Earnings::findOrFail($id);
-		
+		$type = Earningsetting::find($earning->earning_id);
+
+		if ( !Entrust::can('delete_earning') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $tern  = DB::table('transact_earnings')->where('earning_id',$id)->count();
+		if($tern>0){
+			return Redirect::route('other_earnings.index')->withDeleteMessage('Cannot delete this earning because its assigned to a payroll transaction(s)!');
+		}else{
 		Earnings::destroy($id);
 
-		Audit::logaudit('Earnings', 'delete', 'deleted: '.$earning->earnings_name.' for '.Employee::getEmployeeName($earning->employee_id));
+		Audit::logaudit('Earnings', 'delete', 'deleted earning type '.$type->earning_name.' for '.Employee::getEmployeeName($earning->employee_id));
 
 		return Redirect::route('other_earnings.index')->withDeleteMessage('Earning successfully deleted!');
+
+	}
+}
 	
 }
 
     public function view($id){
 
 		$earning = Earnings::find($id);
+		$type = Earningsetting::find($earning->earning_id);
 
-		$organization = Organization::find(Confide::user()->organization_id);
+		$organization = Organization::find(Auth::user()->organization_id);
 
-		return View::make('other_earnings.view', compact('earning'));
+		if ( !Entrust::can('view_earning') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Audit::logaudit('Earnings', 'view', 'viewed earning for employee '.Employee::getEmployeeName($earning->employee_id).' for earning type '.$type->earning_name);
+
+		return view('other_earnings.view', compact('earning'));
+	}
 		
 	}
 

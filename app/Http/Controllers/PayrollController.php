@@ -1,6 +1,22 @@
 <?php
 
-class PayrollController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Payroll;
+use App\Currency;
+use App\Employee;
+use App\Organization;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class PayrollController extends Controller {
 
     /**
      * Display a listing of branches
@@ -575,9 +591,12 @@ public function asMoney($value){
         
     for($i=$net;;$i--){
 
-    $nssf1 = DB::table('social_security')->whereNull('organization_id')->whereRaw($gross.' between income_from and income_to')->pluck('ss_amount_employee');
+    /*$nssf1 = DB::table('social_security')->whereNull('organization_id')->whereRaw($gross.' between income_from and income_to')->pluck('ss_amount_employee');
     
-    $nhif1 = DB::table('hospital_insurance')->whereNull('organization_id')->whereRaw($gross.' between income_from and income_to')->pluck('hi_amount');    
+    $nhif1 = DB::table('hospital_insurance')->whereNull('organization_id')->whereRaw($gross.' between income_from and income_to')->pluck('hi_amount');*/   
+
+    $nssf1 = Payroll::nssfcalc($gross);
+    $nhif1 = Payroll::nhifcalc($gross); 
 
     $taxable = $gross-$nssf1;
     

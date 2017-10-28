@@ -240,7 +240,7 @@ class PropertiesController extends Controller {
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
-
+        Audit::logaudit('Properties', 'view', 'viewed property '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
 		return view('properties.view', compact('property','user','retuser'));
 	}
 		

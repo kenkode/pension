@@ -254,7 +254,7 @@ class AppraisalsController extends Controller {
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
-
+        Audit::logaudit('Employee Appraisal', 'view', 'viewed appraisal '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
 		return view('appraisals.view', compact('appraisal','user'));
 	}
 		

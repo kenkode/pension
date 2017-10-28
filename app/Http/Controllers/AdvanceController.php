@@ -1,6 +1,20 @@
 <?php
 
-class AdvanceController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Account;
+use App\Advance;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class AdvanceController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -10,9 +24,9 @@ class AdvanceController extends \BaseController {
 	public function index()
 	{
 		
-        $accounts = Account::where('organization_id',Confide::user()->organization_id)->where('active',true)->get();
+        $accounts = Account::where('organization_id',Auth::user()->organization_id)->where('active',true)->get();
         
-		return View::make('advances.index', compact('accounts'));
+		return view('advances.index', compact('accounts'));
 	}
 
     public function createaccount()
@@ -22,14 +36,14 @@ class AdvanceController extends \BaseController {
       	            'code' => $postaccount['code'], 
       	            'category' => $postaccount['category'], 
       	            'active' => 1,
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('accounts')->insertGetId( $data );
 
 		if($check > 0){
          
-		Audit::logaudit('Accounts', 'create', 'created: '.$postaccount['name']);
+		Audit::logaudit('Accounts', 'create', 'created account '.$postaccount['name']);
         return $check;
         }else{
          return 1;
@@ -43,7 +57,7 @@ class AdvanceController extends \BaseController {
 		$employees = DB::table('employee')
                   ->join('employee_deductions', 'employee.id', '=', 'employee_deductions.employee_id')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id','=',Confide::user()->organization_id)
+                  ->where('organization_id','=',Auth::user()->organization_id)
                   ->where('deduction_id',1)
 		  ->get();
 
@@ -52,7 +66,7 @@ class AdvanceController extends \BaseController {
 		Audit::logaudit('advance salary', 'preview', 'previewed advance salaries');
 
 
-		return View::make('advances.preview', compact('employees'));
+		return view('advances.preview', compact('employees'));
 	}
 
     public function valid()
@@ -61,7 +75,7 @@ class AdvanceController extends \BaseController {
 
 		//print_r($accounts);
 
-		return View::make('advances.valid', compact('period'));
+		return view('advances.valid', compact('period'));
 	}
 
 	/**
@@ -74,7 +88,7 @@ class AdvanceController extends \BaseController {
 		$employees = DB::table('employee')
                   ->join('employee_deductions', 'employee.id', '=', 'employee_deductions.employee_id')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id','=',Confide::user()->organization_id)
+                  ->where('organization_id','=',Auth::user()->organization_id)
                   ->where('deduction_id',1)
                   ->where('instalments','>',0)
                   ->get();
@@ -85,7 +99,7 @@ class AdvanceController extends \BaseController {
 
 		Audit::logaudit('Advance Salaries', 'preview', 'previewed advance salaries');
 
-		return View::make('advances.preview', compact('employees','period','account'));
+		return view('advances.preview', compact('employees','period','account'));
 	}
 
 	public function del_exist()
@@ -97,7 +111,7 @@ class AdvanceController extends \BaseController {
 
     $period   = $part1.$part2.$part3;  
 
-    $data   = DB::table('transact_advances')->where('financial_month_year', '=', $period)->where('organization_id','=',Confide::user()->organization_id)->delete();
+    $data   = DB::table('transact_advances')->where('financial_month_year', '=', $period)->where('organization_id','=',Auth::user()->organization_id)->delete();
    
     if($data > 0){
       return 0;
@@ -119,7 +133,7 @@ class AdvanceController extends \BaseController {
 		$employees = DB::table('employee')
                   ->join('employee_deductions', 'employee.id', '=', 'employee_deductions.employee_id')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id','=',Confide::user()->organization_id)
+                  ->where('organization_id','=',Auth::user()->organization_id)
                   ->where('deduction_id',1)
                   ->where('instalments','>',0)
                   ->get();
@@ -130,7 +144,7 @@ class AdvanceController extends \BaseController {
 		$advance->amount = $employee->deduction_amount; 
 		$advance->financial_month_year = Input::get('period');
         $advance->account_id = Input::get('account');
-        $advance->organization_id = Confide::user()->organization_id;
+        $advance->organization_id = Auth::user()->organization_id;
         $advance->save();
 		}
 
@@ -154,7 +168,7 @@ class AdvanceController extends \BaseController {
 	{
 		$advance = Advance::findOrFail($id);
 
-		return View::make('advances.show', compact('advance'));
+		return view('advances.show', compact('advance'));
 	}
 
 	/**
@@ -167,7 +181,7 @@ class AdvanceController extends \BaseController {
 	{
 		$deduction = Deduction::find($id);
 
-		return View::make('deductions.edit', compact('deduction'));
+		return view('deductions.edit', compact('deduction'));
 	}
 
 	/**

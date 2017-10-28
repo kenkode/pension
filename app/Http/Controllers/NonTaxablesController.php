@@ -71,7 +71,7 @@ class NonTaxablesController extends Controller {
 
 		$nontaxable->save();
 
-		Audit::logaudit('Nontaxables', 'create', 'created: '.$nontaxable->name);
+		Audit::logaudit('Nontaxables', 'create', 'created non taxable income type '.$nontaxable->name);
 
 		return Redirect::route('nontaxables.index')->withFlashMessage('Non taxable income successfully created!');
 	}
@@ -126,7 +126,7 @@ class NonTaxablesController extends Controller {
 		$nontaxable->name = Input::get('name');
 		$nontaxable->update();
 
-		Audit::logaudit('Nontaxable', 'update', 'updated: '.$nontaxable->name);
+		Audit::logaudit('Nontaxable', 'update', 'updated non taxable income type '.$nontaxable->name);
 
 		return Redirect::route('nontaxables.index')->withFlashMessage('Non taxable income successfully updated!');
 	}
@@ -154,7 +154,7 @@ class NonTaxablesController extends Controller {
 		
 		Nontaxable::destroy($id);
 
-		Audit::logaudit('Nontaxables', 'delete', 'deleted: '.$nontaxable->name);
+		Audit::logaudit('Nontaxables', 'delete', 'deleted non taxable income type '.$nontaxable->name);
 
 		return Redirect::route('nontaxables.index')->withDeleteMessage('Non taxable income successfully deleted!');
 	}

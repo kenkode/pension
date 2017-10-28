@@ -1,4 +1,4 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 
 <?php function asMoney($value){
 
@@ -8,7 +8,12 @@
 
     ?>
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+<?php
+use Illuminate\Support\Facades\Input;
+use App\Payroll;
+?>
+
+{{Html::script('media/jquery-1.8.0.min.js') }}
 
 <script type="text/javascript">
 $(document).ready(function(){
@@ -103,7 +108,7 @@ $(document).ready(function(){
 
     
         
-         @if ($errors->has())
+        @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -128,6 +133,7 @@ $(document).ready(function(){
 
   <div role="tabpanel" class="tab-pane active" id="grosstonet" class="displayrecord">
     <form id="grossform" accept-charset="UTF-8">
+      {{ csrf_field() }}
     <fieldset>
 
       <?php
@@ -196,6 +202,7 @@ $(document).ready(function(){
 
 <div role="tabpanel" class="tab-pane" id="nettogross">
   <form method="POST" id="netform" accept-charset="UTF-8">
+    {{ csrf_field() }}
     <fieldset>
 
        <?php

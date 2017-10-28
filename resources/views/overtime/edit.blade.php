@@ -6,9 +6,13 @@ function asMoney($value) {
 
 ?>
 
-@extends('layouts.payroll')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+<style>
+    .select2 {z-index:10 !important; }
+  </style>
+
+{{Html::script('media/jquery-1.8.0.min.js') }}
 
 <script type="text/javascript">
 document.getElementById("edate").value = '';
@@ -122,7 +126,7 @@ $(document).ready(function() {
 
     
         
-         @if ($errors->has())
+         @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -131,7 +135,7 @@ $(document).ready(function() {
         @endif
 
          <form method="POST" action="{{{ URL::to('overtimes/update/'.$overtime->id) }}}" accept-charset="UTF-8">
-   
+    {{ csrf_field() }}
     <fieldset>
 
       <input class="form-control" placeholder="" type="hidden" readonly name="employeeid" id="employeeid" value="{{$overtime->employee->id}}">
@@ -145,7 +149,7 @@ $(document).ready(function() {
               
         <div class="form-group">
                         <label for="username">Type <span style="color:red">*</span></label>
-                        <select name="type" id="type" class="form-control">
+                        <select name="type" id="type" class="form-control select2">
                             <option></option>
                             <option value="Hourly"<?= ($overtime->type=='Hourly')?'selected="selected"':''; ?>> Hourly</option>
                             <option value="Daily"<?= ($overtime->type=='Daily')?'selected="selected"':''; ?>> Daily</option>
@@ -162,7 +166,7 @@ $(document).ready(function() {
 
          <div class="form-group">
                         <label for="username">Formular <span style="color:red">*</span></label>
-                        <select name="formular" id="formular" class="form-control forml">
+                        <select name="formular" id="formular" class="form-control forml select2">
                             <option></option>
                             <option value="One Time"<?= ($overtime->formular=='One Time')?'selected="selected"':''; ?>>One Time</option>
                             <option value="Recurring"<?= ($overtime->formular=='Recurring')?'selected="selected"':''; ?>>Recurring</option>
@@ -205,7 +209,7 @@ $(document).ready(function() {
         
           <button type="submit" class="btn btn-primary btn-sm">Update Overtime</button>
         </div>
-
+        <br><br>
     </fieldset>
 </form>
         

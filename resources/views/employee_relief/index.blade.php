@@ -6,7 +6,7 @@ function asMoney($value) {
 
 ?>
 
-@extends('layouts.payroll')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">

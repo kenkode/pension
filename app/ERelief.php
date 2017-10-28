@@ -1,6 +1,12 @@
 <?php
 
-class ERelief extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class ERelief extends Model {
 	/*
 	use \Traits\Encryptable;
 
@@ -33,11 +39,11 @@ public static $messages = array(
 
 	public function employee(){
 
-		return $this->belongsTo('Employee');
+		return $this->belongsTo('App\Employee');
 	}
 	public function relief(){
 
-		return $this->belongsTo('Relief');
+		return $this->belongsTo('App\Relief');
 	}
 
 }

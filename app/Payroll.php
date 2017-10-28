@@ -1,6 +1,14 @@
 <?php
 
-class Payroll extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Support\Facades\Auth;
+
+use DB;
+
+class Payroll extends Model {
     public $table = "transact";
 
     /*
@@ -40,7 +48,7 @@ public static $rules = [
 
     public function employees(){
 
-        return $this->hasMany('Employee');
+        return $this->hasMany('App\Employee');
     }
 
     public static function allowances($id,$allowance_id,$period){
@@ -54,7 +62,7 @@ public static $rules = [
     $total_allws = DB::table('employee_allowances')
                      ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowances'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$allowance_id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('allowance_id', '=', $allowance_id)
@@ -85,7 +93,7 @@ public static $rules = [
     $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
@@ -93,7 +101,7 @@ public static $rules = [
     $allw = DB::table('employee_allowances')
                      ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
                      ->where('in_employment','Y')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($allowance_id,$start,$jgroup){
                        $query->where('allowance_id', '=', $allowance_id)
                              ->where('job_group_id',$jgroup->id)
@@ -112,7 +120,7 @@ public static $rules = [
         $allw = DB::table('employee_allowances')
                      ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
                      ->where('in_employment','Y')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($allowance_id,$start,$jgroup){
                        $query->where('allowance_id', '=', $allowance_id)
                              ->where('formular', '=', 'Recurring')
@@ -142,7 +150,7 @@ public static $rules = [
     $total_allws = DB::table('employee_allowances')
                      ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowances'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('formular', '=', 'Recurring')
@@ -173,7 +181,7 @@ public static $rules = [
     $total_nontaxes = DB::table('employeenontaxables')
                      ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_income'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$nontaxable_id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('nontaxable_id', '=', $nontaxable_id)
@@ -204,7 +212,7 @@ public static $rules = [
     $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
@@ -212,7 +220,7 @@ public static $rules = [
     $nontaxable = DB::table('employeenontaxables')
                      ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
                      ->where('in_employment','Y')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($nontaxable_id,$start,$jgroup){
                        $query->where('nontaxable_id', '=', $nontaxable_id)
                              ->where('formular', '=', 'Recurring')
@@ -231,7 +239,7 @@ public static $rules = [
        $nontaxable = DB::table('employeenontaxables')
                      ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
                      ->where('in_employment','Y')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($nontaxable_id,$start,$jgroup){
                        $query->where('nontaxable_id', '=', $nontaxable_id)
                              ->where('formular', '=', 'Recurring')
@@ -261,7 +269,7 @@ public static $rules = [
     $total_nontaxes = DB::table('employeenontaxables')
                      ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_income'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('formular', '=', 'Recurring')
@@ -288,7 +296,7 @@ public static $rules = [
                      ->join('employee', 'employee_relief.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(relief_amount),0.00) as total_reliefs'))
                      ->where('employee_id', '=', $id)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('relief_id', '=', $relief_id)
                      ->get();
     foreach($total_rels as $total_rel){
@@ -304,14 +312,14 @@ public static $rules = [
     $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
 
     $rel = DB::table('employee_relief')
                      ->join('employee', 'employee_relief.employee_id', '=', 'employee.id')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where('job_group_id',$jgroup->id)
                      ->where('relief_id', '=', $relief_id)
@@ -319,7 +327,7 @@ public static $rules = [
     }else{
        $rel = DB::table('employee_relief')
                      ->join('employee', 'employee_relief.employee_id', '=', 'employee.id')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where('job_group_id','!=',$jgroup->id)
                      ->where('relief_id', '=', $relief_id)
@@ -335,7 +343,7 @@ public static $rules = [
     $total_rels = DB::table('employee_relief')
                      ->join('employee', 'employee_relief.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(relief_amount),0.00) as total_reliefs'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('employee_id', '=', $id)
                      ->get();
     foreach($total_rels as $total_rel){
@@ -356,7 +364,7 @@ public static $rules = [
     $total_earns = DB::table('earnings')
                      ->join('employee', 'earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$earning_id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('earning_id', '=', $earning_id)
@@ -394,7 +402,7 @@ public static $rules = [
    $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
@@ -402,7 +410,7 @@ public static $rules = [
     $total_earns = DB::table('earnings')
                      ->join('employee', 'earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where(function ($query) use ($earning_id,$start,$jgroup){
                        $query->where('earning_id', '=', $earning_id)
@@ -429,7 +437,7 @@ public static $rules = [
       $total_earns = DB::table('earnings')
                      ->join('employee', 'earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where(function ($query) use ($earning_id,$start,$jgroup){
                        $query->where('earning_id', '=', $earning_id)
@@ -469,7 +477,7 @@ public static $rules = [
     $total_earns = DB::table('earnings')
                      ->join('employee', 'earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('formular', '=', 'Recurring')
@@ -500,7 +508,7 @@ public static $rules = [
     $pays = DB::table('employee')
                      ->select(DB::raw('COALESCE(sum(basic_pay),0.00) as total_pay'))
                      ->where('id', '=', $id)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->get();
     foreach($pays as $pay){
     $sal = $pay->total_pay;
@@ -514,7 +522,7 @@ public static $rules = [
    }
 
    public static function total_pay(){
-    $salary = DB::table('employee')->where('employee.organization_id',Confide::user()->organization_id)->sum('basic_pay');
+    $salary = DB::table('employee')->where('employee.organization_id',Auth::user()->organization_id)->sum('basic_pay');
     
     return round($salary,2);
    }
@@ -530,7 +538,7 @@ public static $rules = [
     $total_overtimes = DB::table('overtimes')
                      ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(amount*period),0.00) as overtimes'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$overtime,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('type', '=', $overtime)
@@ -561,7 +569,7 @@ public static $rules = [
     $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
@@ -569,7 +577,7 @@ public static $rules = [
     $otime = DB::table('overtimes')
                      ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
                      ->where('in_employment','Y')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($overtime,$start,$jgroup){
                        $query->where('type', '=', $overtime)
                              ->where('job_group_id',$jgroup->id)
@@ -587,7 +595,7 @@ public static $rules = [
     $otime = DB::table('overtimes')
                      ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
                      ->where('in_employment','Y')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($overtime,$start,$jgroup){
                        $query->where('type', '=', $overtime)
                              ->where('job_group_id','!=',$jgroup->id)
@@ -617,7 +625,7 @@ public static $rules = [
     $total_overtimes = DB::table('overtimes')
                      ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(amount*period),0.00) as overtimes'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('formular', '=', 'Recurring')
@@ -663,7 +671,7 @@ public static $rules = [
     
     $total_allw = DB::table('employee_allowances')
                      ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($start){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start);
@@ -676,7 +684,7 @@ public static $rules = [
 
     $earn = DB::table('earnings')
                      ->join('employee', 'earnings.employee_id', '=', 'employee.id')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($start){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start);
@@ -689,7 +697,7 @@ public static $rules = [
 
       $otime = DB::table('overtimes')
                      ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($start){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start);
@@ -836,7 +844,7 @@ public static $rules = [
     if($employee->hospital_insurance_applicable=='0'){
     $nhifAmt = 0.00;
     }else{
-    $nhif_amts = DB::table('hospital_insurance')->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+    $nhif_amts = DB::table('hospital_insurance')->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     foreach($nhif_amts as $nhif_amt){
     $from=$nhif_amt->income_from;
     $to=$nhif_amt->income_to;
@@ -860,7 +868,7 @@ public static $rules = [
     $deds = DB::table('employee_deductions')
                      ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction,instalments'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$deduction_id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('deduction_id', '=', $deduction_id)
@@ -895,7 +903,7 @@ public static $rules = [
     $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
@@ -903,7 +911,7 @@ public static $rules = [
    $deds = DB::table('employee_deductions')
                      ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction,instalments')) 
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where(function ($query) use ($deduction_id,$start,$jgroup){
                        $query->where('deduction_id', '=', $deduction_id)
@@ -929,7 +937,7 @@ public static $rules = [
      $deds = DB::table('employee_deductions')
                      ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction,instalments')) 
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where(function ($query) use ($deduction_id,$start,$jgroup){
                        $query->where('deduction_id', '=', $deduction_id)
@@ -968,7 +976,7 @@ public static $rules = [
     $deds = DB::table('employee_deductions')
                      ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction,instalments'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where(function ($query) use ($id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('formular', '=', 'Recurring')
@@ -1020,7 +1028,7 @@ public static $rules = [
     
     $pays = DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(basic_pay),0.00) as total_pay'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1040,7 +1048,7 @@ public static $rules = [
     
     $pays = DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(taxable_income),0.00) as total_pay'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1058,7 +1066,7 @@ public static $rules = [
     
     $total_hallws = DB::table('transact_allowances')
                      ->select('employee_id',DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowances'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->where('employee_allowance_id', '=', 1)
@@ -1079,7 +1087,7 @@ public static $rules = [
     
     $total_tallws = DB::table('transact_allowances')
                      ->select('employee_id',DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowances'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->where('employee_allowance_id', '=', 2)
@@ -1100,7 +1108,7 @@ public static $rules = [
     
     $total_oallws = DB::table('transact_allowances')
                      ->select('employee_id',DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowances'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->where('employee_allowance_id', '<>', 1)
@@ -1122,7 +1130,7 @@ public static $rules = [
     
     $total_rels = DB::table('transact_reliefs')
                      ->select('employee_id','relief_name')
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1142,7 +1150,7 @@ public static $rules = [
     
     $total_rels = DB::table('transact_reliefs')
                      ->select('employee_id',DB::raw('COALESCE(sum(relief_amount),0.00) as total_reliefs'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1162,7 +1170,7 @@ public static $rules = [
     
     $total_earns = DB::table('transact_earnings')
         ->select('employee_id','earning_name')
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', $period)
         ->where('employee_id' ,'=', $id)
         ->groupBy('employee_id')
@@ -1182,7 +1190,7 @@ public static $rules = [
     
     $total_earns = DB::table('transact_earnings')
         ->select('employee_id',DB::raw('COALESCE(sum(earning_amount),0.00) as total_earnings'))
-        ->where('organization_id',Confide::user()->organization_id)
+        ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', $period)
         ->where('employee_id' ,'=', $id)
         ->groupBy('employee_id')
@@ -1202,7 +1210,7 @@ public static $rules = [
     
     $total_overtimes = DB::table('transact_overtimes')
                      ->select('employee_id','overtime_type')
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id' ,'=', $id)
                      ->groupBy('employee_id')
@@ -1222,7 +1230,7 @@ public static $rules = [
     
     $total_overtimes = DB::table('transact_overtimes')
                      ->select('employee_id',DB::raw('COALESCE(sum(overtime_period*overtime_amount),0.00) as overtimes'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id' ,'=', $id)
                      ->groupBy('employee_id')
@@ -1242,7 +1250,7 @@ public static $rules = [
     
     $total_paye = DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(paye),0.00) as paye'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id' ,'=', $id)
                      ->groupBy('employee_id')
@@ -1260,7 +1268,7 @@ public static $rules = [
     
     $total_tallws = DB::table('transact_allowances')
                      ->select('employee_id','allowance_name')
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('allowance_name')
@@ -1280,7 +1288,7 @@ public static $rules = [
     
     $total_tallws = DB::table('transact_allowances')
                      ->select('employee_id',DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowances'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('allowance_name')
@@ -1300,7 +1308,7 @@ public static $rules = [
     
     $total_nontaxes = DB::table('transact_nontaxables')
                      ->select('employee_id','nontaxable_name')
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('nontaxable_name')
@@ -1320,7 +1328,7 @@ public static $rules = [
     
     $total_nontaxes = DB::table('transact_nontaxables')
                      ->select('employee_id',DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_nontaxables'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('nontaxable_name')
@@ -1340,7 +1348,7 @@ public static $rules = [
     
     $total_nssfs = DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(nssf_amount),0.00) as nssf'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1360,7 +1368,7 @@ public static $rules = [
     
     $total_nhifs = DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(nhif_amount),0.00) as nhif'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1378,7 +1386,7 @@ public static $rules = [
     
     $total_deds= DB::table('transact_deductions')
                      ->select('employee_id','deduction_name')
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('deduction_name')
@@ -1398,7 +1406,7 @@ public static $rules = [
     
     $total_deds= DB::table('transact_deductions')
                      ->select('employee_id',DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deductions'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                     ->groupBy('deduction_name')
@@ -1418,7 +1426,7 @@ public static $rules = [
     
     $total_deds= DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(total_deductions),0.00) as total_deductions'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1438,7 +1446,7 @@ public static $rules = [
     
     $total_nets= DB::table('transact')
                      ->select('employee_id',DB::raw('COALESCE(sum(net),0.00) as total_net'))
-                     ->where('organization_id',Confide::user()->organization_id)
+                     ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
                      ->groupBy('employee_id')
@@ -1479,7 +1487,7 @@ public static $rules = [
     $a = str_replace( ',', '', $gross);
     $total = $a;
     
-    $nssf_amts = DB::table('social_security')->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+    $nssf_amts = DB::table('social_security')->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     foreach($nssf_amts as $nssf_amt){
     $from=$nssf_amt->income_from;
     $to=$nssf_amt->income_to;
@@ -1495,7 +1503,7 @@ public static $rules = [
     $a = str_replace( ',', '', $gross);
     $total = $a;
    
-    $nhif_amts = DB::table('hospital_insurance')->whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
+    $nhif_amts = DB::table('hospital_insurance')->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     foreach($nhif_amts as $nhif_amt){
     $from=$nhif_amt->income_from;
     $to=$nhif_amt->income_to;
@@ -1547,7 +1555,7 @@ public static $rules = [
     $a = str_replace( ',', '', $net);
     $total = $a;
     
-    $nssf_amts = DB::table('social_security')->whereNull('employee.organization_id')->orWhere('employee.organization_id',Confide::user()->organization_id)->get();
+    $nssf_amts = DB::table('social_security')->whereNull('employee.organization_id')->orWhere('employee.organization_id',Auth::user()->organization_id)->get();
     foreach($nssf_amts as $nssf_amt){
     $from=$nssf_amt->income_from;
     $to=$nssf_amt->income_to;
@@ -1563,7 +1571,7 @@ public static $rules = [
     $a = str_replace( ',', '', $net);
     $total = $a;
    
-    $nhif_amts = DB::table('hospital_insurance')->whereNull('employee.organization_id')->orWhere('employee.organization_id',Confide::user()->organization_id)->get();
+    $nhif_amts = DB::table('hospital_insurance')->whereNull('employee.organization_id')->orWhere('employee.organization_id',Auth::user()->organization_id)->get();
     foreach($nhif_amts as $nhif_amt){
     $from=$nhif_amt->income_from;
     $to=$nhif_amt->income_to;
@@ -1602,7 +1610,7 @@ public static $rules = [
 
     $total_earns = DB::table('transact_earnings')
                   ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', $period)
                   ->where('personal_file_number' ,'=', $id)
                   ->where('earning_name' ,'=', $name)
@@ -1623,7 +1631,7 @@ public static $rules = [
 
     $total_overtimes = DB::table('transact_overtimes')
                   ->join('employee', 'transact_overtimes.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', $period)
                   ->where('personal_file_number' ,'=', $id)
                   ->where('overtime_type' ,'=', $name)
@@ -1644,7 +1652,7 @@ public static $rules = [
 
     $total_allowances = DB::table('transact_allowances')
                   ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', $period)
                   ->where('personal_file_number' ,'=', $id)
                   ->where('allowance_name' ,'=', $name)
@@ -1665,7 +1673,7 @@ public static $rules = [
 
     $total_nontaxs = DB::table('transact_nontaxables')
                   ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', $period)
                   ->where('personal_file_number' ,'=', $id)
                   ->where('nontaxable_name' ,'=', $name)
@@ -1686,7 +1694,7 @@ public static $rules = [
 
     $total_rels = DB::table('transact_reliefs')
                   ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', $period)
                   ->where('personal_file_number' ,'=', $id)
                   ->where('relief_name' ,'=', $name)
@@ -1707,7 +1715,7 @@ public static $rules = [
 
     $total_deds = DB::table('transact_deductions')
                   ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', $period)
                   ->where('personal_file_number' ,'=', $id)
                   ->where('deduction_name' ,'=', $name)
@@ -1732,7 +1740,7 @@ public static $rules = [
     $total_earns = DB::table('transact_earnings')
                      ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earning_amount),0.00) as total_earnings'))
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('earning_name' ,'=', $name)
                      ->get();
@@ -1741,7 +1749,7 @@ public static $rules = [
                      ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earning_amount),0.00) as total_earnings'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('branch_id' ,'=', $branch)
                      ->where('earning_name' ,'=', $name)
                      ->get();
@@ -1750,7 +1758,7 @@ public static $rules = [
                      ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earning_amount),0.00) as total_earnings'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('department_id' ,'=', $dept)
                      ->where('earning_name' ,'=', $name)
                      ->get();
@@ -1759,7 +1767,7 @@ public static $rules = [
                      ->join('employee', 'transact_earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earning_amount),0.00) as total_earnings'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('branch_id' ,'=', $branch)
                      ->where('department_id' ,'=', $dept)
                      ->where('earning_name' ,'=', $name)
@@ -1785,7 +1793,7 @@ public static $rules = [
                      ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowance'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('allowance_name' ,'=', $name)
                      ->get();
     }else if($branch != 'All' && $dept == 'All'){
@@ -1794,7 +1802,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowance'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('allowance_name' ,'=', $name)
                      ->get();
     }else if($branch == 'All' && $dept != 'All'){
@@ -1802,7 +1810,7 @@ public static $rules = [
                      ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowance'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('department_id' ,'=', $dept)
                      ->where('allowance_name' ,'=', $name)
                      ->get();
@@ -1811,7 +1819,7 @@ public static $rules = [
                      ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(allowance_amount),0.00) as total_allowance'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('branch_id' ,'=', $branch)
                      ->where('department_id' ,'=', $dept)
                      ->where('allowance_name' ,'=', $name)
@@ -1836,7 +1844,7 @@ public static $rules = [
                      ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_nontaxable'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('nontaxable_name' ,'=', $name)
                      ->get();
      }else if($branch != 'All' && $dept == 'All'){
@@ -1845,7 +1853,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_nontaxable'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('nontaxable_name' ,'=', $name)
                      ->get();
      }else if($branch == 'All' && $dept != 'All'){
@@ -1854,7 +1862,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_nontaxable'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('department_id' ,'=', $dept)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('nontaxable_name' ,'=', $name)
                      ->get();
      }else if($branch != 'All' && $dept != 'All'){
@@ -1863,7 +1871,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(nontaxable_amount),0.00) as total_nontaxable'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('department_id' ,'=', $dept)
                      ->where('nontaxable_name' ,'=', $name)
                      ->get();
@@ -1887,7 +1895,7 @@ public static $rules = [
                      ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(relief_amount),0.00) as total_relief'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('relief_name' ,'=', $name)
                      ->get();
     }else if($branch != 'All' && $dept == 'All'){
@@ -1895,7 +1903,7 @@ public static $rules = [
                      ->join('employee', 'transact_reliefs.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(relief_amount),0.00) as total_relief'))
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('relief_name' ,'=', $name)
                      ->get();
@@ -1905,7 +1913,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(relief_amount),0.00) as total_relief'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('department_id' ,'=', $dept)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('relief_name' ,'=', $name)
                      ->get();
     }else if($branch != 'All' && $dept != 'All'){
@@ -1914,7 +1922,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(relief_amount),0.00) as total_relief'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('department_id' ,'=', $dept)
                      ->where('relief_name' ,'=', $name)
                      ->get();
@@ -1938,7 +1946,7 @@ public static $rules = [
                      ->join('employee', 'transact_deductions.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction'))
                      ->where('financial_month_year' ,'=', $period)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('deduction_name' ,'=', $name)
                      ->get();
     }else if($branch != 'All' && $dept == 'All'){
@@ -1947,7 +1955,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('deduction_name' ,'=', $name)
                      ->get();
     }else if($branch == 'All' && $dept != 'All'){
@@ -1956,7 +1964,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('department_id' ,'=', $dept)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('deduction_name' ,'=', $name)
                      ->get();
     }else if($branch != 'All' && $dept != 'All'){
@@ -1965,7 +1973,7 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(deduction_amount),0.00) as total_deduction'))
                      ->where('financial_month_year' ,'=', $period)
                      ->where('branch_id' ,'=', $branch)
-                     ->where('employee.organization_id',Confide::user()->organization_id)
+                     ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('department_id' ,'=', $dept)
                      ->where('deduction_name' ,'=', $name)
                      ->get();

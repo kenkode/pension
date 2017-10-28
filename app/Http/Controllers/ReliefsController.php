@@ -24,7 +24,7 @@ class ReliefsController extends Controller {
 	{
 		$reliefs = Relief::all();
 
-		if ( !Entrust::can('view_relief') ) // Checks the current user
+		if ( !Entrust::can('view_relief_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -41,7 +41,7 @@ class ReliefsController extends Controller {
 	 */
 	public function create()
 	{
-		if ( !Entrust::can('create_relief') ) // Checks the current user
+		if ( !Entrust::can('create_relief_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -71,7 +71,7 @@ class ReliefsController extends Controller {
 
 		$relief->save();
 
-		Audit::logaudit('Relief', 'create', 'created relief '.Input::get('name'));
+		Audit::logaudit('Relief', 'create', 'created relief type '.Input::get('name'));
 
 		return Redirect::route('reliefs.index')->withFlashMessage('Relief successfully created!');
 	}
@@ -99,7 +99,7 @@ class ReliefsController extends Controller {
 	{
 		$relief = Relief::find($id);
 
-        if ( !Entrust::can('update_relief') ) // Checks the current user
+        if ( !Entrust::can('update_relief_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -127,7 +127,7 @@ class ReliefsController extends Controller {
 		$relief->relief_name = Input::get('name');
 		$relief->update();
 
-		Audit::logaudit('Relief', 'update', 'updated relief '.Input::get('name'));
+		Audit::logaudit('Relief', 'update', 'updated relief type '.Input::get('name'));
 
 		return Redirect::route('reliefs.index')->withFlashMessage('Relief successfully updated!');
 	}
@@ -141,7 +141,7 @@ class ReliefsController extends Controller {
 	public function destroy($id)
 	{
 		$relief = Relief::findOrFail($id);
-		if ( !Entrust::can('update_relief') ) // Checks the current user
+		if ( !Entrust::can('delete_relief_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -154,7 +154,7 @@ class ReliefsController extends Controller {
 		}else{
 		Relief::destroy($id);
 
-		Audit::logaudit('Relief', 'delete', 'deleted relief '.$relief->relief_name);
+		Audit::logaudit('Relief', 'delete', 'deleted relief type '.$relief->relief_name);
 
 		return Redirect::route('reliefs.index')->withDeleteMessage('Relief successfully deleted!');
 	}

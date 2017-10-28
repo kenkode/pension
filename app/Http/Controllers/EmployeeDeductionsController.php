@@ -1,6 +1,23 @@
 <?php
 
-class EmployeeDeductionsController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\EDeduction;
+use App\Currency;
+use App\Employee;
+use App\Organization;
+use App\Deduction;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class EmployeeDeductionsController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -13,10 +30,16 @@ class EmployeeDeductionsController extends \BaseController {
 		          ->join('employee_deductions', 'employee.id', '=', 'employee_deductions.employee_id')
 		          ->join('deductions', 'employee_deductions.deduction_id', '=', 'deductions.id')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->select('employee_deductions.id','first_name','middle_name','last_name','deduction_amount','deduction_name')
 		          ->get();
-		return View::make('employee_deductions.index', compact('deds'));
+
+		if ( !Entrust::can('view_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{          
+		return view('employee_deductions.index', compact('deds'));
+	}
 	}
 
 	/**
@@ -29,25 +52,31 @@ class EmployeeDeductionsController extends \BaseController {
 	{
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->get();
-		$deductions = Deduction::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('employee_deductions.create',compact('employees','deductions','currency'));
+		$deductions = Deduction::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+		if ( !Entrust::can('create_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{    
+		return view('employee_deductions.create',compact('employees','deductions','currency'));
+	}
 	}
 
 	public function creatededuction()
 	{
       $postdeduction = Input::all();
       $data = array('deduction_name' => $postdeduction['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('deductions')->insertGetId( $data );
 
 		if($check > 0){
          
-		Audit::logaudit('Deductions', 'create', 'created: '.$postdeduction['name']);
+		Audit::logaudit('Deductions', 'create', 'created deduction type '.$postdeduction['name']);
         return $check;
         }else{
          return 1;
@@ -118,8 +147,9 @@ class EmployeeDeductionsController extends \BaseController {
 
         
 		$ded->save();
+		$d = Deduction::findOrFail($ded->deduction_id);
 
-		Audit::logaudit('Employee Deduction', 'create', 'assigned: '.$ded->deduction_amount.' to '.Employee::getEmployeeName(Input::get('employee')));
+		Audit::logaudit('Employee Deduction', 'create', 'assigned deduction amount '.$ded->deduction_amount.' to '.Employee::getEmployeeName(Input::get('employee')).' for deduction type '.$d->deduction_name);
 
 		return Redirect::route('employee_deductions.index')->withFlashMessage('Employee Deduction successfully created!');
 	}
@@ -134,7 +164,7 @@ class EmployeeDeductionsController extends \BaseController {
 	{
 		$ded = EDeduction::findOrFail($id);
 
-		return View::make('employee_deductions.show', compact('ded'));
+		return view('employee_deductions.show', compact('ded'));
 	}
 
 	/**
@@ -146,10 +176,16 @@ class EmployeeDeductionsController extends \BaseController {
 	public function edit($id)
 	{
 		$ded = EDeduction::find($id);
-		$employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
-                $deductions = Deduction::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-                $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('employee_deductions.edit', compact('ded','employees','deductions','currency'));
+		$employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+                $deductions = Deduction::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+                $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+        if ( !Entrust::can('update_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{    
+		return view('employee_deductions.edit', compact('ded','employees','deductions','currency'));
+	}
 	}
 
 	/**
@@ -212,8 +248,9 @@ class EmployeeDeductionsController extends \BaseController {
 	    }
 
 		$ded->update();
+		$d = Deduction::findOrFail($ded->deduction_id);
 
-		Audit::logaudit('Employee Deduction', 'update', 'assigned: '.$ded->deduction_amount.' for '.Employee::getEmployeeName($ded->employee_id));
+		Audit::logaudit('Employee Deduction', 'update', 'updated deduction '.$d->deduction_name.' for employee '.Employee::getEmployeeName($ded->employee_id));
 
 		return Redirect::route('employee_deductions.index')->withFlashMessage('Employee Deduction successfully updated!');
 	}
@@ -227,11 +264,23 @@ class EmployeeDeductionsController extends \BaseController {
 	public function destroy($id)
 	{
 		$ded = EDeduction::findOrFail($id);
+		$d = Deduction::findOrFail($ded->deduction_id);
+
+		if ( !Entrust::can('delete_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{    
+        $tded  = DB::table('transact_deductions')->where('employee_deduction_id',$id)->count();
+		if($tded>0){
+			return Redirect::route('employee_deductions.index')->withDeleteMessage('Cannot delete this deduction because its assigned to a payroll transaction(s)!');
+		}else{
 		EDeduction::destroy($id);
 
-		Audit::logaudit('Employee Deduction', 'delete', 'deleted: '.$ded->deduction_amount.' for '.Employee::getEmployeeName($ded->employee_id));
+		Audit::logaudit('Employee Deduction', 'delete', 'deleted deduction '.$d->deduction_name.' for '.Employee::getEmployeeName($ded->employee_id));
 
 		return Redirect::route('employee_deductions.index')->withDeleteMessage('Employee Deduction successfully deleted!');
+	}
+    }
 	}
 
 	public function view($id){
@@ -240,13 +289,19 @@ class EmployeeDeductionsController extends \BaseController {
 		          ->join('employee_deductions', 'employee.id', '=', 'employee_deductions.employee_id')
 		          ->join('deductions', 'employee_deductions.deduction_id', '=', 'deductions.id')
 		          ->where('employee_deductions.id','=',$id)
-		          ->where('employee.organization_id',Confide::user()->organization_id)
-  ->select('employee_deductions.id','first_name','last_name','middle_name','formular','instalments','deduction_amount','deduction_name','deduction_date','last_day_month','photo','signature')
+		          ->where('employee.organization_id',Auth::user()->organization_id)
+                  ->select('employee_deductions.id','first_name','last_name','middle_name','formular','instalments','deduction_amount','deduction_name','deduction_date','last_day_month','photo','signature','employee_id')
 		          ->first();
 
-		$organization = Organization::find(Confide::user()->organization_id);
-
-		return View::make('employee_deductions.view', compact('ded'));
+		$organization = Organization::find(Auth::user()->organization_id);
+        
+        if ( !Entrust::can('view_deduction') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{ 
+        Audit::logaudit('Employee Allowances', 'view', 'viewed deduction for employee '.Employee::getEmployeeName($ded->employee_id).' for deduction type '.$ded->deduction_name);  
+		return view('employee_deductions.view', compact('ded'));
+	}
 		
 	}
 

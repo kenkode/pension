@@ -1,7 +1,7 @@
 
-@extends('layouts.payroll')
+@extends('layouts.app')
 
-{{ HTML::script('media/jquery-1.8.0.min.js') }}
+{{ Html::script('media/jquery-1.8.0.min.js') }}
 
 <?php
 $part = explode("-", $period);
@@ -12,7 +12,7 @@ $start  = date('Y-m-01', strtotime($end_date));
 
      $per = DB::table('transact_advances')
           ->where('financial_month_year','=',$period)
-          ->where('organization_id','=',Confide::user()->organization_id)
+          ->where('organization_id','=',Auth::user()->organization_id)
           ->count();
      if($per>0){?>
 
@@ -76,7 +76,7 @@ function asMoney($value) {
 
     
     <form method="POST" action="{{{ URL::to('advance') }}}" accept-charset="UTF-8">
-
+{{ csrf_field() }}
       <input type="hidden" name="period" value="{{ $period }}"> 
        <input type="hidden" name="account" value="{{ $account }}"> 
 

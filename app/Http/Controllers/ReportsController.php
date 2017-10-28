@@ -32,8 +32,12 @@ class ReportsController extends Controller {
 
   public function selstate()
   {
-
+    if ( !Entrust::can('employee_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.selectStateEmployee');
+  }
   }
 
   public function employees(){
@@ -366,8 +370,12 @@ class ReportsController extends Controller {
   public function emp_id()
   {
     $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
-
+    if ( !Entrust::can('employee_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.ind_emp', compact('employees'));
+  }
   }
 
     public function individual(){
@@ -395,8 +403,12 @@ class ReportsController extends Controller {
         $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
         $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
-
+        if ( !Entrust::can('occurrence_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pdf.selectEmployee', compact('employees','branches','departments'));
+      }
     }
 
     public function occurence(){
@@ -1061,7 +1073,12 @@ class ReportsController extends Controller {
     {
             
        $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+       if ( !Entrust::can('property_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pdf.selectPropertyPeriod',compact('employees'));
+      }
     }
 
     public function property(){
@@ -1333,7 +1350,12 @@ class ReportsController extends Controller {
     public function appraisalperiod()
     {
        $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+       if ( !Entrust::can('appraisal_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pdf.selectAppraisalPeriod',compact('employees'));
+      }
     }
 
     public function appraisal(){
@@ -1589,7 +1611,12 @@ class ReportsController extends Controller {
     public function selempkin()
     {
        $employees = Employee::where('employee.organization_id',Auth::user()->organization_id)->get();
+       if ( !Entrust::can('kin_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pdf.selectKinEmployee',compact('employees'));
+      }
     }
 
     public function kin(){
@@ -13017,8 +13044,12 @@ public function members(){
     {
         $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
-
+        if ( !Entrust::can('application_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('leavereports.applicationSelect', compact('branches','departments'));
+      }
     }
 
     public function leaveapplications(){
@@ -13601,7 +13632,12 @@ public function members(){
         $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
+        if ( !Entrust::can('approved_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('leavereports.approvedSelect',compact('branches','departments'));
+      }
     }
 
     public function approvedleaves(){
@@ -14086,8 +14122,12 @@ public function members(){
     {
         $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
-
+        if ( !Entrust::can('rejected_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('leavereports.rejectedSelect',compact('branches','departments'));
+      }
     }
 
     public function rejectedleaves(){
@@ -14564,7 +14604,12 @@ public function members(){
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
         $leaves = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('balance_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('leavereports.balanceSelect',compact('leaves','branches','departments'));
+      }
     }
 
     public function leavebalances(){
@@ -15061,7 +15106,12 @@ public function members(){
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
         $leaves = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('employees_on_vacation_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('leavereports.leaveSelect',compact('leaves','branches','departments'));
+      }
     }
 
     public function employeesleave(){
@@ -15637,7 +15687,12 @@ public function members(){
         $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
 
         $employees = Employee::where('employee.organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('individual_employees_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('leavereports.employeeSelect',compact('employees','branches','departments'));
+      }
     }
 
     public function individualleave(){

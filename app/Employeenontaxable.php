@@ -1,6 +1,12 @@
 <?php
 
-class Employeenontaxable extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class Employeenontaxable extends Model {
 	/*
 
 	use \Traits\Encryptable;
@@ -36,11 +42,11 @@ public static $messages = array(
 
 	public function employee(){
 
-		return $this->belongsTo('Employee');
+		return $this->belongsTo('App\Employee');
 	}
 	public function nontaxable(){
 
-		return $this->hasMany('Nontaxable');
+		return $this->hasMany('App\Nontaxable');
 	}
 
 }

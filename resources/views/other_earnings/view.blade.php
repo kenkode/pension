@@ -1,4 +1,4 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -7,14 +7,16 @@
 function asMoney($value) {
   return number_format($value, 2);
 }
-
+use App\Earningsetting;
 ?>
+<br>
 <div class="row">
 	<div class="col-lg-12">
 
 
 <a class="btn btn-info btn-sm "  href="{{ URL::to('other_earnings/edit/'.$earning->id)}}">update details</a>
-
+<a class="btn btn-danger btn-sm "  href="{{URL::to('other_earnings/delete/'.$earning->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s earning?'))">Delete</a>
+<a class="btn btn-success btn-sm "  href="{{ URL::to('other_earnings')}}">Go Back</a>
 <hr>
 </div>	
 </div>
@@ -24,9 +26,9 @@ function asMoney($value) {
 
 <div class="col-lg-2">
 
-<img src="{{asset('/public/uploads/employees/photo/'.$earning->employee->photo) }}" width="150px" height="130px" alt=""><br>
+<img src="{{asset('/uploads/employees/photo/'.$earning->employee->photo) }}" width="150px" height="130px" alt=""><br>
 <br>
-<img src="{{asset('/public/uploads/employees/signature/'.$earning->employee->signature) }}" width="120px" height="50px" alt="">
+<img src="{{asset('/uploads/employees/signature/'.$earning->employee->signature) }}" width="120px" height="50px" alt="">
 </div>
 
 <div class="col-lg-6">
@@ -39,7 +41,7 @@ function asMoney($value) {
       <td><strong>Employee: </strong></td><td> {{$earning->employee->last_name.' '.$earning->employee->first_name}}</td>
       @endif
       </tr>
-      <tr><td><strong>Earning Type: </strong></td><td>{{$earning->earnings_name}}</td></tr>
+      <tr><td><strong>Earning Type: </strong></td><td>{{Earningsetting::getType($earning->earning_id)}}</td></tr>
       <tr><td><strong>Narrative: </strong></td><td>{{$earning->narrative}}</td></tr>
        <tr><td><strong>Formular: </strong></td><td>{{$earning->formular}}</td></tr>
       @if($earning->instalments > 1)
@@ -61,11 +63,6 @@ function asMoney($value) {
 
 </div>
 
-
-	</div>
-
-
-</div>
 
 
 @stop

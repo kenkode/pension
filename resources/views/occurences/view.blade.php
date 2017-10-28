@@ -42,9 +42,9 @@ use App\Occurencesetting;
 
 <div class="col-lg-2">
 
-<img src="{{asset('/public/uploads/employees/photo/'.$occurence->employee->photo) }}" width="150px" height="130px" alt=""><br>
+<img src="{{asset('/uploads/employees/photo/'.$occurence->employee->photo) }}" width="150px" height="130px" alt=""><br>
 <br>
-<img src="{{asset('/public/uploads/employees/signature/'.$occurence->employee->signature) }}" width="120px" height="50px" alt="">
+<img src="{{asset('/uploads/employees/signature/'.$occurence->employee->signature) }}" width="120px" height="50px" alt="">
 </div>
 
 <div class="col-lg-6">

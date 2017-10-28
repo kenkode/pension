@@ -24,7 +24,7 @@ class PayrollDeductionsController extends Controller {
 	{
 		$deductions = Deduction::all();
 
-		if ( !Entrust::can('view_deduction') ) // Checks the current user
+		if ( !Entrust::can('view_deduction_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -42,7 +42,7 @@ class PayrollDeductionsController extends Controller {
 	 */
 	public function create()
 	{
-		if ( !Entrust::can('create_deduction') ) // Checks the current user
+		if ( !Entrust::can('create_deduction_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -72,7 +72,7 @@ class PayrollDeductionsController extends Controller {
 
 		$deduction->save();
 
-		Audit::logaudit('Deductions', 'create', 'created deduction '.$deduction->deduction_name);
+		Audit::logaudit('Deductions', 'create', 'created deduction type '.$deduction->deduction_name);
 
 		return Redirect::route('deductions.index')->withFlashMessage('Deduction successfully created!');
 	}
@@ -100,7 +100,7 @@ class PayrollDeductionsController extends Controller {
 	{
 		$deduction = Deduction::find($id);
 
-		if ( !Entrust::can('update_deduction') ) // Checks the current user
+		if ( !Entrust::can('update_deduction_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -129,7 +129,7 @@ class PayrollDeductionsController extends Controller {
 		$deduction->deduction_name = Input::get('name');
 		$deduction->update();
 
-		Audit::logaudit('Deductions', 'update', 'updated deduction '.$deduction->deduction_name);
+		Audit::logaudit('Deductions', 'update', 'updated deduction type '.$deduction->deduction_name);
 
 		return Redirect::route('deductions.index')->withFlashMessage('Deduction successfully updated!');
 	}
@@ -144,7 +144,7 @@ class PayrollDeductionsController extends Controller {
 	{
 		$deduction = Deduction::findOrFail($id);
 
-		if ( !Entrust::can('delete_deduction') ) // Checks the current user
+		if ( !Entrust::can('delete_deduction_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -157,7 +157,7 @@ class PayrollDeductionsController extends Controller {
 		}else{
 		Deduction::destroy($id);
 
-		Audit::logaudit('Deductions', 'delete', 'deleted deduction '.$deduction->deduction_name);
+		Audit::logaudit('Deductions', 'delete', 'deleted deduction type '.$deduction->deduction_name);
 
 
 		return Redirect::route('deductions.index')->withDeleteMessage('Deduction successfully deleted!');

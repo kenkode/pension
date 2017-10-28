@@ -145,7 +145,7 @@ class OccurencesettingsController extends Controller {
 	public function destroy($id)
 	{
 		$occurence = Occurencesetting::findOrFail($id);
-		if ( !Entrust::can('view_occurrence_setting') ) // Checks the current user
+		if ( !Entrust::can('delete_occurrence_setting') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{

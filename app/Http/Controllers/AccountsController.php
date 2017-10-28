@@ -195,8 +195,11 @@ class AccountsController extends Controller {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
         $acc  = DB::table('transact')->where('account_id',$id)->count();
+        $tacc  = DB::table('transact_advances')->where('account_id',$id)->count();
 		if($acc>0){
-			return Redirect::route('accounts.index')->withDeleteMessage('Cannot delete this account because its assigned to payroll(s)!');
+			return Redirect::route('accounts.index')->withDeleteMessage('Cannot delete this account because its assigned to a payroll transaction(s)!');
+		}else if($tacc>0){
+			return Redirect::route('accounts.index')->withDeleteMessage('Cannot delete this account because its assigned to a salary advance transaction(s)!');
 		}else{
 		Account::destroy($id);
 

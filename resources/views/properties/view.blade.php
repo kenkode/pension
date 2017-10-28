@@ -44,9 +44,9 @@ use App\Employee
 
 <div class="col-lg-2">
 
-<img src="{{asset('/public/uploads/employees/photo/'.$property->employee->photo) }}" width="150px" height="130px" alt=""><br>
+<img src="{{asset('/uploads/employees/photo/'.$property->employee->photo) }}" width="150px" height="130px" alt=""><br>
 <br>
-<img src="{{asset('/public/uploads/employees/signature/'.$property->employee->signature) }}" width="120px" height="50px" alt="">
+<img src="{{asset('/uploads/employees/signature/'.$property->employee->signature) }}" width="120px" height="50px" alt="">
 </div>
 
 <div class="col-lg-6">

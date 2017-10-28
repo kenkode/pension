@@ -192,6 +192,8 @@ class NextOfKinsController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+		Audit::logaudit('NextofKins', 'view', 'viewed kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName($kin->employee_id));
+
 		return view('nextofkins.view', compact('kin'));
 		
 	}

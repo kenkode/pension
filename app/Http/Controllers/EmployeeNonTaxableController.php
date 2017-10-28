@@ -1,6 +1,23 @@
 <?php
 
-class EmployeeNonTaxableController extends \BaseController {
+namespace App\Http\Controllers;
+
+use App\Employeenontaxable;
+use App\Currency;
+use App\Employee;
+use App\Organization;
+use App\Nontaxable;
+use App\Http\Controllers\Controller;
+use App\Audit;
+use Illuminate\Http\Request;
+use Redirect;
+use Entrust;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class EmployeeNonTaxableController extends Controller {
 
 	/**
 	 * Display a listing of branches
@@ -13,10 +30,16 @@ class EmployeeNonTaxableController extends \BaseController {
 		          ->join('employeenontaxables', 'employee.id', '=', 'employeenontaxables.employee_id')
 		          ->join('nontaxables', 'employeenontaxables.nontaxable_id', '=', 'nontaxables.id')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->select('employeenontaxables.id','first_name','middle_name','last_name','nontaxable_amount','name')
 		          ->get();
-		return View::make('employeenontaxables.index', compact('nontaxables'));
+
+		if ( !Entrust::can('view_nontaxable') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{                  
+		return view('employeenontaxables.index', compact('nontaxables'));
+	}
 	}
 
 	/**
@@ -29,25 +52,30 @@ class EmployeeNonTaxableController extends \BaseController {
 	{
 		$employees = DB::table('employee')
 		          ->where('in_employment','=','Y')
-		          ->where('employee.organization_id',Confide::user()->organization_id)
+		          ->where('employee.organization_id',Auth::user()->organization_id)
 		          ->get();
-		$nontaxables = Nontaxable::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('employeenontaxables.create',compact('employees','nontaxables','currency'));
+		$nontaxables = Nontaxable::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+		$currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+		if ( !Entrust::can('create_nontaxable') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		return view('employeenontaxables.create',compact('employees','nontaxables','currency'));
+	}
 	}
 
 	public function createnontaxable()
 	{
       $postdeduction = Input::all();
       $data = array('name' => $postdeduction['name'], 
-      	            'organization_id' => Confide::user()->organization_id,
+      	            'organization_id' => Auth::user()->organization_id,
       	            'created_at' => DB::raw('NOW()'),
       	            'updated_at' => DB::raw('NOW()'));
       $check = DB::table('nontaxables')->insertGetId( $data );
 
 		if($check > 0){
          
-		Audit::logaudit('Nontaxables', 'create', 'created: '.$postdeduction['name']);
+		Audit::logaudit('Nontaxables', 'create', 'created non taxable income type '.$postdeduction['name']);
         return $check;
         }else{
          return 1;
@@ -118,8 +146,9 @@ class EmployeeNonTaxableController extends \BaseController {
 
         
 		$nontaxable->save();
+		$nontax = Nontaxable::find($nontaxable->nontaxable_id);
 
-		Audit::logaudit('Employeenontaxables', 'create', 'assigned: '.$nontaxable->nontaxable_amount.' to '.Employee::getEmployeeName(Input::get('employee')));
+		Audit::logaudit('Employeenontaxables', 'create', 'assigned amount '.$nontaxable->nontaxable_amount.' to '.Employee::getEmployeeName(Input::get('employee')).' for non taxable income'.$nontax->name);
 
 		return Redirect::route('employeenontaxables.index')->withFlashMessage('Employee non taxable income successfully created!');
 	}
@@ -134,7 +163,7 @@ class EmployeeNonTaxableController extends \BaseController {
 	{
 		$nontaxable = Employeenontaxable::findOrFail($id);
 
-		return View::make('employeenontaxables.show', compact('nontaxable'));
+		return view('employeenontaxables.show', compact('nontaxable'));
 	}
 
 	/**
@@ -146,10 +175,16 @@ class EmployeeNonTaxableController extends \BaseController {
 	public function edit($id)
 	{
 		$nontax = Employeenontaxable::find($id);
-		$employees = Employee::where('organization_id',Confide::user()->organization_id)->get();
-                $nontaxables = Nontaxable::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->get();
-                $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-		return View::make('employeenontaxables.edit', compact('nontax','employees','nontaxables','currency'));
+		$employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+                $nontaxables = Nontaxable::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+                $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+        if ( !Entrust::can('update_nontaxable') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{        
+		return view('employeenontaxables.edit', compact('nontax','employees','nontaxables','currency'));
+	}
 	}
 
 	/**
@@ -213,8 +248,9 @@ class EmployeeNonTaxableController extends \BaseController {
 	    }
 
 		$nontaxable->update();
+		$nontax = Nontaxable::find($nontaxable->nontaxable_id);
 
-		Audit::logaudit('employeenontaxables', 'update', 'assigned: '.$nontaxable->nontaxable_amount.' for '.Employee::getEmployeeName($nontaxable->employee_id));
+		Audit::logaudit('employeenontaxables', 'update', 'updated non taxable income '.$nontax->name.' for '.Employee::getEmployeeName($nontaxable->employee_id));
 
 		return Redirect::route('employeenontaxables.index')->withFlashMessage('Employee non taxable income successfully updated!');
 	}
@@ -228,11 +264,23 @@ class EmployeeNonTaxableController extends \BaseController {
 	public function destroy($id)
 	{
 		$nontaxable = Employeenontaxable::findOrFail($id);
+		$nontax = Nontaxable::find($nontaxable->nontaxable_id);
+
+		if ( !Entrust::can('delete_nontaxable') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        $tnt  = DB::table('transact_nontaxables')->where('employee_nontaxable_id',$id)->count();
+		if($tnt>0){
+			return Redirect::route('employeenontaxables.index')->withDeleteMessage('Cannot delete this non taxable income because its assigned to a payroll transaction(s)!');
+		}else{ 
 		Employeenontaxable::destroy($id);
 
-		Audit::logaudit('Employeenontaxables', 'delete', 'deleted: '.$nontaxable->nontaxable_amount.' for '.Employee::getEmployeeName($nontaxable->employee_id));
+		Audit::logaudit('Employeenontaxables', 'delete', 'deleted non taxable income '.$nontax->name.' for '.Employee::getEmployeeName($nontaxable->employee_id));
 
 		return Redirect::route('employeenontaxables.index')->withDeleteMessage('Employee non taxable income successfully deleted!');
+	}
+    }
 	}
 
 	public function view($id){
@@ -241,13 +289,18 @@ class EmployeeNonTaxableController extends \BaseController {
 		          ->join('employeenontaxables', 'employee.id', '=', 'employeenontaxables.employee_id')
 		          ->join('nontaxables', 'employeenontaxables.nontaxable_id', '=', 'nontaxables.id')
 		          ->where('employeenontaxables.id','=',$id)
-		          ->where('employee.organization_id',Confide::user()->organization_id)
-		          ->select('employeenontaxables.id','first_name','last_name','middle_name','formular','instalments','nontaxable_amount','name','nontaxable_date','last_day_month','photo','signature')
+		          ->where('employee.organization_id',Auth::user()->organization_id)
+		          ->select('employeenontaxables.id','first_name','last_name','middle_name','formular','instalments','nontaxable_amount','name','nontaxable_date','last_day_month','photo','signature','nontaxable_id','employee_id')
 		          ->first();
-
-		$organization = Organization::find(Confide::user()->organization_id);
-
-		return View::make('employeenontaxables.view', compact('nontaxable'));
+        
+        if ( !Entrust::can('view_nontaxable') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+		$organization = Organization::find(Auth::user()->organization_id);
+        Audit::logaudit('Employeenontaxables', 'view', 'viewed non taxable income '.$nontaxable->name.' for '.Employee::getEmployeeName($nontaxable->employee_id));
+		return view('employeenontaxables.view', compact('nontaxable'));
+	}
 		
 	}
 

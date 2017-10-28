@@ -1,6 +1,10 @@
 <?php
 
-class EAllowances extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class EAllowances extends Model {
 	/*
 	use \Traits\Encryptable;
 
@@ -34,11 +38,11 @@ public static $messages = array(
 
 	public function employee(){
 
-		return $this->belongsTo('Employee');
+		return $this->belongsTo('App\Employee');
 	}
 	public function allowance(){
 
-		return $this->belongsTo('Allowance');
+		return $this->belongsTo('App\Allowance');
 	}
 
 }

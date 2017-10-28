@@ -71,7 +71,7 @@ class EarningsettingsController extends Controller {
 
 		$earning->save();
 
-		Audit::logaudit('EarningSettings', 'create', 'created: '.$earning->earning_name);
+		Audit::logaudit('EarningSettings', 'create', 'created earning type '.$earning->earning_name);
 
 
 		return Redirect::route('earningsettings.index')->withFlashMessage('Earning type successfully created!');
@@ -129,7 +129,7 @@ class EarningsettingsController extends Controller {
 		$earning->earning_name = Input::get('name');
 		$earning->update();
 
-		Audit::logaudit('EarningSettings', 'update', 'updated: '.$earning->earning_name);
+		Audit::logaudit('EarningSettings', 'update', 'updated earning type '.$earning->earning_name);
 
 		return Redirect::route('earningsettings.index')->withFlashMessage('Earning type successfully updated!');
 	}
@@ -158,7 +158,7 @@ class EarningsettingsController extends Controller {
 		
 		Earningsetting::destroy($id);
 
-		Audit::logaudit('EarningSettings', 'delete', 'deleted: '.$earning->earning_name);
+		Audit::logaudit('EarningSettings', 'delete', 'deleted earning type '.$earning->earning_name);
 
 		return Redirect::route('earningsettings.index')->withDeleteMessage('Earning type successfully deleted!');
 	}

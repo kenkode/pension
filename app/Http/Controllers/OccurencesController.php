@@ -249,6 +249,7 @@ class OccurencesController extends Controller {
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
+        Audit::logaudit('Occurences', 'view', 'viewed occurence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
 		return view('occurences.view', compact('occurence'));
 	}
 		

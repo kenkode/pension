@@ -1,6 +1,10 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+{{Html::script('media/jquery-1.8.0.min.js') }}
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <script type="text/javascript">
 
@@ -57,7 +61,7 @@ if($(this).val() == "Instalments"){
 
     
         
-         @if ($errors->has())
+       @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -65,10 +69,11 @@ if($(this).val() == "Instalments"){
         </div>
         @endif
         
-  {{ HTML::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
-  {{ HTML::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
+  {{ Html::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
+  {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <style>
+    .select2 {z-index:10 !important; }
     label, input { display:block; }
     input.text { margin-bottom:12px; width:95%; padding: .4em; }
     fieldset { padding:0; border:0; margin-top:25px; }
@@ -86,11 +91,11 @@ if($(this).val() == "Instalments"){
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
@@ -99,7 +104,7 @@ if($(this).val() == "Instalments"){
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       name = $( "#name" ),
       
       allFields = $( [] ).add( name ),
@@ -164,14 +169,15 @@ if($(this).val() == "Instalments"){
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : name.val()
+                              'name'  : name.val(),
+                              '_token' : $("#form input[name=_token]").val()
                       },
                       success : function(s){
                          $('#allowance').append($('<option>', {
                          value: s,
                          text: name.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -211,12 +217,13 @@ if($(this).val() == "Instalments"){
   });
   </script>
  
-   {{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+   {{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <div id="dialog-form" title="Create new allowance type">
   <p class="validateTips">Please insert Allowance Type.</p>
  
-  <form>
+  <form id="form">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
@@ -229,12 +236,12 @@ if($(this).val() == "Instalments"){
  
 
          <form method="POST" action="{{{ URL::to('employee_allowances') }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
        <div class="form-group">
                         <label for="username">Employee <span style="color:red">*</span></label>
-                        <select name="employee" class="form-control">
+                        <select name="employee" class="form-control select2">
                            <option></option>
                             @foreach($employees as $employee)
                             <option value="{{ $employee->id }}"> {{ $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name }}</option>
@@ -245,7 +252,7 @@ if($(this).val() == "Instalments"){
 
                     <div class="form-group">
                         <label for="username">Allowance Type <span style="color:red">*</span></label>
-                        <select name="allowance" id="allowance" class="form-control">
+                        <select name="allowance" id="allowance" class="form-control select2">
                             <option id="blanko"></option>
                             <option value="cnew">Create New</option>
                             @foreach($allowances as $allowance)
@@ -258,7 +265,7 @@ if($(this).val() == "Instalments"){
 
                      <div class="form-group">
                         <label for="username">Formular <span style="color:red">*</span></label>
-                        <select name="formular" id="formular" class="form-control forml">
+                        <select name="formular" id="formular" class="form-control forml select2">
                             <option></option>
                             <option value="One Time">One Time</option>
                             <option value="Recurring">Recurring</option>
@@ -318,7 +325,7 @@ $('.allowancedate').datepicker({
         
           <button type="submit" class="btn btn-primary btn-sm">Create Employee Allowance</button>
         </div>
-
+       <br><br>
     </fieldset>
 </form>
         

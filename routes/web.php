@@ -15,7 +15,7 @@ use App\Branch;
 use App\Notification;
 use App\Jobgroup;
 use App\Appraisalquestion;
-use App\Price;
+use App\Currency;
 use App\TaxOrder;
 use App\Account;
 use App\Accounts;

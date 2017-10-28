@@ -1,6 +1,12 @@
 <?php
 
-class Advance extends \Eloquent {
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use DB;
+
+class Advance extends Model {
 	public $table = "transact_advances";
 
     /*
@@ -40,7 +46,7 @@ public static $rules = [
 
 	public function employees(){
 
-		return $this->hasMany('Employee');
+		return $this->hasMany('App\Employee');
 	}
     
     public static function advance_salary($id){

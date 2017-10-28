@@ -37,4 +37,9 @@ public static $rules = [
 		return $this->belongsTo('App\Earning');
 	}
 
+	public static function getType($id){
+		$earning = Earningsetting::find($id);
+		return $earning->earning_name;
+	}
+
 }

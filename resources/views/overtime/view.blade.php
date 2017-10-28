@@ -1,4 +1,4 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -9,12 +9,14 @@ function asMoney($value) {
 }
 
 ?>
+<br>
 <div class="row">
 	<div class="col-lg-12">
 
 
 <a class="btn btn-info btn-sm "  href="{{ URL::to('overtimes/edit/'.$overtime->id)}}">update details</a>
-
+<a class="btn btn-danger btn-sm "  href="{{URL::to('overtimes/delete/'.$overtime->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s overtime?'))">Delete</a>
+<a class="btn btn-success btn-sm "  href="{{ URL::to('overtimes')}}">Go Back</a>
 <hr>
 </div>	
 </div>
@@ -24,9 +26,9 @@ function asMoney($value) {
 
 <div class="col-lg-3">
 
-<img src="{{asset('/public/uploads/employees/photo/'.$overtime->employee->photo) }}" width="150px" height="130px" alt=""><br>
+<img src="{{asset('/uploads/employees/photo/'.$overtime->employee->photo) }}" width="150px" height="130px" alt=""><br>
 <br>
-<img src="{{asset('/public/uploads/employees/signature/'.$overtime->employee->signature) }}" width="120px" height="50px" alt="">
+<img src="{{asset('/uploads/employees/signature/'.$overtime->employee->signature) }}" width="120px" height="50px" alt="">
 </div>
 
 <div class="col-lg-6">
@@ -58,12 +60,6 @@ function asMoney($value) {
       @endif
 </table>
 </div>
-
-</div>
-
-
-	</div>
-
 
 </div>
 

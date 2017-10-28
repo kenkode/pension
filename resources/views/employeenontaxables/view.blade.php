@@ -1,4 +1,4 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 @section('content')
 
 <?php
@@ -14,7 +14,8 @@ function asMoney($value) {
 
 
 <a class="btn btn-info btn-sm "  href="{{ URL::to('employeenontaxables/edit/'.$nontaxable->id)}}">update details</a>
-
+<a class="btn btn-danger btn-sm "  href="{{URL::to('employeenontaxables/delete/'.$nontaxable->id)}}" onclick="return (confirm('Are you sure you want to delete this employee`s non taxable income?'))">Delete</a>
+<a class="btn btn-success btn-sm "  href="{{ URL::to('employeenontaxables')}}">Go Back</a>
 <hr>
 </div>	
 </div>
@@ -24,9 +25,9 @@ function asMoney($value) {
 
 <div class="col-lg-3">
 
-<img src="{{asset('/public/uploads/employees/photo/'.$nontaxable->photo) }}" width="150px" height="130px" alt=""><br>
+<img src="{{asset('/uploads/employees/photo/'.$nontaxable->photo) }}" width="150px" height="130px" alt=""><br>
 <br>
-<img src="{{asset('/public/uploads/employees/signature/'.$nontaxable->signature) }}" width="120px" height="50px" alt="">
+<img src="{{asset('/uploads/employees/signature/'.$nontaxable->signature) }}" width="120px" height="50px" alt="">
 </div>
 
 <div class="col-lg-6">
@@ -56,12 +57,6 @@ function asMoney($value) {
       @endif
 </table>
 </div>
-
-</div>
-
-
-	</div>
-
 
 </div>
 

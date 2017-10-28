@@ -24,11 +24,11 @@ class AllowancesController extends Controller {
 	{
 		$allowances = Allowance::all();
 
-	   if ( !Entrust::can('view_allowance') ) // Checks the current user
+	   if ( !Entrust::can('view_allowance_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
-       Audit::logaudit('Allowance', 'view', 'viewed allowances');
+       Audit::logaudit('Allowance', 'view', 'viewed allowance types');
 
 
 		return view('allowances.index', compact('allowances'));
@@ -42,7 +42,7 @@ class AllowancesController extends Controller {
 	 */
 	public function create()
 	{
-		if ( !Entrust::can('create_allowance') ) // Checks the current user
+		if ( !Entrust::can('create_allowance_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -72,7 +72,7 @@ class AllowancesController extends Controller {
 
 		$allowance->save();
 
-		Audit::logaudit('Allowances', 'create', 'created allowance '.$allowance->allowance_name);
+		Audit::logaudit('Allowances', 'create', 'created allowance type '.$allowance->allowance_name);
 
 
 		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully created!');
@@ -100,7 +100,7 @@ class AllowancesController extends Controller {
 	public function edit($id)
 	{
 		$allowance = Allowance::find($id);
-        if ( !Entrust::can('update_allowance') ) // Checks the current user
+        if ( !Entrust::can('update_allowance_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -128,7 +128,7 @@ class AllowancesController extends Controller {
 		$allowance->allowance_name = Input::get('name');
 		$allowance->update();
 
-		Audit::logaudit('Allowances', 'update', 'updated allowance '.$allowance->allowance_name);
+		Audit::logaudit('Allowances', 'update', 'updated allowance type '.$allowance->allowance_name);
 
 		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully updated!');
 	}
@@ -143,7 +143,7 @@ class AllowancesController extends Controller {
 	{
 		$allowance = Allowance::findOrFail($id);
 
-		if ( !Entrust::can('delete_allowance') ) // Checks the current user
+		if ( !Entrust::can('delete_allowance_type') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -156,7 +156,7 @@ class AllowancesController extends Controller {
 		}else{
 		Allowance::destroy($id);
 
-		Audit::logaudit('Allowances', 'delete', 'deleted allowance '.$allowance->allowance_name);
+		Audit::logaudit('Allowances', 'delete', 'deleted allowance type '.$allowance->allowance_name);
 
 		return Redirect::route('allowances.index')->withFlashMessage('Allowance successfully deleted!');
 	}

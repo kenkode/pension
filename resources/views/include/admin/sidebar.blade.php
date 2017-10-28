@@ -87,14 +87,20 @@
                             <li><a href="{{ URL::to('employee_deductions') }}"><i class="fa fa-barcode fa-fw"></i>Deductions</a>
                             <li><a href="{{ URL::to('employee_relief') }}"><i class="fa fa-credit-card fa-fw"></i>Relief</a>
                             <li><a href="{{ URL::to('employeenontaxables') }}"><i class="fa fa-credit-card fa-fw"></i>Non-Taxable Income</a></li>
-                            <li><a href="{{ URL::to('payrollcalculator') }}"><i class="fa fa-calculator fa-fw"></i>Payroll Calculator</a>
-                            <li><a href="{{ URL::to('email/payslip') }}"><i class="fa fa-envelope fa-fw"></i>Email Payslips</a>  
+                            <li>
+                            <a href="#"><i class="fa fa-cog fa-fw"></i>Process <i class="fa fa-caret-down"></i></a>
+                            <ul class="nav"> 
                             <li>
                               <a href="{{ URL::to('advance') }}"><i class="fa fa-credit-card fa-fw"></i>Advance Salaries</a>
                             </li>
                             <li>
-                              <a href="{{ URL::to('payroll') }}"><i class="fa fa-credit-card fa-fw"></i>Process Payroll</a>
+                              <a href="{{ URL::to('payroll') }}"><i class="fa fa-credit-card fa-fw"></i> Payroll</a>
                             </li>
+                            </ul>
+                            </li>
+                            <li><a href="{{ URL::to('payrollcalculator') }}"><i class="fa fa-calculator fa-fw"></i>Payroll Calculator</a>
+                            <li><a href="{{ URL::to('email/payslip') }}"><i class="fa fa-envelope fa-fw"></i>Email Payslips</a> 
+                            
                         </ul>
                     </li> 
                     
