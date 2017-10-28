@@ -505,6 +505,30 @@ $(function (){$('.daily').datepicker({
         $('#appr').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
         $('#prop').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
         $('#occ').DataTable({"sDom": '<"H"lfrp>t<"F"ip>'});
+        var table = $('#example').DataTable( {
+        "sDom": '<"H"lfrp>t<"F"ip>',
+        "lengthMenu": [ 10, 25, 50, 75, 100 ],
+        buttons: true,
+        buttons: [
+             {
+                extend: 'excelHtml5',
+                title: 'Payroll Preview for financial period {{Session::get("transperiod")}}'
+            },
+            {
+                extend: 'pdfHtml5',
+                title: 'Payroll Preview for financial period {{Session::get("transperiod")}}',
+                orientation: 'landscape',
+                pageSize: 'A1'
+            },
+            {
+                extend: 'print',
+                title: 'Payroll Preview for financial period {{Session::get("transperiod")}}'
+            }
+        ]
+    } );
+ 
+    table.buttons().container()
+        .insertBefore( '#example_filter' );
 
     } );
 

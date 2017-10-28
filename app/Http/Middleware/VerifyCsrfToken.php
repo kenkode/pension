@@ -15,6 +15,7 @@ class VerifyCsrfToken extends BaseVerifier
         //
         'shownet',
         'showgross',
-        'deleteadvance'
+        'deleteadvance',
+        'deleterow'
     ];
 }

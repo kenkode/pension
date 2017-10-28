@@ -25,8 +25,12 @@ class AdvanceController extends Controller {
 	{
 		
         $accounts = Account::where('organization_id',Auth::user()->organization_id)->where('active',true)->get();
-        
+        if ( !Entrust::can('process_advance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
 		return view('advances.index', compact('accounts'));
+	}
 	}
 
     public function createaccount()
@@ -97,7 +101,7 @@ class AdvanceController extends Controller {
 
 		//print_r($accounts);
 
-		Audit::logaudit('Advance Salaries', 'preview', 'previewed advance salaries');
+		Audit::logaudit('Advance Salaries', 'preview', 'previewed advance salaries for period '.$period);
 
 		return view('advances.preview', compact('employees','period','account'));
 	}

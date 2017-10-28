@@ -3,6 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Payroll;
+use App\Department;
+use App\Jobgroup;
+use App\Account;
+use App\Earningsetting;
+use App\Deduction;
+use App\Allowance;
+use App\Overtime;
+use App\Nontaxable;
+use App\Relief;
 use App\Currency;
 use App\Employee;
 use App\Organization;
@@ -26,19 +35,24 @@ class PayrollController extends Controller {
     public function index()
     {
       
-        $accounts = Account::where('organization_id',Confide::user()->organization_id)->get();
+        $accounts = Account::where('organization_id',Auth::user()->organization_id)->get();
 
-        $department = Department::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->where('department_name','Management')->first();
+        $department = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->where('department_name','Management')->first();
 
         $jgroup = Jobgroup::where(function($query){
                             $query->whereNull('organization_id')
-                                  ->orWhere('organization_id',Confide::user()->organization_id);
+                                  ->orWhere('organization_id',Auth::user()->organization_id);
                             })->where('job_group_name','Management')
                               ->first();
 
-        $type = Employee::where('organization_id',Confide::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Confide::user()->username)->count();
+        $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->username)->count();
 
-        return View::make('payroll.index', compact('accounts','type'));
+        if ( !Entrust::can('process_payroll') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        return view('payroll.index', compact('accounts','type'));
+      }
     }
 
     public function createaccount()
@@ -48,14 +62,14 @@ class PayrollController extends Controller {
                     'code' => $postaccount['code'], 
                     'category' => $postaccount['category'], 
                     'active' => 1,
-                    'organization_id' => Confide::user()->organization_id,
+                    'organization_id' => Auth::user()->organization_id,
                     'created_at' => DB::raw('NOW()'),
                     'updated_at' => DB::raw('NOW()'));
       $check = DB::table('accounts')->insertGetId( $data );
 
     if($check > 0){
          
-    Audit::logaudit('Accounts', 'create', 'created: '.$postaccount['name']);
+    Audit::logaudit('Accounts', 'create', 'created account '.$postaccount['name']);
         return $check;
         }else{
          return 1;
@@ -68,7 +82,7 @@ class PayrollController extends Controller {
 
         $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('employee.organization_id',Confide::user()->organization_id)
+                  ->where('employee.organization_id',Auth::user()->organization_id)
                   ->get();
 
         $earnings = Earningsetting::all();
@@ -78,7 +92,7 @@ class PayrollController extends Controller {
         Audit::logaudit('Payroll', 'preview', 'previewed payroll');
 
 
-        return View::make('payroll.preview', compact('employees','earnings'));
+        return view('payroll.preview', compact('employees','earnings'));
     }
 
     public function valid()
@@ -87,7 +101,7 @@ class PayrollController extends Controller {
 
         //print_r($accounts);
 
-        return View::make('payroll.valid', compact('period'));
+        return view('payroll.valid', compact('period'));
     }
 
     /**
@@ -100,33 +114,33 @@ class PayrollController extends Controller {
 
        $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->get();
 
       $department = Department::where('department_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
 
       $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if(Input::get('type') == 'management'){
 
          $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('job_group_id',$jgroup->id)
                   ->get();
        }else{
           $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('job_group_id','!=',$jgroup->id)
                   ->get();
        }
@@ -134,18 +148,18 @@ class PayrollController extends Controller {
         $period = Input::get('period');
         $type = Input::get('type');
         $account = Input::get('account');
-        $earnings = Earningsetting::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        //$pays = Dailypay::where('organization_id',Confide::user()->organization_id)->get();
+        $earnings = Earningsetting::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        //$pays = Dailypay::where('organization_id',Auth::user()->organization_id)->get();
         $overtimes = Overtime::all();
-        $allowances = Allowance::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $nontaxables = Nontaxable::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $reliefs = Relief::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $deductions = Deduction::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
+        $allowances = Allowance::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $nontaxables = Nontaxable::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $reliefs = Relief::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $deductions = Deduction::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
         //print_r($accounts);
 
-        Audit::logaudit('Payroll', 'preview', 'previewed payroll');
+        Audit::logaudit('Payroll', 'preview', 'previewed payroll for period '.$period);
 
-        return View::make('payroll.preview', compact('employees','period','account','nontaxables','earnings','overtimes','allowances','reliefs','deductions','type'));
+        return view('payroll.preview', compact('employees','period','account','nontaxables','earnings','overtimes','allowances','reliefs','deductions','type'));
     }
 
     public function del_exist()
@@ -160,7 +174,7 @@ class PayrollController extends Controller {
 
     DB::table('employee_allowances')
               ->join('transact_allowances','employee_allowances.id','=','transact_allowances.employee_allowance_id')
-              ->where('transact_allowances.organization_id',Confide::user()->organization_id)
+              ->where('transact_allowances.organization_id',Auth::user()->organization_id)
               ->where('process_type',$type)
               ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -171,7 +185,7 @@ class PayrollController extends Controller {
     DB::table('employeenontaxables')
               ->join('transact_nontaxables','employeenontaxables.id','=','transact_nontaxables.employee_nontaxable_id')
               ->where('financial_month_year', '=', $period)
-              ->where('transact_nontaxables.organization_id',Confide::user()->organization_id)
+              ->where('transact_nontaxables.organization_id',Auth::user()->organization_id)
               ->where('process_type',$type)
               ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -182,7 +196,7 @@ class PayrollController extends Controller {
      DB::table('employee_deductions')
               ->join('transact_deductions','employee_deductions.id','=','transact_deductions.employee_deduction_id')
               ->where('financial_month_year', '=', $period)
-              ->where('transact_deductions.organization_id',Confide::user()->organization_id)
+              ->where('transact_deductions.organization_id',Auth::user()->organization_id)
               ->where('process_type',$type)
               ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -193,7 +207,7 @@ class PayrollController extends Controller {
     DB::table('earnings')
               ->join('transact_earnings','earnings.id','=','transact_earnings.earning_id')
               ->where('financial_month_year', '=', $period)
-              ->where('transact_earnings.organization_id',Confide::user()->organization_id)
+              ->where('transact_earnings.organization_id',Auth::user()->organization_id)
               ->where('process_type',$type)
               ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -204,7 +218,7 @@ class PayrollController extends Controller {
     DB::table('overtimes')
               ->join('transact_overtimes','overtimes.id','=','transact_overtimes.overtime_id')
               ->where('financial_month_year', '=', $period)
-              ->where('transact_overtimes.organization_id',Confide::user()->organization_id)
+              ->where('transact_overtimes.organization_id',Auth::user()->organization_id)
               ->where('process_type',$type)
               ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -217,13 +231,13 @@ class PayrollController extends Controller {
 
         
     
-    $data     = DB::table('transact')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year',$period)->delete(); 
-    $data2    = DB::table('transact_allowances')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
-    $data3    = DB::table('transact_deductions')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
-    $data4    = DB::table('transact_earnings')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
-    $data5    = DB::table('transact_overtimes')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
-    $data6    = DB::table('transact_reliefs')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
-    $data7    = DB::table('transact_nontaxables')->where('process_type',$type)->where('organization_id',Confide::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
+    $data     = DB::table('transact')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year',$period)->delete(); 
+    $data2    = DB::table('transact_allowances')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
+    $data3    = DB::table('transact_deductions')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
+    $data4    = DB::table('transact_earnings')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
+    $data5    = DB::table('transact_overtimes')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
+    $data6    = DB::table('transact_reliefs')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
+    $data7    = DB::table('transact_nontaxables')->where('process_type',$type)->where('organization_id',Auth::user()->organization_id)->where('financial_month_year', '=', $period)->delete();
    
     if($data > 0){
       return 0;
@@ -263,8 +277,8 @@ class PayrollController extends Controller {
     
         return $display;
         exit();*/
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
-        //return View::make('payroll.payroll_calculator', compact('gross','paye','nssf','nhif','currency'));
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+        //return view('payroll.payroll_calculator', compact('gross','paye','nssf','nhif','currency'));
 
 
         echo json_encode(array("paye"=>$paye,"nssf"=>$nssf,"nhif"=>$nhif));
@@ -301,7 +315,7 @@ class PayrollController extends Controller {
     
         $data = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->get();
         $period = $period;
         $account = Input::get('account');
@@ -311,9 +325,9 @@ class PayrollController extends Controller {
         $reliefs = Relief::all();
         $deductions = Deduction::all();
         
-        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+        $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
-        $organization = Organization::find(Confide::user()->organization_id);
+        $organization = Organization::find(Auth::user()->organization_id);
 
         $part = explode("-", $period);
               
@@ -642,7 +656,7 @@ public function asMoney($value){
      
         //$net = number_format(Payroll::netcalc($employee->id,$fperiod),2);
 
-   $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Confide::user()->organization_id)->first();
+   $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
        
         /*$display .="
         <br/>
@@ -802,7 +816,7 @@ $display .="
         return $display;
         exit();*/
         
-//return View::make('payroll.payroll_calculator', compact('net','paye1','nssf1','nhif1','gross','currency'));
+//return view('payroll.payroll_calculator', compact('net','paye1','nssf1','nhif1','gross','currency'));
 
 
         
@@ -821,32 +835,32 @@ $display .="
       $fperiod   = $part1.$part2.$part3; 
       $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->get();
 
       $department = Department::where('department_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
       $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if($type == 'management'){
 
          $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('job_group_id',$jgroup->id)
                   ->get();
        }else{
           $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('job_group_id','!=',$jgroup->id)
                   ->get();
        }
@@ -879,13 +893,13 @@ $display .="
          $totalnet = 0.00;
 
          
-        $earnings = Earningsetting::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $pays = Dailypay::where('organization_id',Confide::user()->organization_id)->get();
+        $earnings = Earningsetting::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $pays = Dailypay::where('organization_id',Auth::user()->organization_id)->get();
         $overtimes = Overtime::all();
-        $allowances = Allowance::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $nontaxables = Nontaxable::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $reliefs = Relief::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
-        $deductions = Deduction::where('organization_id',Confide::user()->organization_id)->orWhereNull('organization_id')->get();
+        $allowances = Allowance::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $nontaxables = Nontaxable::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $reliefs = Relief::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
+        $deductions = Deduction::where('organization_id',Auth::user()->organization_id)->orWhereNull('organization_id')->get();
 
 
         foreach($employees as $employee){
@@ -1019,34 +1033,34 @@ $display .="
     {
         $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->get();
 
 
         $department = Department::where('department_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
 
         $jgroup = Jobgroup::where('job_group_name','Management')
                   ->where(function($query){
                          $query->whereNull('organization_id')
-                               ->orWhere('organization_id',Confide::user()->organization_id);
+                               ->orWhere('organization_id',Auth::user()->organization_id);
                  })->first();
 
        if(Input::get('type') == 'management'){
 
          $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('job_group_id',$jgroup->id)
                   ->get();
        }else{
           $employees = DB::table('employee')
                   ->where('in_employment','=','Y')
-                  ->where('organization_id',Confide::user()->organization_id)
+                  ->where('organization_id',Auth::user()->organization_id)
                   ->where('job_group_id','!=',$jgroup->id)
                   ->get();
        }
@@ -1070,7 +1084,7 @@ $display .="
         $payroll->financial_month_year = Input::get('period');
         $payroll->account_id = Input::get('account');
         $payroll->process_type = Input::get('type');
-        $payroll->organization_id = Confide::user()->organization_id;
+        $payroll->organization_id = Auth::user()->organization_id;
         $payroll->save();
     
         }
@@ -1089,7 +1103,7 @@ $display .="
             ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1108,7 +1122,7 @@ $display .="
             ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1127,7 +1141,7 @@ $display .="
         DB::table('transact_allowances')->insert(
         ['employee_id' => $allw->eid, 
         'employee_allowance_id' => $allw->id, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'allowance_name' => $allw->allowance_name,
         'allowance_id' => $allw->allowance_id,
         'allowance_amount' => $allw->allowance_amount,
@@ -1145,7 +1159,7 @@ $display .="
                })
              ->where('instalments','>',0)
              ->where('job_group_id',$jgroup->id)
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->decrement('instalments');
 
         }
@@ -1156,7 +1170,7 @@ $display .="
             ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1175,7 +1189,7 @@ $display .="
             ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1193,7 +1207,7 @@ $display .="
         foreach($nontaxes as $nontax){
         DB::table('transact_nontaxables')->insert(
         ['employee_id' => $nontax->eid, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'employee_nontaxable_id' => $nontax->id, 
         'nontaxable_name' => $nontax->name,
         'nontaxable_id' => $nontax->nontaxable_id,
@@ -1206,7 +1220,7 @@ $display .="
 
          DB::table('employeenontaxables')
              ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1222,7 +1236,7 @@ $display .="
             ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1239,7 +1253,7 @@ $display .="
         $count = DB::table('employee_deductions')
             ->join('deductions', 'employee_deductions.deduction_id', '=', 'deductions.id')
             ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('instalments','>',0)
             ->where('in_employment','Y')
             ->where(function ($query) use ($start,$jgroup){
@@ -1259,7 +1273,7 @@ $display .="
         foreach($deds as $ded){
         DB::table('transact_deductions')->insert(
         ['employee_id' => $ded->eid, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'employee_deduction_id' => $ded->id, 
         'deduction_name' => $ded->deduction_name,
         'deduction_id' => $ded->deduction_id,
@@ -1272,7 +1286,7 @@ $display .="
 
         DB::table('employee_deductions')
              ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1290,7 +1304,7 @@ $display .="
             ->where('instalments','>',0)
             ->where('in_employment','Y')
             ->where('job_group_id',$jgroup->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1307,7 +1321,7 @@ $display .="
         $ct = DB::table('earnings')
             ->join('employee', 'earnings.employee_id', '=', 'employee.id')
             ->join('earningsettings', 'earnings.earning_id', '=', 'earningsettings.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('instalments','>',0)
             ->where('in_employment','Y')
             ->where(function ($query) use ($start,$jgroup){
@@ -1328,7 +1342,7 @@ $display .="
         DB::table('transact_earnings')->insert(
         ['employee_id' => $earn->employee_id, 
         'earning_id' => $earn->id,
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'earning_name' => $earn->earning_name,
         'earning_amount' => $earn->earnings_amount,
         'financial_month_year'=>Input::get('period'),
@@ -1339,7 +1353,7 @@ $display .="
 
         DB::table('earnings')
              ->join('employee', 'earnings.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1355,7 +1369,7 @@ $display .="
             ->where('instalments','>',0)
             ->where('in_employment','Y')
             ->where('job_group_id',$jgroup->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1373,7 +1387,7 @@ $display .="
             ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('first_day_month','<=',$start)
@@ -1392,7 +1406,7 @@ $display .="
         foreach($overtimes as $overtime){
         DB::table('transact_overtimes')->insert(
         ['employee_id' => $overtime->employee_id, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'overtime_type' => $overtime->type, 
         'overtime_id' => $overtime->id, 
         'overtime_period' => $overtime->period,
@@ -1405,7 +1419,7 @@ $display .="
         
         DB::table('overtimes')
              ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1421,14 +1435,14 @@ $display .="
             ->join('employee', 'employee_relief.employee_id', '=', 'employee.id')
             ->where('in_employment','Y')
             ->where('job_group_id',$jgroup->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('employee.id as eid','employee_relief.id as id','relief_name','relief_id','relief_amount')
             ->get();
 
         foreach($rels as $rel){
         DB::table('transact_reliefs')->insert(
         ['employee_id' => $rel->eid, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'employee_relief_id' => $rel->id, 
         'relief_name' => $rel->relief_name,
         'relief_id' => $rel->relief_id,
@@ -1444,7 +1458,7 @@ $display .="
             ->join('employee', 'employee_allowances.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1464,7 +1478,7 @@ $display .="
             ->where('instalments','>',0)
             ->where('job_group_id','!=',$jgroup->id)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1483,7 +1497,7 @@ $display .="
         DB::table('transact_allowances')->insert(
         ['employee_id' => $allw->eid, 
         'employee_allowance_id' => $allw->id, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'allowance_name' => $allw->allowance_name,
         'allowance_id' => $allw->allowance_id,
         'allowance_amount' => $allw->allowance_amount,
@@ -1501,7 +1515,7 @@ $display .="
                })
              ->where('instalments','>',0)
              ->where('job_group_id','!=',$jgroup->id)
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->decrement('instalments');
 
         }
@@ -1512,7 +1526,7 @@ $display .="
             ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1531,7 +1545,7 @@ $display .="
             ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1549,7 +1563,7 @@ $display .="
         foreach($nontaxes as $nontax){
         DB::table('transact_nontaxables')->insert(
         ['employee_id' => $nontax->eid, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'employee_nontaxable_id' => $nontax->id, 
         'nontaxable_name' => $nontax->name,
         'nontaxable_id' => $nontax->nontaxable_id,
@@ -1562,7 +1576,7 @@ $display .="
 
          DB::table('employeenontaxables')
              ->join('employee', 'employeenontaxables.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id','!=',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1578,7 +1592,7 @@ $display .="
             ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1595,7 +1609,7 @@ $display .="
         $count = DB::table('employee_deductions')
             ->join('deductions', 'employee_deductions.deduction_id', '=', 'deductions.id')
             ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('job_group_id','!=',$jgroup->id)
             ->where('instalments','>',0)
             ->where('in_employment','Y')
@@ -1616,7 +1630,7 @@ $display .="
         foreach($deds as $ded){
         DB::table('transact_deductions')->insert(
         ['employee_id' => $ded->eid, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'employee_deduction_id' => $ded->id, 
         'deduction_name' => $ded->deduction_name,
         'deduction_id' => $ded->deduction_id,
@@ -1629,7 +1643,7 @@ $display .="
 
         DB::table('employee_deductions')
              ->join('employee', 'employee_deductions.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id','!=',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1646,7 +1660,7 @@ $display .="
             ->join('earningsettings', 'earnings.earning_id', '=', 'earningsettings.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1663,7 +1677,7 @@ $display .="
         $ct = DB::table('earnings')
             ->join('employee', 'earnings.employee_id', '=', 'employee.id')
             ->join('earningsettings', 'earnings.earning_id', '=', 'earningsettings.id')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('instalments','>',0)
             ->where('in_employment','Y')
             ->where(function ($query) use ($start,$jgroup){
@@ -1684,7 +1698,7 @@ $display .="
         DB::table('transact_earnings')->insert(
         ['employee_id' => $earn->employee_id, 
         'earning_id' => $earn->id,
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'earning_name' => $earn->earning_name,
         'earning_amount' => $earn->earnings_amount,
         'financial_month_year'=>Input::get('period'),
@@ -1695,7 +1709,7 @@ $display .="
 
         DB::table('earnings')
              ->join('employee', 'earnings.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id','!=',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1710,7 +1724,7 @@ $display .="
             ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
             ->where('instalments','>',0)
             ->where('in_employment','Y')
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1729,7 +1743,7 @@ $display .="
             ->where('instalments','>',0)
             ->where('in_employment','Y')
             ->where('job_group_id','!=',$jgroup->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
                              ->where('job_group_id','!=',$jgroup->id)
@@ -1748,7 +1762,7 @@ $display .="
         foreach($overtimes as $overtime){
         DB::table('transact_overtimes')->insert(
         ['employee_id' => $overtime->employee_id, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'overtime_type' => $overtime->type, 
         'overtime_id' => $overtime->id, 
         'overtime_period' => $overtime->period,
@@ -1761,7 +1775,7 @@ $display .="
         
         DB::table('overtimes')
              ->join('employee', 'overtimes.employee_id', '=', 'employee.id')
-             ->where('employee.organization_id',Confide::user()->organization_id)
+             ->where('employee.organization_id',Auth::user()->organization_id)
              ->where('job_group_id','!=',$jgroup->id)
              ->where(function($query){
                 $query->where('formular','=','One Time')
@@ -1777,14 +1791,14 @@ $display .="
             ->join('employee', 'employee_relief.employee_id', '=', 'employee.id')
             ->where('in_employment','Y')
             ->where('job_group_id','!=',$jgroup->id)
-            ->where('employee.organization_id',Confide::user()->organization_id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
             ->select('employee.id as eid','employee_relief.id as id','relief_name','relief_id','relief_amount')
             ->get();
 
         foreach($rels as $rel){
         DB::table('transact_reliefs')->insert(
         ['employee_id' => $rel->eid, 
-        'organization_id' => Confide::user()->organization_id,
+        'organization_id' => Auth::user()->organization_id,
         'employee_relief_id' => $rel->id, 
         'relief_name' => $rel->relief_name,
         'relief_id' => $rel->relief_id,
@@ -1816,7 +1830,7 @@ $display .="
     {
         $payroll = Payroll::findOrFail($id);
 
-        return View::make('payroll.show', compact('payroll'));
+        return view('payroll.show', compact('payroll'));
     }
 
     /**
@@ -1829,7 +1843,7 @@ $display .="
     {
         $deduction = Deduction::find($id);
 
-        return View::make('deductions.edit', compact('deduction'));
+        return view('deductions.edit', compact('deduction'));
     }
 
     /**

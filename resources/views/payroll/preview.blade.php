@@ -1,8 +1,10 @@
 
-@extends('layouts.payrollp')
-{{ HTML::script('media/jquery-1.12.0.min.js') }}
+@extends('layouts.app')
+{{ Html::script('media/jquery-1.12.0.min.js') }}
 
 <?php
+use App\Payroll;
+Session::put( 'transperiod', $period);
 $part = explode("-", $period);
 $start_date = $part[1]."-".$part[0]."-01";
 $end_date  = date('Y-m-t', strtotime($start_date));
@@ -12,7 +14,7 @@ $start  = date('Y-m-01', strtotime($end_date));
      $per = DB::table('transact')
           ->where('financial_month_year','=',$period)
           ->where('process_type','=',$type)
-          ->where('organization_id','=',Confide::user()->organization_id)
+          ->where('organization_id','=',Auth::user()->organization_id)
           ->count();
      if($per>0){?>
 
@@ -127,13 +129,16 @@ function asMoney($value) {
 {
     display: inline-block;
 }
+th{
+  color:#676a6c !important;
+}
 
         </style>
 
 @section('content')
 
 <form method="POST" action="{{{ URL::to('payroll') }}}" accept-charset="UTF-8">
-
+{{ csrf_field() }}
       <div align="right" style="margin-top:50px;" class="form-actions form-group">
 
         <input type="hidden" value="{{ $period }}" name="period"/>
@@ -162,7 +167,7 @@ function asMoney($value) {
 
       <input type="hidden" name="period" value="{{ $period }}"> 
        <input type="hidden" name="account" value="{{ $account }}"> 
-       <input type="hidden" value="{{ $type }}" name="type"/>
+       <input type="hidden" value="normal" name="type"/>
 
     <table id="example" data-show-refresh="true" style="font-size:10px;width:1000px" class="table table-condensed table-bordered table-responsive table-hover nowrap">
 

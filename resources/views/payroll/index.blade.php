@@ -1,4 +1,4 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 
 <script type="text/javascript">
 function YNconfirm() { 
@@ -11,6 +11,11 @@ var per = document.getElementById("period").value;
 </script>
 
 @section('content')
+{{ Html::script('media/jquery-1.12.0.min.js') }}
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
 	<div class="col-lg-12">
@@ -26,10 +31,11 @@ var per = document.getElementById("period").value;
 
     
 
-    {{ HTML::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
-  {{ HTML::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
+    {{ Html::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
+  {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <style>
+    .select2 {z-index:10 !important; }
     label, input { display:block; }
     input.text { margin-bottom:12px; width:95%; padding: .4em; }
     fieldset { padding:0; border:0; margin-top:25px; }
@@ -47,11 +53,11 @@ var per = document.getElementById("period").value;
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
@@ -60,7 +66,7 @@ var per = document.getElementById("period").value;
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       name = $( "#name" ),
       code = $( "#code" ),
       category = $( "#category" ),
@@ -95,6 +101,18 @@ var per = document.getElementById("period").value;
         return true;
       }
     }
+
+    $.ui.dialog.prototype._allowInteraction = function(e) {
+    return !!$(e.target).closest('.ui-dialog, .ui-datepicker, .select2-drop').length;
+};
+
+if ($.ui && $.ui.dialog && $.ui.dialog.prototype._allowInteraction) {
+    var ui_dialog_interaction = $.ui.dialog.prototype._allowInteraction;
+    $.ui.dialog.prototype._allowInteraction = function(e) {
+        if ($(e.target).closest('.select2-dropdown').length) return true;
+        return ui_dialog_interaction.apply(this, arguments);
+    };
+}
  
     function addUser() {
       var valid = true;
@@ -132,14 +150,15 @@ var per = document.getElementById("period").value;
                       data    : {
                               'name'      : name.val(),
                               'code'      : code.val(),
-                              'category'  : category.val()
+                              'category'  : category.val(),
+                              '_token' : $("#form input[name=_token]").val()
                       },
                       success : function(s){
                         $('#account').append($('<option>', {
                          value: s,
                          text: name.val(),
                          selected:true
-                        }));
+                        })).trigger('change');
                       }        
         });
         
@@ -179,15 +198,16 @@ var per = document.getElementById("period").value;
   });
   </script>
  
-   {{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+   {{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <div id="dialog-form" title="Create new Account">
   <p class="validateTips">Please insert All fields.</p>
  
-  <form>
+  <form id="form">
+    {{ csrf_field() }}
     <fieldset>
        <label for="name">Account Category <span style="color:red">*</span></label>
-            <select class="form-control" name="category" id="category">
+            <select class="form-control select2" name="category" id="category">
                 <option value=""></option>
                 <option value="ASSET">Asset (1000)</option>
                 <option value="INCOME">Income (2000)</option>
@@ -201,7 +221,7 @@ var per = document.getElementById("period").value;
       <label for="name">GL Code <span style="color:red">*</span></label>
       <input type="text" name="code" id="code" value="" class="text ui-widget-content ui-corner-all">
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
-      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+      <input type="submit" style="position:absolute; top:-1000px">
     </fieldset>
   </form>
 </div>
@@ -214,7 +234,7 @@ var per = document.getElementById("period").value;
     @else
 
 		 <form method="POST" action="{{ URL::to('payroll/preview')}}" accept-charset="UTF-8">
-   
+    {{ csrf_field() }}
     <fieldset>
        <div class="form-group">
                         <label for="username">Period <span style="color:red">*</span></label>
@@ -226,7 +246,7 @@ var per = document.getElementById("period").value;
         
         <div class="form-group">
                         <label for="username">Select Account <span style="color:red">*</span></label>
-                        <select name="account" id="account" class="form-control" required>
+                        <select name="account" id="account" class="form-control select2" required>
                            <option></option>
                            <option value="cnew">Create New</option>
                             @foreach($accounts as $account)
@@ -237,18 +257,7 @@ var per = document.getElementById("period").value;
                     </div>
 
 
-                    <div class="form-group">
-                        <label for="username">Select Category <span style="color:red">*</span></label>
-                        <select name="type" id="type" class="form-control" required>
-                           <option></option>
-                           @if(Entrust::can('manager_payroll'))
-                           <option value="management"> Management </option>
-                           @endif
-                           <option value="normal"> Normal </option>
-                        </select>
-                
-                    </div>
-
+                    
         <div class="form-actions form-group">
         
           <button type="submit" class="btn btn-primary btn-sm" >Select</button>
