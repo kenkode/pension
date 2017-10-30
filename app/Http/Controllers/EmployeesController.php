@@ -24,10 +24,14 @@ use App\Audit;
 use Illuminate\Http\Request;
 use Redirect;
 use Entrust;
+use Mail;
+use App\User;
+use App\Mail\Portal;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
+use Illuminate\Support\Str;
 
 class EmployeesController extends Controller {
 
@@ -431,6 +435,7 @@ class EmployeesController extends Controller {
       }else{
       $employee->in_employment = 'N';
       }
+    $employee->is_css_active = FALSE;
 		$employee->save();
 
     Audit::logaudit('Employee', 'create', 'created employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
@@ -935,6 +940,11 @@ class EmployeesController extends Controller {
 
   public function activateportal($id){
 
+    if ( !Entrust::can('activate_portal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
+
     $employee = Employee::find($id);
 
 
@@ -948,89 +958,84 @@ class EmployeesController extends Controller {
     if($email != null){
 
 
-      if(Mailsender::checkConnection() == false){
+   Mail::to($employee->email_office)->send(new Portal($name,$password));
 
-        return Redirect::back()->with('notice', 'Employee has not been activated. Could not establish interenet connection. kindly check your mail settings');
-      }
+   if( count(Mail::failures()) == 0 ) {
 
     DB::table('users')->insert(
-  array('email' => $employee->email_office, 
-    'username' => $employee->personal_file_number,
-    'password' => Hash::make($password),
-    'user_type'=>'employee',
-    'confirmation_code'=> md5(uniqid(mt_rand(), true)),
-    'confirmed'=> 1,
-    'organization_id'=> Auth::user()->organization_id
-    )
-);
+      array('email' => $employee->email_office, 
+        'name' => $employee->personal_file_number,
+        'password' => bcrypt($password),
+        'role'=>'employee',
+        'confirmation_code'=> md5(uniqid(mt_rand(), true)),
+        'confirmed'=> 1,
+        'organization_id'=> Auth::user()->organization_id
+        )
+    );
 
     
-
     $employee->is_css_active = true;
     $employee->update();
 
-
-
-  Mail::queue( 'emails.password', array('password'=>$password, 'name'=>$name), function( $message ) use ($employee)
-{
-    $message->to($employee->email_office )->subject( 'Self Service Portal Credentials' );
-});
-
-
     
+    Audit::logaudit('Employee Portal', 'activate', 'activated employee portal for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
 
+    return Redirect::back()->with('check', 'Employee has been activated and login credentials emailed');
 
-    return Redirect::back()->with('notice', 'Employee has been activated and login credentials emailed');
+}else{
 
-}
-
-else{
-
+  return Redirect::back()->with('check', 'Employee has not been activated. Could not establish interenet connection. kindly check your mail settings');
+  }
+}else{
   return Redirect::back()->with('notice', 'Employee has not been activated kindly update email address');
 
 }
 
+}
 
-
-
-
-    
-
-  }
+}
 
 
 
   public function deactivateportal($id){
-
+    if ( !Entrust::can('deactivate_portal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
     
     $employee = Employee::find($id);
 
-    DB::table('users')->where('username', '=', $employee->personal_file_number)->delete();
+    DB::table('users')->where('name', '=', $employee->personal_file_number)->delete();
 
     $employee->is_css_active = false;
     $employee->update();
 
+    Audit::logaudit('Employee Portal', 'deactivate', 'deactivated employee portal for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
 
-    return Redirect::back()->with('notice', 'Employee has been deactivated');;
-
-    
+    return Redirect::back()->with('check', 'Employee has been deactivated');;
+   }
   }
 
   public function reset($id){
     
-    //$id = DB::table('members')->where('membership_no', '=', $mem)->pluck('id');
+    if ( !Entrust::can('reset_portal_password') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
     $employee = Employee::findOrFail($id);
     
-    $user_id = DB::table('users')->where('organization_id',Auth::user()->organization_id)->where('username', '=', $employee->personal_file_number)->pluck('id');
+    $user_id = DB::table('users')->where('organization_id',Auth::user()->organization_id)->where('name', '=', $employee->personal_file_number)->pluck('id')[0];
     
     $user = User::findOrFail($user_id);
     
-    $user->password = Hash::make('123456');
+    $user->password = bcrypt('123456');
     $user->update();
+
+    Audit::logaudit('Employee Portal', 'reset', 'reset employee portal for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name);
     
-    return Redirect::back();
+    return Redirect::back()->with('check', 'Employee password reset');
     
   }
-
+}
 	
 }

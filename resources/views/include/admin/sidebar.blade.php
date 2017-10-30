@@ -40,7 +40,7 @@
                             <li><a href="{{ URL::to('Properties') }}"><i class="fa fa-chevron-right fa-fw"></i>Company Property </a></li>
                             <li><a href="{{ URL::to('deactives') }}"><i class="fa fa-chevron-right fa-fw"></i>Activate Employee</a></li>
                             <li><a target="_blank" href="{{ URL::to('EmployeeForm') }}"><i class="fa fa-chevron-right fa-fw"></i>Employee Detail Form</a></li>
-                            <li><a href="{{ URL::to('payrollReports/selectPeriod') }}"><i class="fa fa-chevron-right fa-fw"></i>Payslips</a></li>
+                           <li><a href="{{ URL::to('portal')}}"><i class="fa fa-chevron-right fa-fw"></i>Portal</a></li>
                         </ul>   
                     </li>
 

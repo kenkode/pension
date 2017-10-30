@@ -60,7 +60,7 @@ class RolesController extends Controller
         }else{
         
        return view('roles.edit', compact('role', 'permissions', 'categories', 'roleperm'));
-   }
+    }
     }
 
 

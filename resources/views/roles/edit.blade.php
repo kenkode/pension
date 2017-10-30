@@ -27,10 +27,6 @@
             </div>
         @endif
 
-        @if (Session::get('notice'))
-            <div class="alert">{{ Session::get('notice') }}</div>
-        @endif
-
         
 </div>
 </div>

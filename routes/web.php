@@ -1467,13 +1467,20 @@ Route::get('license/activate/{id}', 'OrganizationsController@activate_license_fo
 
 Route::get('portal', function(){
 
-    $members = DB::table('members')->where('is_active', '=', TRUE)->get();
-    return view('css.members', compact('members'));
+    $employees = DB::table('employee')->where('in_employment', '=', "Y")->get();
+    if ( !Entrust::can('view_portal') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+    }else{
+    Audit::logaudit('Employee Portal', 'view', 'viewed employee portal list');
+    return view('css.members', compact('employees'));
+  }
 });
 
-Route::get('portal/activate/{id}', 'MembersController@activateportal');
-Route::get('portal/deactivate/{id}', 'MembersController@deactivateportal');
-Route::get('css/reset/{id}', 'MembersController@reset');
+
+Route::get('portal/activate/{id}', 'EmployeesController@activateportal');
+Route::get('portal/deactivate/{id}', 'EmployeesController@deactivateportal');
+Route::get('css/reset/{id}', 'EmployeesController@reset');
 
 
 
