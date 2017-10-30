@@ -753,7 +753,46 @@ class EmployeesController extends Controller {
 
 		 Audit::logaudit('Employee', 'update', 'updated employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
-    Nextofkin::where('employee_id', $id)->delete();
+    $nkc = Nextofkin::where('employee_id', $id)->count();
+   
+    if($nkc > 0){
+    
+      $kins = Nextofkin::where('employee_id', $id)->get();
+
+      for($n=0;$n<count($kins);$n++){
+        $kins[$n]->first_name = Input::get('kin_first_name')[$n];
+        $kins[$n]->last_name = Input::get('kin_last_name')[$n];
+        $kins[$n]->middle_name = Input::get('kin_middle_name')[$n];
+        $kins[$n]->relationship = Input::get('relationship')[$n];
+        $kins[$n]->contact = Input::get('contact')[$n];
+        $kins[$n]->id_number = Input::get('id_number')[$n];
+
+        $kins[$n]->update();
+
+        Audit::logaudit('NextofKins', 'update', 'updated Next of kin '.Input::get('kin_first_name')[$n].' for '.Employee::getEmployeeName($id));
+      }
+      $rem = count(Input::get('kin_first_name')) - count($kins);
+      //return $rem;
+      if($rem > 0){
+      for($i=count($kins);$i<count(Input::get('kin_first_name'));$i++){
+        if((Input::get('kin_first_name')[$i] != '' || Input::get('kin_first_name')[$i] != null) && (Input::get('kin_last_name')[$i] != '' || Input::get('kin_last_name')[$i] != null)){
+        $kin = new Nextofkin;
+        $kin->employee_id=$id;
+        $kin->first_name = Input::get('kin_first_name')[$i];
+        $kin->last_name = Input::get('kin_last_name')[$i];
+        $kin->middle_name = Input::get('kin_middle_name')[$i];
+        $kin->relationship = Input::get('relationship')[$i];
+        $kin->contact = Input::get('contact')[$i];
+        $kin->id_number = Input::get('id_number')[$i];
+
+        $kin->save();
+
+        Audit::logaudit('NextofKins', 'create', 'created Next of kin '.Input::get('kin_first_name')[$i].' for '.Employee::getEmployeeName($id));
+       }
+     }
+   }
+
+    }else{
     for($i=0;$i<count(Input::get('kin_first_name'));$i++){
         if((Input::get('kin_first_name')[$i] != '' || Input::get('kin_first_name')[$i] != null) && (Input::get('kin_last_name')[$i] != '' || Input::get('kin_last_name')[$i] != null)){
         $kin = new Nextofkin;
@@ -770,8 +809,80 @@ class EmployeesController extends Controller {
         Audit::logaudit('NextofKins', 'create', 'created Next of kin '.Input::get('kin_first_name')[$i].' for '.Employee::getEmployeeName($id));
        }
      }
+   }
 
-      Document::where('employee_id', $id)->delete();
+      
+      //Document::where('employee_id', $id)->delete();
+      
+      $dc = Document::where('employee_id', $id)->count();
+      //return Input::get('path')[3];
+
+      if($dc > 0){
+    
+      $documents = Document::where('employee_id', $id)->get();
+
+      for($d=0;$d<count($documents);$d++){
+
+        if ( isset(Input::file('path')[$d])){
+            $file = Input::file('path')[$d];
+            $name = time().'-'.$file->getClientOriginalName();
+            $file = $file->move('public/uploads/employees/documents/', $name);
+            $input['file'] = '/public/uploads/employees/documents/'.$name;
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $documents[$d]->document_path = $name;
+            $documents[$d]->document_name = Input::get('doc_name')[$d].'.'.$extension;
+        
+        }else{
+            $name = Input::get('curpath')[$d];
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $documents[$d]->document_path = $name;
+            $documents[$d]->document_name = Input::get('doc_name')[$d].'.'.$extension;
+
+        }
+
+        $documents[$d]->description = Input::get('description')[$d];
+
+        $documents[$d]->update();
+
+        Audit::logaudit('Documents', 'update', 'updated document '.Input::get('doc_name')[$d].' for '.Employee::getEmployeeName($id));
+      }
+      $rem = count(Input::get('doc_name')) - count($documents);
+      //return $rem;
+      if($rem > 0){
+      for($j=count($documents);$j<count(Input::get('doc_name'));$j++){
+        if ( Input::get('doc_name')[$j] != null || Input::get('doc_name')[$j] != ''){
+       $document= new Document;
+       $document->employee_id=$id;
+       $file = Input::file('path')[$j];
+       if ( $file){
+       
+            $name = time().'-'.$file->getClientOriginalName();
+            $file = $file->move('public/uploads/employees/documents/', $name);
+            $input['file'] = '/public/uploads/employees/documents/'.$name;
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $document->document_path = $name;
+            $document->document_name = Input::get('doc_name')[$j].'.'.$extension;
+        
+        }else{
+            $name = Input::get('curpath')[$j];
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            $document->document_path = $name;
+            $document->document_name = Input::get('doc_name')[$j].'.'.$extension;
+
+        }
+
+        $document->description = Input::get('description')[$j];
+
+        $document->save();
+
+       Audit::logaudit('Documents', 'create', 'created document '.Input::get('doc_name')[$j].' for '.Employee::getEmployeeName($id));
+       $j=$j+1;
+       }
+     }
+   }
+
+    }else{
+
       $files = Input::file('path');
       $j = 0;
 
@@ -805,6 +916,7 @@ class EmployeesController extends Controller {
        $j=$j+1;
        }
        }
+     }
 
 
 		 if(Auth::user()->user_type == 'employee'){

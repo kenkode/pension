@@ -1834,7 +1834,7 @@ $(".ndelete").on('click', function() {
 }
 }
 });
-var i=2;
+var i={{$i}};
 $(".naddmore").on('click',function(){
   count=$('#nextkin tr').length;
     var data="<tr><td><input type='checkbox' class='ncase'/></td><td><span id='nsnum"+i+"'>"+count+".</span></td>";
@@ -1950,7 +1950,7 @@ $(".ddelete").on('click', function() {
 }
 }
 });
-var j=2;
+var j={{$j}};
 $(".daddmore").on('click',function(){
   count=$('#docEmp tr').length;
     var data="<tr><td><input type='checkbox' class='dcase'/></td><td><span id='dsnum"+j+"'>"+count+".</span></td>";
