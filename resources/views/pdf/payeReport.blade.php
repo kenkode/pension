@@ -44,7 +44,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -67,7 +67,7 @@ body {
        
         <td style="width:150px">
 
-            <img src="{{public_path().'/uploads/logo/'.$organization->logo}}" alt="logo" width="80%">>
+            <img src="{{public_path().'/uploads/logo/'.$organization->logo}}" alt="logo" width="80%">
 
     
         </td>
@@ -108,7 +108,7 @@ body {
 	<div class="content" style='margin-top:-70px;'>
     <table>
     
-          {{'<tr><td width="50"><strong>Period</strong> : </td><td>'.$period.'</td></tr>'}}
+          <tr><td width="50"><strong>Period</strong> : </td><td>{{$period}}</td></tr>
           <tr><td width="50"><strong>Due Date: </strong></td>
             <td>
             <?php

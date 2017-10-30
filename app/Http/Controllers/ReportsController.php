@@ -6,14 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Account;
 use App\Employeebenefit;
 use App\Employee;
+use App\Currency;
 use App\Organization;
 use App\Occurencesetting;
 use App\Property;
+use App\Jobgroup;
 use App\Audit;
 use App\Branch;
+use App\BBranch;
+use App\Bank;
 use App\Department;
 use App\Leaveapplication;
 use App\Leavetype;
+use App\Payroll;
 use Illuminate\Http\Request;
 use Redirect;
 use Entrust;
@@ -24,6 +29,9 @@ use DB;
 use Barryvdh\DomPDF\Facade as PDF;
 use Session;
 use PHPExcel;
+use PHPExcel_Cell;
+use DateTime;
+use Response;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 
 class ReportsController extends Controller {
@@ -1884,7 +1892,12 @@ class ReportsController extends Controller {
                               ->first();
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    if ( !Entrust::can('view_payslip') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.payslipSelect', compact('employees','branches','departments','type'));
+  }
   }
 
     public function payslip(){
@@ -1949,11 +1962,7 @@ class ReportsController extends Controller {
 
         $employees = Employee::where('organization_id',Auth::User()->organization_id)->get();
 
-        if(Entrust::can('manager_payroll')){
-        $employees = Employee::where('organization_id',Auth::User()->organization_id)->where('job_group_id',$jgroup->id)->get();
-        }else{
-        $employees = Employee::where('organization_id',Auth::User()->organization_id)->where('job_group_id','!=',$jgroup->id)->get();
-        }
+        Audit::logaudit('Payslip', 'view', 'viewed payslip for all employees for period '.Input::get('period'));
 
         foreach ($employees as $employee) {
   
@@ -1965,20 +1974,22 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->first(); 
 
-        $allws = DB::table('transact_allowances')
-            ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.id' ,'=', $employee->id)
-            ->where('employee.organization_id',Auth::user()->organization_id)
-            ->groupBy('allowance_name')
-            ->get(); 
-
         $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', $employee->id)
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('nontaxable_name')
+            ->select('nontaxable_name',DB::raw('COALESCE(sum(nontaxable_amount),0.00) as nontaxable_amount'))
+            ->get(); 
+
+        $allws = DB::table('transact_allowances')
+            ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
+            ->where('financial_month_year' ,'=', Input::get('period'))
+            ->where('employee.id' ,'=', $employee->id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->groupBy('allowance_name')
+            ->select('allowance_name',DB::raw('COALESCE(sum(allowance_amount),0.00) as allowance_amount'))
             ->get(); 
 
         $earnings = DB::table('transact_earnings')
@@ -1987,6 +1998,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', $employee->id)
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('earning_name')
+            ->select('earning_name',DB::raw('COALESCE(sum(earning_amount),0.00) as earning_amount'))
             ->get(); 
 
         $deds = DB::table('transact_deductions')
@@ -1995,6 +2007,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', $employee->id)
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('deduction_name')
+            ->select('deduction_name',DB::raw('COALESCE(sum(deduction_amount),0.00) as deduction_amount'))
             ->get(); 
 
         $overtimes = DB::table('transact_overtimes')
@@ -2003,6 +2016,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', $employee->id)
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('overtime_type')
+            ->select('overtime_type',DB::raw('COALESCE(sum(overtime_period*overtime_amount),0.00) as overtimes'))
             ->get();
 
         $rels = DB::table('transact_reliefs')
@@ -2011,6 +2025,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', $employee->id)
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('relief_name')
+            ->select('relief_name',DB::raw('COALESCE(sum(relief_amount),0.00) as relief_amount'))
             ->get();
 
           $save = '';
@@ -2046,6 +2061,8 @@ class ReportsController extends Controller {
         $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        
      
     
   Excel::create('Payslips', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency) {
@@ -2200,7 +2217,7 @@ class ReportsController extends Controller {
              for($i = 0; $i<count($overtimes); $i++){
             
              $sheet->row($row, array(
-             'Overtime Earning - '.$overtimes[$i]->overtime_type,$overtimes[$i]->overtime_amount * $overtimes[$i]->overtime_period
+             'Overtime Earning - '.$overtimes[$i]->overtime_type,$overtimes[$i]->overtimes
              ));
              
              $sheet->cell('B'.$row, function($cell) {
@@ -2227,11 +2244,11 @@ class ReportsController extends Controller {
 
               for($i = 0; $i<count($allws); $i++){
             
-             $sheet->row($row, array(
+             $sheet->row($row+1, array(
              $allws[$i]->allowance_name,$allws[$i]->allowance_amount
              ));
              
-             $sheet->cell('B'.$row, function($cell) {
+             $sheet->cell('B'.$row+1, function($cell) {
 
                // manipulate the cell
                 $cell->setAlignment('right');
@@ -2242,25 +2259,25 @@ class ReportsController extends Controller {
              
              }      
 
-            $sheet->row($row, array(
+            $sheet->row($row+1, array(
               'GROSS PAY',$data->taxable_income
             ));
 
-              $sheet->row($row, function($cell) {
+              $sheet->row($row+1, function($cell) {
 
                // manipulate the cell
                 $cell->setFontWeight('bold');
 
               });  
 
-              $sheet->cell('B'.$row, function($cell) {
+              $sheet->cell('B'.$row+1, function($cell) {
 
                // manipulate the cell
                 $cell->setAlignment('right');
 
               });
 
-               $r = $row+1;
+               $r = $row+2;
 
               for($i = 0; $i<count($nontaxables); $i++){
             
@@ -2413,20 +2430,22 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->first(); 
 
-        $allws = DB::table('transact_allowances')
-            ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-            ->where('financial_month_year' ,'=', Input::get('period'))
-            ->where('employee.id' ,'=', Input::get('employeeid'))
-            ->where('employee.organization_id',Auth::user()->organization_id)
-            ->groupBy('allowance_name')
-            ->get(); 
-
         $nontaxables = DB::table('transact_nontaxables')
             ->join('employee', 'transact_nontaxables.employee_id', '=', 'employee.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('nontaxable_name')
+            ->select('nontaxable_name',DB::raw('COALESCE(sum(nontaxable_amount),0.00) as nontaxable_amount'))
+            ->get(); 
+
+        $allws = DB::table('transact_allowances')
+            ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
+            ->where('financial_month_year' ,'=', Input::get('period'))
+            ->where('employee.id' ,'=', Input::get('employeeid'))
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->groupBy('allowance_name')
+            ->select('allowance_name',DB::raw('COALESCE(sum(allowance_amount),0.00) as allowance_amount'))
             ->get(); 
 
         $earnings = DB::table('transact_earnings')
@@ -2435,6 +2454,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('earning_name')
+            ->select('earning_name',DB::raw('COALESCE(sum(earning_amount),0.00) as earning_amount'))
             ->get(); 
 
         $deds = DB::table('transact_deductions')
@@ -2443,6 +2463,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('deduction_name')
+            ->select('deduction_name',DB::raw('COALESCE(sum(deduction_amount),0.00) as deduction_amount'))
             ->get(); 
 
         $overtimes = DB::table('transact_overtimes')
@@ -2451,6 +2472,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('overtime_type')
+            ->select('overtime_type',DB::raw('COALESCE(sum(overtime_period*overtime_amount),0.00) as overtimes'))
             ->get();
 
         $rels = DB::table('transact_reliefs')
@@ -2459,6 +2481,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('relief_name')
+            ->select('relief_name',DB::raw('COALESCE(sum(relief_amount),0.00) as relief_amount'))
             ->get();
 
           $save = '';
@@ -2494,6 +2517,8 @@ class ReportsController extends Controller {
         $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Payslip', 'view', 'viewed payslip for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.Input::get('period'));
      
     
   Excel::create($save.'_'.$month.' Payslip', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency) {
@@ -2648,7 +2673,7 @@ class ReportsController extends Controller {
              for($i = 0; $i<count($overtimes); $i++){
             
              $sheet->row($row, array(
-             'Overtime Earning - '.$overtimes[$i]->overtime_type,$overtimes[$i]->overtime_amount * $overtimes[$i]->overtime_period
+             'Overtime Earning - '.$overtimes[$i]->overtime_type,$overtimes[$i]->overtimes
              ));
              
              $sheet->cell('B'.$row, function($cell) {
@@ -2675,11 +2700,11 @@ class ReportsController extends Controller {
 
               for($i = 0; $i<count($allws); $i++){
             
-             $sheet->row($row, array(
+             $sheet->row($row+1, array(
              $allws[$i]->allowance_name,$allws[$i]->allowance_amount
              ));
              
-             $sheet->cell('B'.$row, function($cell) {
+             $sheet->cell('B'.$row+1, function($cell) {
 
                // manipulate the cell
                 $cell->setAlignment('right');
@@ -2690,11 +2715,11 @@ class ReportsController extends Controller {
              
              }      
 
-            $sheet->row($row, array(
+            $sheet->row($row+1, array(
               'GROSS PAY',$data->taxable_income
             ));
 
-              $sheet->row($row, function($cell) {
+              $sheet->row($row+1, function($cell) {
 
                // manipulate the cell
                 $cell->setFontWeight('bold');
@@ -2708,7 +2733,7 @@ class ReportsController extends Controller {
 
               });
 
-               $r = $row+1;
+               $r = $row+2;
 
               for($i = 0; $i<count($nontaxables); $i++){
             
@@ -2875,20 +2900,20 @@ class ReportsController extends Controller {
                             })->where('job_group_name','Management')
                               ->first();
 
-      if(Entrust::can('manager_payroll')){
          $empall = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->get(); 
-      }else{
+      
         $empall = DB::table('transact')
             ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('job_group_id' ,'!=', $jgroup->id)
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->get(); 
-        }
+        
+    Audit::logaudit('Payslip', 'view', 'viewed payslip for all employees for period '.Input::get('period'));
 
     $pdf = PDF::loadView('pdf.monthlySlip', compact('empall','select','period','currency', 'organization'))->setPaper('a5');
   
@@ -2939,6 +2964,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('nontaxable_name')
+            ->select('nontaxable_name',DB::raw('COALESCE(sum(nontaxable_amount),0.00) as nontaxable_amount'))
             ->get(); 
 
         $allws = DB::table('transact_allowances')
@@ -2947,6 +2973,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('allowance_name')
+            ->select('allowance_name',DB::raw('COALESCE(sum(allowance_amount),0.00) as allowance_amount'))
             ->get(); 
 
         $earnings = DB::table('transact_earnings')
@@ -2955,6 +2982,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('earning_name')
+            ->select('earning_name',DB::raw('COALESCE(sum(earning_amount),0.00) as earning_amount'))
             ->get(); 
 
         $deds = DB::table('transact_deductions')
@@ -2963,6 +2991,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('deduction_name')
+            ->select('deduction_name',DB::raw('COALESCE(sum(deduction_amount),0.00) as deduction_amount'))
             ->get(); 
 
         $overtimes = DB::table('transact_overtimes')
@@ -2971,6 +3000,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('overtime_type')
+            ->select('overtime_type',DB::raw('COALESCE(sum(overtime_period*overtime_amount),0.00) as overtimes'))
             ->get();
 
         $rels = DB::table('transact_reliefs')
@@ -2979,6 +3009,7 @@ class ReportsController extends Controller {
             ->where('employee.id' ,'=', Input::get('employeeid'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->groupBy('relief_name')
+            ->select('relief_name',DB::raw('COALESCE(sum(relief_amount),0.00) as relief_amount'))
             ->get();
  
         $currency = DB::table('currencies')
@@ -2987,6 +3018,8 @@ class ReportsController extends Controller {
             ->first();
 
     $organization = Organization::find(Auth::user()->organization_id);
+
+    Audit::logaudit('Payslip', 'view', 'viewed payslip for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.Input::get('period'));
 
     $pdf = PDF::loadView('pdf.monthlySlip', compact('nontaxables','empall','select','name','employee','transact','allws','deds','earnings','overtimes','rels','period','currency', 'organization','id'))->setPaper('a5');
   
@@ -3012,8 +3045,12 @@ class ReportsController extends Controller {
                               ->first();
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
-
+    if ( !Entrust::can('view_allowance_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.allowanceSelect', compact('allws','type'));
+  }
   }
 
     public function allowances(){
@@ -3109,6 +3146,8 @@ class ReportsController extends Controller {
     $organization = Organization::find(Auth::user()->organization_id);
 
     $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+    Audit::logaudit('Allowance Report', 'view', 'viewed all allowance report for period '.Input::get('period'));
      
     
   Excel::create('Allowances Report '.$month, function($excel) use($data,$dataearning,$dataovertime,$total,$totalearning,$totalovertime,$organization,$currency) {
@@ -3389,6 +3428,7 @@ class ReportsController extends Controller {
 
     $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
+  Audit::logaudit('Allowance Report', 'view', 'viewed allowance report for allowance type '.$type.' for period '.Input::get('period'));
     
   Excel::create('Allowances Report '.$month, function($excel) use($data,$currency,$total,$type,$organization) {
 
@@ -3625,6 +3665,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Allowance Report', 'view', 'viewed all allowance report for period '.Input::get('period'));
+ 
     $pdf = PDF::loadView('pdf.allowanceReport', compact('allws','earnings','overtimes','totalearning','totalovertime','period','type','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Allowance_Report_'.$month.'.pdf');
@@ -3691,8 +3733,7 @@ class ReportsController extends Controller {
 
         $total = DB::table('transact_allowances')
                   ->join('employee', 'transact_allowances.employee_id', '=', 'employee.id')
-                  ->join('allowances', 'transact_allowances.allowance_id', '=', 'allowances.id')
-                  ->where('allowances.id' ,'=', Input::get('allowance'))
+                  ->where('transact_allowances.allowance_name' ,'=', Input::get('allowance'))
                   ->where('process_type' ,'=', Input::get('type'))
                   ->where('employee.organization_id',Auth::user()->organization_id)
                   ->where('financial_month_year' ,'=', Input::get('period'))
@@ -3754,6 +3795,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Allowance Report', 'view', 'viewed allowance report for allowance type '.$type.' for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.allowanceReport', compact('allws','earnings','overtimes','totalearning','totalovertime','name','period','type','currencies','total','organization'))->setPaper('a4');
   
     return $pdf->stream('Allowance_Report_'.$month.'.pdf');
@@ -3780,8 +3823,13 @@ class ReportsController extends Controller {
                               ->first();
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
-
+    
+    if ( !Entrust::can('view_earning_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.earningSelect', compact('earnings','type'));
+  }
   }
 
     public function earnings(){
@@ -3829,6 +3877,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+  Audit::logaudit('Earning Report', 'view', 'viewed all earnings report for period '.Input::get('period'));
 
     
   Excel::create('Earnings Report '.$month, function($excel) use($data,$currency,$total,$organization) {
@@ -4011,6 +4061,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+  Audit::logaudit('Earning Report', 'view', 'viewed earning report for earning type '.$type.' for period '.Input::get('period'));
     
   Excel::create('Earnings Report '.$month, function($excel) use($data,$total,$type,$currency,$organization) {
 
@@ -4194,6 +4246,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('Earning Report', 'view', 'viewed all earnings report for period '.Input::get('period'));
+
     $organization = Organization::find(Auth::user()->organization_id);
 
     $pdf = PDF::loadView('pdf.earningReport', compact('earnings','type','period','currencies','total', 'organization'))->setPaper('a4');
@@ -4253,6 +4307,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('Earning Report', 'view', 'viewed earning report for earning type '.$type.' for period '.Input::get('period'));
+
     $organization = Organization::find(Auth::user()->organization_id);
 
     $pdf = PDF::loadView('pdf.earningReport', compact('earnings','name','type','period','currencies', 'total','organization'))->setPaper('a4');
@@ -4274,10 +4330,17 @@ class ReportsController extends Controller {
                               ->first();
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+
+    if ( !Entrust::can('view_overtime_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.overtimeSelect',compact('type'));
+  }
   }
 
     public function overtimes(){
+
          if(Input::get('format') == "excel"){
           if(Input::get('overtime') == 'All'){
             if(Input::get('type') == 'All'){
@@ -4322,7 +4385,7 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
-
+ Audit::logaudit('Overtime Report', 'view', 'viewed all overtime report for period '.Input::get('period'));
     
   Excel::create('Overtimes Report '.$month, function($excel) use($data,$currency,$total,$organization) {
 
@@ -4504,6 +4567,9 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+
+  Audit::logaudit('Overtime Report', 'view', 'viewed overtime report for overtime type '.$type.' for period '.Input::get('period'));
     
   Excel::create('Overtimes Report '.$month, function($excel) use($data,$total,$type,$currency,$organization) {
 
@@ -4689,6 +4755,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Overtime Report', 'view', 'viewed all overtime report for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.overtimeReport', compact('overtimes','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Overtimes_Report_'.$month.'.pdf');
@@ -4749,6 +4817,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Overtime Report', 'view', 'viewed overtime report for overtime type '.$type.' for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.overtimeReport', compact('overtimes','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Overtime_Report_'.$month.'.pdf');
@@ -4776,7 +4846,12 @@ class ReportsController extends Controller {
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
+    if ( !Entrust::can('view_relief_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.reliefSelect', compact('reliefs','type'));
+  }
   }
 
     public function reliefs(){
@@ -4824,6 +4899,9 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+
+  Audit::logaudit('Relief Report', 'view', 'viewed all relief report for period '.Input::get('period'));
 
     
   Excel::create('Reliefs Report '.$month, function($excel) use($data,$currency,$total,$organization) {
@@ -5007,6 +5085,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+  Audit::logaudit('Relief Report', 'view', 'viewed relief report for relief type '.$type.' for period '.Input::get('period'));
     
   Excel::create('Relief Report '.$month, function($excel) use($data,$total,$type,$currency,$organization) {
 
@@ -5191,6 +5271,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Relief Report', 'view', 'viewed relief report for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.reliefReport', compact('reliefs','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Relief_Report_'.$month.'.pdf');
@@ -5250,6 +5332,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Relief Report', 'view', 'viewed relief report for relief type '.$type.' for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.reliefReport', compact('reliefs','name','type','period','currencies', 'total','organization'))->setPaper('a4');
   
     return $pdf->stream('Relief_Report_'.$month.'.pdf');
@@ -5277,7 +5361,12 @@ class ReportsController extends Controller {
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
+    if ( !Entrust::can('view_deduction_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.deductionSelect', compact('deds','type'));
+  }
   }
 
     public function deductions(){
@@ -5326,6 +5415,7 @@ class ReportsController extends Controller {
               
               $month = $m."-".$part[1];
 
+  Audit::logaudit('Deduction Report', 'view', 'viewed deduction report for period '.Input::get('period'));
     
   Excel::create('Deductions Report '.$month, function($excel) use($data,$currency,$total,$organization) {
 
@@ -5506,6 +5596,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+  Audit::logaudit('Deduction Report', 'view', 'viewed deduction report for deduction type '.$type.' for period '.Input::get('period'));
     
   Excel::create('Deductions Report '.$month, function($excel) use($data,$total,$type,$currency,$organization) {
 
@@ -5690,6 +5782,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Deduction Report', 'view', 'viewed deduction report for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.deductionReport', compact('deds','type','period','currencies','total', 'organization'))->setPaper('a4');
   
     return $pdf->stream('Deduction_Report_'.$month.'.pdf');
@@ -5746,6 +5840,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('Deduction Report', 'view', 'viewed deduction report for deduction type '.$type.' for period '.Input::get('period'));
+
     $organization = Organization::find(Auth::user()->organization_id);
 
     $pdf = PDF::loadView('pdf.deductionReport', compact('deds','name','type','period','currencies', 'total','organization'))->setPaper('a4');
@@ -5775,7 +5871,12 @@ class ReportsController extends Controller {
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
 
+    if ( !Entrust::can('view_nontaxable_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.nontaxableSelect', compact('nontaxables','type'));
+  }
   }
 
     public function employeenontaxables(){
@@ -5826,6 +5927,7 @@ class ReportsController extends Controller {
               
               $month = $m."-".$part[1];
 
+  Audit::logaudit('Non Taxable Income Report', 'view', 'viewed all non taxable income report for period '.Input::get('period'));
     
   Excel::create('Non Taxable Income Report '.$month, function($excel) use($data,$currency,$total,$organization) {
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -6008,6 +6110,9 @@ class ReportsController extends Controller {
               }
               
               $month = $m."-".$part[1];
+
+
+  Audit::logaudit('Non Taxable Income Report', 'view', 'viewed non taxable income report for income type '.$type.' for period '.Input::get('period'));
     
   Excel::create('Non Taxable Income Report '.$month, function($excel) use($data,$total,$type,$currency,$organization) {
 
@@ -6189,6 +6294,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('Non Taxable Income Report', 'view', 'viewed all non taxable income report for period '.Input::get('period'));
+
     $organization = Organization::find(Auth::user()->organization_id);
 
     $pdf = PDF::loadView('pdf.nontaxableReport', compact('nontaxables','type','period','currencies','total', 'organization'))->setPaper('a4');
@@ -6248,6 +6355,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('Non Taxable Income Report', 'view', 'viewed non taxable income report for income type '.$type.' for period '.Input::get('period'));
+
     $organization = Organization::find(Auth::user()->organization_id);
 
     $pdf = PDF::loadView('pdf.nontaxableReport', compact('nontaxables','name','type','period','currencies', 'total','organization'))->setPaper('a4');
@@ -6269,7 +6378,12 @@ class ReportsController extends Controller {
 
      public function period_paye()
   {
+    if ( !Entrust::can('view_paye_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.payeSelect');
+  }
   }
 
     public function payeReturns(){
@@ -6304,6 +6418,8 @@ class ReportsController extends Controller {
 
        $organization = Organization::find(Auth::user()->organization_id);
 
+       $employee = Employee::find(Input::get('employeeid'));
+
        $period = Input::get('period');
 
        $type = Input::get('type');
@@ -6319,6 +6435,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+
+  Audit::logaudit('Itax Report', 'view', 'viewed Itax report for period '.Input::get('period'));
 
     
   Excel::create('Paye Report '.$month, function($excel) use($type,$period,$total_enabled,$total_disabled,$payes_enabled,$payes_disabled,$organization) {
@@ -6486,6 +6604,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+
+  Audit::logaudit('Itax Report', 'view', 'viewed Itax report for B_Employee_Dtls for period '.Input::get('period'));
     
   Excel::create('B_Employee_Dtls_'.$month, function($excel) use($data,$period) {
 
@@ -6580,6 +6700,8 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+
+  Audit::logaudit('Itax Report', 'view', 'viewed Itax report for C_Disabled_Employee_Dtls for period '.Input::get('period'));
 
   Excel::create('C_Disabled_Employee_Dtls_'.$month, function($excel) use($data_disabled,$period) {
 
@@ -6709,6 +6831,8 @@ class ReportsController extends Controller {
 
     $organization = Organization::find(Auth::user()->organization_id);
 
+    Audit::logaudit('Paye Report', 'view', 'viewed paye report for period '.Input::get('period'));
+
     $pdf = PDF::loadView('pdf.payeReport', compact('payes_enabled','payes_disabled','type','total_enabled','total_disabled','currencies','period','organization'))->setPaper('a4');
   
     return $pdf->stream('Paye_Returns_'.$month.'.pdf');
@@ -6717,7 +6841,12 @@ class ReportsController extends Controller {
 
    public function period_nssf()
   {
+    if ( !Entrust::can('view_nssf_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.nssfSelect');
+  }
   }
 
     public function nssfReturns(){
@@ -6751,7 +6880,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    
+  Audit::logaudit('NSSF Report', 'view', 'viewed NSSF report for period '.Input::get('period'));  
+
   Excel::create('Nssf Report '.$month, function($excel) use($data,$total,$organization) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -6881,6 +7011,7 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('NSSF Report', 'view', 'viewed NSSF report for period '.Input::get('period'));  
 
     $pdf = PDF::loadView('pdf.nssfReport', compact('nssfs','total','currencies','period','organization'))->setPaper('a4');
   
@@ -6892,7 +7023,12 @@ class ReportsController extends Controller {
 
     public function period_nhif()
   {
+    if ( !Entrust::can('view_nhif_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.nhifSelect');
+  }
   }
 
     public function nhifReturns(){
@@ -6928,6 +7064,7 @@ class ReportsController extends Controller {
 
               $per = $part[1]."-".$m;
 
+  Audit::logaudit('NHIF Report', 'view', 'viewed NHIF report for period '.Input::get('period')); 
     
   Excel::create('Nhif Report '.$month, function($excel) use($per,$data,$total,$organization) {
 
@@ -7057,6 +7194,7 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+    Audit::logaudit('NHIF Report', 'view', 'viewed NHIF report for period '.Input::get('period')); 
 
     $pdf = PDF::loadView('pdf.nhifReport', compact('nhifs','total','currencies','period','organization'))->setPaper('a4');
   
@@ -7079,7 +7217,12 @@ class ReportsController extends Controller {
                               ->first();
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    if ( !Entrust::can('view_payroll_remittance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.remittanceSelect',compact('branches','depts','type'));
+  }
   }
 
     public function payeRems(){
@@ -7149,6 +7292,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees for period '.Input::get('period'));
     
   Excel::create('Remittance Report '.$month, function($excel) use($data,$total,$organization,$currency,$branch,$bank) {
 
@@ -7308,6 +7453,10 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+
+  $branch = Branch::find(Input::get('branch'));
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees in branch '.$branch->name.' for period '.Input::get('period'));
     
   Excel::create('Remittance Report '.$month, function($excel) use($data,$total,$organization,$currency,$branch,$bank) {
 
@@ -7325,7 +7474,7 @@ class ReportsController extends Controller {
               $sheet->mergeCells('A1:F1');
 
               $sheet->row(1, array(
-              $rganization->name
+              $organization->name
               ));
 
 
@@ -7370,7 +7519,7 @@ class ReportsController extends Controller {
              }
 
              $sheet->row($row, array(
-             $data[$i]->personal_file_number,$name,$idno,$date[$i]->bank_eft_code,$data[$i]->bank_account_number,$data[$i]->net
+             $data[$i]->personal_file_number,$name,$idno,$data[$i]->bank_eft_code,$data[$i]->bank_account_number,$data[$i]->net
              ));
 
              $sheet->cell('F'.$row, function($cell) {
@@ -7470,6 +7619,10 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees in department '.$department->deduction_name.' for period '.Input::get('period'));
     
   Excel::create('Remittance Report '.$month, function($excel) use($data,$total,$organization,$currency,$branch,$bank) {
 
@@ -7632,6 +7785,10 @@ class ReportsController extends Controller {
             ->where('banks.id','=',$organization->bank_id)
             ->first();
 
+  $branch = Branch::find(Input::get('branch'));
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees in branch '.$branch->name.' and department '.$department->deduction_name.' for period '.Input::get('period'));
     
   Excel::create('Remittance Report '.$month, function($excel) use($data,$total,$organization,$currency,$branch,$bank) {
 
@@ -7798,9 +7955,11 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+  
 
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees for period '.Input::get('period'));
 
-    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Pay_Remittance_'.$month.'.pdf');
 
@@ -7878,7 +8037,12 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','branch','bank','total','emps','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+
+  $branch = Branch::find(Input::get('branch'));
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees in branch '.$branch->name.' for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','branch','bank','total','emps','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Pay_Remittance_'.$month.'.pdf');
 
@@ -7956,7 +8120,12 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','total','branch','bank','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+
+      $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees in department '.$department->deduction_name.' for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','total','branch','bank','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Pay_Remittance_'.$month.'.pdf');
 
@@ -8038,7 +8207,12 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+  $branch = Branch::find(Input::get('branch'));
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Remittance', 'view', 'viewed payroll remittance for all employees in branch '.$branch->name.' and department '.$department->deduction_name.' for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.remittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Pay_Remittance_'.$month.'.pdf');
 
@@ -8061,7 +8235,12 @@ class ReportsController extends Controller {
                               ->first();
 
     $type = Employee::where('organization_id',Auth::user()->organization_id)->where('job_group_id',$jgroup->id)->where('personal_file_number',Auth::user()->name)->count();
+    if ( !Entrust::can('view_payroll_summary') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.summarySelect',compact('branches','depts','type'));
+  }
   }
 
     public function paySummary(){
@@ -8317,7 +8496,8 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees for period '.Input::get('period'));
+
   Excel::create('Payroll Summary '.$month, function($excel) use($data,$data_nontax,$data_earnings,$data_allowance,$data_overtime,$data_overtime_hourly,$data_overtime_daily,$data_relief,$data_deduction,$total_pay,$total_earning,$total_gross,$total_paye,$total_nssf,$total_nhif,$total_others,$total_deds,$total_net,$organization,$currency) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -9021,6 +9201,9 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
+  $branch = Branch::find(Input::get('branch'));
+
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees in branch '.$branch->name.' for period '.Input::get('period'));
     
   Excel::create('Payroll Summary '.$month, function($excel) use($sels,$data,$data_nontax,$data_earnings,$data_allowance,$data_overtime,$data_overtime_hourly,$data_overtime_daily,$data_relief,$data_deduction,$total_pay,$total_earning,$total_gross,$total_paye,$total_nssf,$total_nhif,$total_others,$total_deds,$total_net,$organization,$currency) {
 
@@ -9723,6 +9906,10 @@ class ReportsController extends Controller {
               }
               
               $month = $m."_".$part[1];
+
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees in department '.$department->department_name.' for period '.Input::get('period'));
 
     
   Excel::create('Payroll Summary '.$month, function($excel) use($sels,$data,$data_nontax,$data_earnings,$data_allowance,$data_overtime,$data_overtime_hourly,$data_overtime_daily,$data_relief,$data_deduction,$total_pay,$total_earning,$total_gross,$total_paye,$total_nssf,$total_nhif,$total_others,$total_deds,$total_net,$organization,$currency) {
@@ -10444,7 +10631,11 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    
+  $branch = Branch::find(Input::get('branch'));
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees in branch '.$branch->name.' and department '.$department->deduction_name.' for period '.Input::get('period'));
+
   Excel::create('Payroll Summary '.$month, function($excel) use($selBr,$selDt,$data,$data_nontax,$data_earnings,$data_allowance,$data_overtime,$data_overtime_hourly,$data_overtime_daily,$data_relief,$data_deduction,$total_pay,$total_earning,$total_gross,$total_paye,$total_nssf,$total_nhif,$total_others,$total_deds,$total_net,$organization,$currency) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -11022,7 +11213,9 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+    Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Payroll_summary_'.$month.'.pdf');
 
@@ -11210,7 +11403,12 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','sels','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+
+    $branch = Branch::find(Input::get('branch'));
+
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees in branch '.$branch->name.' for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','sels','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Payroll_summary_'.$month.'.pdf');
 
@@ -11397,7 +11595,11 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','sels','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees in department '.$department->deduction_name.' for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','sels','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Payroll_summary_'.$month.'.pdf');
 
@@ -11607,7 +11809,12 @@ class ReportsController extends Controller {
               
               $month = $m."_".$part[1];
 
-    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','selBr','selDt','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+  $branch = Branch::find(Input::get('branch'));
+  $department = Department::find(Input::get('department'));
+
+  Audit::logaudit('Payroll Summary', 'view', 'viewed payroll summary for all employees in branch '.$branch->name.' and department '.$department->deduction_name.' for period '.Input::get('period'));
+
+    $pdf = PDF::loadView('pdf.summaryReport', compact('sums','selBranch','selDept','selBr','selDt','total_pay','total_earning','total_gross','total_paye','total_nssf','total_nhif','total_others','total_deds','total_net','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Payroll_summary_'.$month.'.pdf');
 
@@ -11639,7 +11846,7 @@ public function members(){
     ->get();
     $loanproducts = Loanproduct::where('organization_id',Auth::user()->organization_id)->get();
 
-    $pdf = PDF::loadView('pdf.remittance', compact('members', 'organization', 'loanproducts', 'savingproducts'))->setPaper('a4')->setOrientation('landscape');
+    $pdf = PDF::loadView('pdf.remittance', compact('members', 'organization', 'loanproducts', 'savingproducts'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Remittance.pdf');
     
@@ -11653,7 +11860,7 @@ public function members(){
     ->get();
     $organization = Organization::find(Auth::user()->organization_id);
 
-    $pdf = PDF::loadView('pdf.blank', compact('employees', 'organization'))->setPaper('a4')->setOrientation('landscape');
+    $pdf = PDF::loadView('pdf.blank', compact('employees', 'organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Template.pdf');
     
@@ -15865,7 +16072,12 @@ public function period_advrem()
     {
         $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
         $depts = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('view_advance_remittance') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pdf.remittanceAdvanceSelect',compact('branches','depts'));
+      }
     }
 
     public function payeAdvRems(){
@@ -15890,6 +16102,8 @@ public function period_advrem()
         $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period'));
 
         /*$branch=DB::table('bank_branches')
             ->join('organizations', 'bank_branches.organization_id', '=', 'organizations.id')
@@ -15939,7 +16153,7 @@ public function period_advrem()
             if($organization->bank_branch_id==0){
             $orgbankbranchname = '';
             }else{
-            $orgbankbranchname = $branch->bank_branch_name;
+            $orgbankbranchname = BBranch::getName($organization->bank_branch_id);
             }
 
               $sheet->row(1, array(
@@ -16139,6 +16353,10 @@ public function period_advrem()
             ->where('banks.id','=',$organization->bank_id)
             ->first();
 
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period').' for branch '.$branch->name);
+
 
         $part = explode("-", Input::get('period'));
               
@@ -16177,7 +16395,7 @@ public function period_advrem()
             if($organization->bank_branch_id==0){
             $orgbankbranchname = '';
             }else{
-            $orgbankbranchname = $branch->bank_branch_name;
+            $orgbankbranchname = BBranch::getName($organization->bank_branch_id);
             }
 
               $sheet->row(1, array(
@@ -16376,6 +16594,10 @@ public function period_advrem()
             ->where('banks.id','=',$organization->bank_id)
             ->first();
 
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period').' for department '.$department->department_name);
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -16413,7 +16635,7 @@ public function period_advrem()
             if($organization->bank_branch_id==0){
             $orgbankbranchname = '';
             }else{
-            $orgbankbranchname = $branch->bank_branch_name;
+            $orgbankbranchname = BBranch::getName($organization->bank_branch_id);
             }
 
               $sheet->row(1, array(
@@ -16615,6 +16837,13 @@ public function period_advrem()
             ->first();
 
 
+        $branch = Branch::find(Input::get('branch'));
+
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period').' for branch '.$branch->name.' and department '.$department->department_name);
+
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -16652,7 +16881,7 @@ public function period_advrem()
             if($organization->bank_branch_id==0){
             $orgbankbranchname = '';
             }else{
-            $orgbankbranchname = $branch->bank_branch_name;
+            $orgbankbranchname = BBranch::getName($organization->bank_branch_id);
             }
 
               $sheet->row(1, array(
@@ -16869,7 +17098,10 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period'));
+
+        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_Remittance_'.$month.'.pdf');
 
@@ -16922,14 +17154,18 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','branch','bank','total','emps','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period').' for branch '.$branch->name);
+
+        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','branch','bank','total','emps','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_Remittance_'.$month.'.pdf');
 
         } else if(Input::get('branch') == 'All'){
           $total = DB::table('transact_advances')
           ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
-          ->join('banks', 'employee.banK_id', '=', 'banks.id')
+          ->join('banks', 'employee.bank_id', '=', 'banks.id')
           ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
           ->where('department_id' ,'=', Input::get('department'))
           ->where('mode_of_payment' ,'=', 'Bank')
@@ -16944,6 +17180,8 @@ public function period_advrem()
         $rems = DB::table('transact_advances')
             ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
             ->where('department_id' ,'=', Input::get('department'))
+            ->join('banks', 'employee.bank_id', '=', 'banks.id')
+            ->join('bank_branches', 'employee.bank_branch_id', '=', 'bank_branches.id')
             ->where('financial_month_year' ,'=', Input::get('period'))
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->where('mode_of_payment' ,'=', 'Bank')
@@ -16973,7 +17211,11 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','total','branch','bank','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period').' for department '.$department->department_name);
+
+        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','total','branch','bank','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_Remittance_'.$month.'.pdf');
 
@@ -17027,7 +17269,13 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $branch = Branch::find(Input::get('branch'));
+
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Remittance', 'view', 'viewed salary advance remittance for period '.Input::get('period').' for branch '.$branch->name.' and department '.$department->department_name);
+
+        $pdf = PDF::loadView('pdf.advanceremittanceReport', compact('rems','branch','bank','total','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_Remittance_'.$month.'.pdf');
 
@@ -17042,13 +17290,19 @@ public function period_advrem()
     {
         $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
         $depts = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+        if ( !Entrust::can('view_advance_summary') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pdf.summaryAdvanceSelect',compact('branches','depts'));
+      }
     }
 
     public function payAdvSummary(){
         if(Input::get('format') == "excel"){
         if(Input::get('branch') == 'All' && Input::get('department') == 'All'){
          $total = DB::table('transact_advances')
+         ->join('employee', 'transact_advances.employee_id', '=', 'employee.personal_file_number')
          ->where('employee.organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', Input::get('period'))
         ->sum('amount');
@@ -17076,6 +17330,8 @@ public function period_advrem()
               }
               
               $month = $m."_".$part[1];
+
+              Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period'));
 
     
   Excel::create('Salary Advance Summary '.$month, function($excel) use($data,$total,$organization,$currency) {
@@ -17244,6 +17500,10 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
+              $branch = Branch::find(Input::get('branch'));
+
+              Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period').' for branch '.$branch->name);
+
     
   Excel::create('Salary Advance Summary '.$month, function($excel) use($data,$total,$organization,$currency,$sels) {
 
@@ -17397,6 +17657,10 @@ public function period_advrem()
         $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first(); 
 
         $organization = Organization::find(Auth::user()->organization_id);
+
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period').' for branch '.$department->department_name);
 
         $part = explode("-", Input::get('period'));
               
@@ -17569,6 +17833,12 @@ public function period_advrem()
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $branch = Branch::find(Input::get('branch'));
+
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period').' for branch '.$branch->name.' and department '.$department->department_name);
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -17738,6 +18008,8 @@ public function period_advrem()
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period'));
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -17750,7 +18022,7 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','total_amount','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','total_amount','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_summary_'.$month.'.pdf');
 
@@ -17779,6 +18051,10 @@ public function period_advrem()
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $branch = Branch::find(Input::get('branch'));
+
+        Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period').' for branch '.$branch->name);
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -17791,7 +18067,7 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','sels','total_amount','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','sels','total_amount','currencies','period','organization'))->setPaper('a4', 'landscape');
   
     return $pdf->stream('Advance_summary_'.$month.'.pdf');
 
@@ -17820,6 +18096,10 @@ public function period_advrem()
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period').' for department '.$department->department_name);
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -17832,7 +18112,7 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','sels','total_amount','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','sels','total_amount','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_summary_'.$month.'.pdf');
 
@@ -17867,6 +18147,12 @@ public function period_advrem()
 
         $organization = Organization::find(Auth::user()->organization_id);
 
+        $branch = Branch::find(Input::get('branch'));
+
+        $department = Department::find(Input::get('department'));
+
+        Audit::logaudit('Salary Advance Summary', 'view', 'viewed salary advance summary for period '.Input::get('period').' for branch '.$branch->name.' and department '.$department->department_name);
+
         $part = explode("-", Input::get('period'));
               
               $m = "";
@@ -17879,7 +18165,7 @@ public function period_advrem()
               
               $month = $m."_".$part[1];
 
-        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','selBr','selDt','total_amount','currencies','period','organization'))->setPaper('a4')->setOrientation('landscape');
+        $pdf = PDF::loadView('pdf.summaryAdvanceReport', compact('sums','selBranch','selDept','selBr','selDt','total_amount','currencies','period','organization'))->setPaper('a4', 'landscape');
     
         return $pdf->stream('Advance_summary_'.$month.'.pdf');
 
@@ -17937,7 +18223,7 @@ public function monthlyrepayments(){
         ->where('organization_id',Auth::user()->organization_id)
         ->where('sharetransactions.type','=','credit')
         ->sum('sharetransactions.amount');    
-    $pdf = PDF::loadView('pdf.loanreports.creditappraisal', compact('member', 'loans','savings','savingaccount','shares','shareaccount','currentloan'))->setPaper('a4')->setOrientation('portrait');  
+    $pdf = PDF::loadView('pdf.loanreports.creditappraisal', compact('member', 'loans','savings','savingaccount','shares','shareaccount','currentloan'))->setPaper('a4');  
     return $pdf->stream('Member Credit Appraisal Report.pdf');
     
   }
@@ -18154,7 +18440,8 @@ public function p9form(){
               $ename = $employee->first_name.'_'.$employee->last_name;
               }
 
-    
+  Audit::logaudit('p9Form Report', 'view', 'viewed p9Form for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for year '.Input::get('period'));
+
   Excel::create($ename.'_P9Form_'.$year, function($excel) use($employee,$organization,$year) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -18309,8 +18596,8 @@ public function p9form(){
              $salo = Payroll::salo($employee,$i,$year);
              $gross = Payroll::pgross($employee->personal_file_number,$i,$year);
              $e = (30/100) * Payroll::salo($employee,$i,$year);
-             $relief = Payroll::prelief($employee->id,$employee->personal_file_number,$i,$year);
-             $ttax = Payroll::ptax($employee->personal_file_number,$i,$year)+Payroll::prelief($employee->id,$employee->personal_file_number,$i,$year);
+             $relief = Payroll::prelief($employee->id,$i,$year);
+             $ttax = Payroll::ptax($employee->personal_file_number,$i,$year)+Payroll::prelief($employee->id,$i,$year);
              $tax = Payroll::ptax($employee->personal_file_number,$i,$year);
 
              $sheet->row(($i+8), array(

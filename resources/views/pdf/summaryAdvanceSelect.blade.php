@@ -1,5 +1,13 @@
-@extends('layouts.adv_ports')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
+<style type="text/css">
+    .select2 {z-index:10 !important; }
+</style>
 
 <div class="row">
 	<div class="col-lg-12">
@@ -15,7 +23,7 @@
 
     
 		
-		 @if ($errors->has())
+		@if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +32,7 @@
         @endif
 
 		 <form target="_blank" method="POST" action="{{URL::to('advanceReports/advanceSummary')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <div class="form-group">
@@ -37,7 +45,7 @@
 
             <div class="form-group">
                         <label for="username">Select Branch: <span style="color:red">*</span></label>
-                        <select required name="branch" class="form-control">
+                        <select required name="branch" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($branches as $branch)
@@ -51,7 +59,7 @@
             
             <div class="form-group">
                         <label for="username">Select Department: <span style="color:red">*</span></label>
-                        <select required name="department" class="form-control">
+                        <select required name="department" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($depts as $dept)
@@ -65,7 +73,7 @@
         
         <div class="form-group">
                         <label for="username">Download as: <span style="color:red">*</span></label>
-                        <select required name="format" class="form-control">
+                        <select required name="format" class="form-control select2">
                             <option></option>
                             <option value="excel"> Excel</option>
                             <option value="pdf"> PDF</option>

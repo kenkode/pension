@@ -4,7 +4,7 @@
 function asMoney($value) {
   return number_format($value, 2);
 }
-
+use App\Bank;
 ?>
 <html >
 
@@ -25,7 +25,7 @@ th {
 }
 .table {
   width: 100%;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
 }
 hr {
   margin-top: 1px;
@@ -63,7 +63,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 30px 30px; }
  .header { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px}
  .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
@@ -124,7 +124,7 @@ body {
    </div>
 
 
-	<div class="content" style='margin-top:-50px;'>
+	<div class="content" style='margin-top:-160px !important;'>
     <table>
     
       @if($organization->bank_id != 0)

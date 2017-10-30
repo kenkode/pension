@@ -111,7 +111,7 @@
                         </a>
                         <ul class="nav">
                             <li>
-                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Employee Reports <i class="fa fa-caret-down"></i></a>
+                            <a href="#"><i class="fa fa-folder-open fa-fw"></i>Employee Reports <i class="fa fa-caret-down"></i></a>
                              <ul class="nav">
                             <li><a href="{{ URL::to('employee/select') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Individual Employee report</a></li>
                             <li><a href="{{ URL::to('reports/selectEmployeeStatus') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Employee List report</a></li>
@@ -122,7 +122,7 @@
                             </ul>
                             </li>
                             <li>
-                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Vacation Reports <i class="fa fa-caret-down"></i></a>
+                            <a href="#"><i class="fa fa-folder-open fa-fw"></i>Vacation Reports <i class="fa fa-caret-down"></i></a>
                              <ul class="nav">
                             <li><a href="{{ URL::to('leaveReports/selectApplicationPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Vacation Application</a></li>
                    
@@ -134,7 +134,18 @@
                            </ul>
                            </li>
                            <li>
-                            <a href="#"><i class="fa fa-cogs fa-fw"></i>Payroll Reports <i class="fa fa-caret-down"></i></a>
+                            <a href="#"><i class="fa fa-folder-open fa-fw"></i>Payroll <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
+                            <li>
+                            <a href="#"><i class="fa fa-folder-open fa-fw"></i>Salary Advance Reports <i class="fa fa-caret-down"></i></a>
+                             <ul class="nav">
+
+                            <li><a href="{{ URL::to('advanceReports/selectSummaryPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Advance Summary</a></li>
+                            <li><a href="{{ URL::to('advanceReports/selectRemittancePeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Advance Remittance</a></li>
+                            </ul>
+                            </li>
+                            <li>
+                            <a href="#"><i class="fa fa-folder-open fa-fw"></i>Payroll Reports <i class="fa fa-caret-down"></i></a>
                              <ul class="nav">
                            <li>
                            <a href="{{ URL::to('payrollReports/selectPeriod') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Monthly Payslips</a>
@@ -171,6 +182,33 @@
                             <li>
                                 <a href="{{ URL::to('payrollReports/selectRelief') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Relief Report</a>
                             </li>  
+                            </ul>
+                            </li>
+                            <li>
+                            <a href="#"><i class="fa fa-folder-open fa-fw"></i>Statutory Reports <i class="fa fa-caret-down"></i></a>
+                            <ul class="nav">
+
+                            <li>
+                            <a href="{{ URL::to('payrollReports/selectNssfPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> NSSF Returns</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectNhifPeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> NHIF Returns</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectPayePeriod') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Paye Returns</a>
+                            </li>
+
+                            <li>
+                              <a href="{{ URL::to('payrollReports/selectYear') }}"><i class="glyphicon glyphicon-file fa-fw"></i>P9 Form</a>
+                            </li>
+
+                            <li>
+                               <a href="{{ URL::to('itax/download') }}"><i class="glyphicon glyphicon-file fa-fw"></i>Download Itax Template</a>
+                            </li>
+                            </ul>
+                            </li>
                                 </ul>
                             </li>
                             </ul>

@@ -1820,7 +1820,13 @@ Route::get('payrollReports/selectYear', function(){
     $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
     $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
+
+    if ( !Entrust::can('view_paye_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('pdf.p9Select',compact('employees','branches','departments'));
+  }
 });
 
 Route::get('email/payslip', 'payslipEmailController@index');
@@ -3142,16 +3148,16 @@ Route::get('api/branchemployee', function(){
 
 
     if(($bid == 'All' || $bid == '' || $bid == 0) && ($did == 'All' || $did == '' || $did == 0)){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
+    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name,IF(middle_name is null or middle_name="","",CONCAT(" ",middle_name))," ",last_name) AS full_name'))
     ->where('organization_id',Auth::user()->organization_id)
     ->pluck('full_name', 'id');
     }else if(($bid != 'All' || $bid != '' || $bid != 0) && ($did == 'All' || $did == '' || $did == 0)){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
+    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name,IF(middle_name is null or middle_name="","",CONCAT(" ",middle_name))," ",last_name) AS full_name'))
     ->where('branch_id',$bid)
     ->where('organization_id',Auth::user()->organization_id)
     ->pluck('full_name', 'id');
     }else if(($did != 'All' || $did != '' || $did != 0) && ($bid != 'All' || $bid != '' || $bid != 0) ){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
+    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name,IF(middle_name is null or middle_name="","",CONCAT(" ",middle_name))," ",last_name) AS full_name'))
     ->where('branch_id',$bid)
     ->where('organization_id',Auth::user()->organization_id)
     ->where('department_id',$did)
@@ -3167,16 +3173,16 @@ Route::get('api/deptemployee', function(){
     $employee = array();
 
     if(($did == 'All' || $did == '' || $did == 0) && ($bid == 'All' || $bid == '' || $bid == 0)){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
+    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name,IF(middle_name is null or middle_name="","",CONCAT(" ",middle_name))," ",last_name) AS full_name'))
     ->where('organization_id',Auth::user()->organization_id)
     ->pluck('full_name', 'id');
     }else if(($did != 'All' || $did != '' || $did != 0) && ($bid == 'All' || $bid == '' || $bid == 0)){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
+    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name,IF(middle_name is null or middle_name="","",CONCAT(" ",middle_name))," ",last_name) AS full_name'))
     ->where('department_id',$did)
     ->where('organization_id',Auth::user()->organization_id)
     ->pluck('full_name', 'id');
     }else if(($did != 'All' || $did != '' || $did != 0) && ($bid != 'All' || $bid != '' || $bid != 0) ){
-    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name," ",middle_name," ",last_name) AS full_name'))
+    $employee = Employee::select('id', DB::raw('CONCAT(personal_file_number, " : ", first_name,IF(middle_name is null or middle_name="","",CONCAT(" ",middle_name))," ",last_name) AS full_name'))
     ->where('branch_id',$bid)
     ->where('organization_id',Auth::user()->organization_id)
     ->where('department_id',$did)

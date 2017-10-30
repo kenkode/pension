@@ -1,6 +1,6 @@
-@extends('layouts.portspay')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+{{Html::script('media/jquery-1.8.0.min.js') }}
 
 <script type="text/javascript">
 $(document).ready(function() {
@@ -15,7 +15,7 @@ $(document).ready(function() {
             $('#employeeid').append("<option value='All'>All</option>");
             $.each(data, function(key, element) {
                 
-                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>");
+                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>").trigger("change");
             });
         });
     });
@@ -29,12 +29,20 @@ $(document).ready(function() {
             $('#employeeid').empty(); 
             $('#employeeid').append("<option value='All'>All</option>");
             $.each(data1, function(key, element) {
-                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>");
+                $('#employeeid').append("<option value='" + key +"'>" + element + "</option>").trigger("change");
             });
         });
     });
 });
 </script>
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
+<style type="text/css">
+    .select2 {z-index:10 !important; }
+</style>
 
 @section('content')
 
@@ -52,7 +60,7 @@ $(document).ready(function() {
 
     
         
-         @if ($errors->has())
+         @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -61,7 +69,7 @@ $(document).ready(function() {
         @endif
 
          <form target="_blank" method="POST" action="{{URL::to('payrollReports/payslip')}}" accept-charset="UTF-8">
-   
+    {{ csrf_field() }}
     <fieldset>
 
      <input required class="form-control" readonly="readonly" placeholder="" type="hidden" name="type" id="type" value="{{$type}}">
@@ -77,7 +85,7 @@ $(document).ready(function() {
 
        <div class="form-group">
                         <label for="username">Select Branch: <span style="color:red">*</span></label>
-                        <select required name="branchid" id="branchid" class="form-control">
+                        <select required name="branchid" id="branchid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($branches as $branch)
@@ -90,7 +98,7 @@ $(document).ready(function() {
 
         <div class="form-group">
                         <label for="username">Select Department: <span style="color:red">*</span></label>
-                        <select required name="departmentid" id="departmentid" class="form-control">
+                        <select required name="departmentid" id="departmentid" class="form-control select2">
                             <option></option>
                             <option value="All">All</option>
                             @foreach($departments as $department)
@@ -103,7 +111,7 @@ $(document).ready(function() {
 
            <div class="form-group">
                         <label for="username">Select Employee: <span style="color:red">*</span></label>
-                        <select required name="employeeid" id="employeeid" class="form-control">
+                        <select required name="employeeid" id="employeeid" class="form-control select2">
                             <option></option>
                             
 
@@ -114,7 +122,7 @@ $(document).ready(function() {
 
         <div class="form-group">
                         <label for="username">Download as: <span style="color:red">*</span></label>
-                        <select required name="format" class="form-control">
+                        <select required name="format" class="form-control select2">
                             <option></option>
                             <option value="excel"> Excel</option>
                             <option value="pdf"> PDF</option>

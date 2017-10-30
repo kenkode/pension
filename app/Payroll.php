@@ -2051,7 +2051,7 @@ public static $rules = [
       $year = str_replace(' ','',$year);
       $period = $month.'-'.$year; 
       if(DB::table('transact')->where('employee_id',$employee->personal_file_number)->where('financial_month_year',$period)->count()>0){
-        $pay = DB::table('transact')->where('employee_id',$employee->personal_file_number)->where('financial_month_year',$period)->pluck("basic_pay");
+        $pay = DB::table('transact')->where('employee_id',$employee->personal_file_number)->where('financial_month_year',$period)->pluck("basic_pay")[0];
       }else{
         $pay = 0.00;
       }
@@ -2081,7 +2081,7 @@ public static $rules = [
        
       $gross   = 0.00;
       if(DB::table('transact')->where('employee_id',$id)->where('financial_month_year',$period)->count()>0){
-        $gross = DB::table('transact')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('taxable_income');
+        $gross = DB::table('transact')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('taxable_income')[0];
       }else{
         $gross = 0.00;
       }
@@ -2096,7 +2096,7 @@ public static $rules = [
 
       $tax   = 0.00;
       if(DB::table('transact')->where('employee_id',$id)->where('financial_month_year',$period)->count()>0){
-        $tax = DB::table('transact')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('paye');
+        $tax = DB::table('transact')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('paye')[0];
       }else{
         $tax = 0.00;
       }
@@ -2111,7 +2111,7 @@ public static $rules = [
 
       $relief   = 0.00;
       if(DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->count()>0){
-        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')+1280.00;
+        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')[0]+1280.00;
       }else{
         $relief = 1280.00;
       }
@@ -2126,7 +2126,7 @@ public static $rules = [
 
       $relief   = 0.00;
       if(DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->count()>0){
-        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')+1280.00;
+        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')[0]+1280.00;
       }else{
         $relief = 1280.00;
       }

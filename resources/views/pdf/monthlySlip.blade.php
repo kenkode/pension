@@ -1,12 +1,22 @@
 <html >
 
-
+<?php
+use App\Payroll;
+?>
 
 <head>
 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<style type="text/css">
+
+
+</head>
+
+<body>
+
+  @if($select == 'All')
+
+  <style type="text/css">
 
 table {
   max-width: 100%;
@@ -36,7 +46,7 @@ body {
 
 
 
- @page { margin: 170px 30px; }
+ @page { margin: 160px 30px; }
  .header { position: fixed; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .header1 { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
  .content {margin-top: -100px; margin-bottom: -150px; margin-left:auto; margin-right: auto;}
@@ -45,12 +55,6 @@ body {
 
 
 </style>
-
-</head>
-
-<body>
-
-  @if($select == 'All')
   <div class="header">
      <table >
 
@@ -105,7 +109,7 @@ body {
 
 
     <table class="table table-bordered" border='1' cellspacing='0' cellpadding='0' style='width:350px'>
-          {{'<tr><td colspan="2" align="center"><strong>PERIOD : '.$period.'</strong></td></tr>'}}
+          <tr><td colspan="2" align="center"><strong>PERIOD : {{$period}}</strong></td></tr>
         <tr><td colspan='2'><strong>PERSONAL DETAILS</strong></td></tr>
 
         
@@ -199,6 +203,45 @@ body {
 <br>
         @endforeach
         @else
+        <style type="text/css">
+
+table {
+  max-width: 100%;
+  background-color: transparent;
+}
+th {
+  text-align: left;
+}
+.table {
+  width: 100%;
+  margin-bottom: 50px;
+}
+hr {
+  margin-top: 1px;
+  margin-bottom: 2px;
+  border: 0;
+  border-top: 2px dotted #eee;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.428571429;
+  color: #333;
+  background-color: #fff;
+}
+
+
+
+ @page { margin: 30px 30px; }
+ .header { position: fixed; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
+ .header1 { position: top; left: 0px; top: -150px; right: 0px; height: 150px;  text-align: center; }
+ .content {margin-top: -100px; margin-bottom: -150px; margin-left:auto; margin-right: auto;}
+ .footer { position: fixed; left: 0px; bottom: -180px; right: 0px; height: 50px;  }
+ .footer .page:after { content: counter(page, upper-roman); }
+
+
+</style>
         <div class="header1" style="margin-top:-150px">
      <table >
 
@@ -248,7 +291,7 @@ body {
 
   <div  class="content" style='margin-top:-50px;'>
      <table class="table table-bordered" border='1' cellspacing='0' cellpadding='0' style='width:350px'>
-          {{'<tr><td colspan="2" align="center"><strong>PERIOD : '.$period.'</strong></td></tr>'}}
+        <tr><td colspan="2" align="center"><strong>PERIOD : {{$period}}</strong></td></tr>
         <tr><td colspan='2'><strong>PERSONAL DETAILS</strong></td></tr>
         <tr><td>Payroll Number:</td><td>{{$transact->personal_file_number}}</td></tr>
       
@@ -291,7 +334,7 @@ body {
 
        @foreach($overtimes as $overtime)
         @if($overtime->overtime_type != null || $overtime->overtime_type != '')
-        <tr><td>{{ 'Overtime Earning - '.$overtime->overtime_type }}: </td><td align='right'>{{ Payroll::asMoney((double)$overtime->overtime_amount*$overtime->overtime_period) }}</td></tr>
+        <tr><td>{{ 'Overtime Earning - '.$overtime->overtime_type }}: </td><td align='right'>{{ Payroll::asMoney((double)$overtime->overtimes) }}</td></tr>
         @else
         @endif
        @endforeach
