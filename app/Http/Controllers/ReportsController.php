@@ -2920,6 +2920,16 @@ class ReportsController extends Controller {
     return $pdf->stream('Payslips.pdf');
 
   }else{
+
+    if($data = DB::table('transact')
+            ->join('employee', 'transact.employee_id', '=', 'employee.personal_file_number')
+            ->where('financial_month_year' ,'=', Input::get('period'))
+            ->where('employee.id' ,'=', Input::get("employeeid"))
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->count() == 0 ){
+
+      return Redirect::to('css/payslips')->with('errors', 'Your payslip for period '.Input::get('period').' is not available!');
+      }else{
       
         $period = Input::get("period");
 
@@ -3025,6 +3035,7 @@ class ReportsController extends Controller {
   
     return $pdf->stream($employee->personal_file_number.'_'.$employee->first_name.'_'.$employee->last_name.'_'.$month.'.pdf');
     }
+  }
     
   }
 

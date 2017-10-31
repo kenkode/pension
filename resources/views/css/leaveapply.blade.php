@@ -1,6 +1,11 @@
-@extends('layouts.membercss')
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+@extends('layouts.app')
+{{Html::script('media/jquery-1.8.0.min.js') }}
 @section('content')
+
+<?php
+use Illuminate\Support\Facades\Input;
+?>
+
 <div class="row">
     <div class="col-lg-12">
  
@@ -9,13 +14,17 @@
 </div>  
 </div>
 
+<style>
+    .select2 {z-index:10 !important; }
+    </style>
+
 
 <div class="row">
     <div class="col-lg-5">
 
     
         
-         @if ($errors->has())
+         @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -24,7 +33,7 @@
         @endif
 
          <form method="POST" action="{{{ URL::to('leaveapplications') }}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <input type="hidden" name="employee_id" id="employee" value="{{$employee->id}}">
@@ -32,7 +41,7 @@
 
         <div class="form-group">
             <label for="username">Leave type</label>
-            <select class="form-control" name="leavetype_id" id="leave">
+            <select class="form-control select2" name="leavetype_id" id="leave">
             <option> select leave</option>
               @foreach($leavetypes as $leavetype)  
                     <option value="{{$leavetype->id}}">{{$leavetype->name}}</option>

@@ -567,6 +567,31 @@ class EmployeesController extends Controller {
   }
 	}
 
+  public function editdetails($id)
+  {
+    $employee = Employee::find($id);
+    $branches = Branch::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $departments = Department::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $jgroups = Jobgroup::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $etypes = EType::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $citizenships = Citizenship::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $contract = DB::table('employee')
+              ->join('employee_type','employee.type_id','=','employee_type.id')
+              ->where('type_id',2)
+              ->first();
+    $banks = Bank::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $bbranches = BBranch::where('bank_id',$employee->bank_id)->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $educations = Education::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->get();
+    $kins = Nextofkin::where('employee_id',$id)->get();
+    $docs = Document::where('employee_id',$id)->get();
+    $countk = Nextofkin::where('employee_id',$id)->count();
+    $countd = Document::where('employee_id',$id)->count();
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+    
+    return view('employees.cssedit', compact('currency','countk','countd','docs','kins','citizenships','contract','branches','educations','departments','etypes','jgroups','banks','bbranches','employee'));
+  }
+
 	/**
 	 * Update the specified branch in storage.
 	 *
@@ -918,9 +943,10 @@ class EmployeesController extends Controller {
        }
      }
 
+    //return Auth::user()->role;
 
-		 if(Auth::user()->user_type == 'employee'){
-		 	return Redirect::to('dashboard');
+		 if(Auth::user()->role == 'Employee'){
+		 	return Redirect::to('employee/viewdetails/'.$id)->withFlashMessage('Successfully updated details!');
 		 } else {
 		 	return Redirect::route('employees.index')->withFlashMessage('Employee successfully updated!');
 		 }
@@ -1008,6 +1034,12 @@ class EmployeesController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+    if(Auth::user()->role == 'Employee'){
+
+    return Redirect::to('employee/viewdetails/'.$id)->withFlashMessage('Successfully updated details!');     
+
+    }else{
+
     if ( !Entrust::can('view_employee') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
@@ -1017,8 +1049,33 @@ class EmployeesController extends Controller {
 
 		return view('employees.view', compact('id','employee','appraisals','kins','documents','occurences','properties'));
   }
+  }
 		
 	}
+
+  public function viewdetails($id){
+
+    $employee = Employee::where('id',$id)->first();
+
+    $appraisals = Appraisal::where('employee_id', $id)->get();
+
+        $kins = Nextofkin::where('employee_id', $id)->get();
+
+        $occurences = Occurence::where('employee_id', $id)->get();
+
+        $properties = Property::where('employee_id', $id)->get();
+
+        $documents = Document::where('employee_id', $id)->get();
+
+        
+
+    $organization = Organization::find(Auth::user()->organization_id);
+
+    Audit::logaudit('Employee', 'view', 'employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name.' viewed their details');
+
+    return view('employees.viewdetails', compact('id','employee','appraisals','kins','documents','occurences','properties'));
+    
+  }
 
 	public function viewdeactive($id){
 
@@ -1070,7 +1127,7 @@ class EmployeesController extends Controller {
     if($email != null){
 
 
-   Mail::to($employee->email_office)->send(new Portal($name,$password));
+   Mail::to($employee->email_office)->send(new Portal($name,$name,$password));
 
    if( count(Mail::failures()) == 0 ) {
 
@@ -1078,7 +1135,7 @@ class EmployeesController extends Controller {
       array('email' => $employee->email_office, 
         'name' => $employee->personal_file_number,
         'password' => bcrypt($password),
-        'role'=>'employee',
+        'role'=>'Employee',
         'confirmation_code'=> md5(uniqid(mt_rand(), true)),
         'confirmed'=> 1,
         'organization_id'=> Auth::user()->organization_id

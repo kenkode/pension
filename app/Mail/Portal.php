@@ -17,12 +17,14 @@ class Portal extends Mailable
      * @return void
      */
 
+    public $email;
     public $name;
     public $password;
 
-    public function __construct($name,$password)
+    public function __construct($email,$name,$password)
     {
         //
+        $this->email = $email;
         $this->name = $name;
         $this->password = $password;
     }

@@ -1,12 +1,19 @@
-@extends('layouts.membercss')
+@extends('layouts.app')
 
-{{HTML::script('media/jquery-1.8.0.min.js') }}
+{{Html::script('media/jquery-1.8.0.min.js') }}
+
+<?php
+use Illuminate\Support\Facades\Input;
+
+?>
+
 <style>
+.select2 {z-index:10 !important; }
 #imagePreview {
     width: 180px;
     height: 180px;
     background-position: center center;
-    background-image:url("{{asset('/public/uploads/employees/photo/'.$employee->photo) }}");
+    background-image:url("{{asset('public/uploads/employees/photo/'.$employee->photo) }}");
     background-size: cover;
     -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .3);
     display: inline-block;
@@ -15,7 +22,7 @@
     width: 180px;
     height: 100px;
     background-position: center center;
-    background-image:url("{{asset('/public/uploads/employees/signature/'.$employee->signature) }}");
+    background-image:url("{{asset('public/uploads/employees/signature/'.$employee->signature) }}");
     background-size: cover;
     -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, .3);
     display: inline-block;
@@ -41,9 +48,9 @@ tr,#ncontainer input,#ncontainer textarea,#fdate,#edate{height:30px;width:150px;
 #dcontainer table{border-collapse:collapse;border-radius:25px;width:500px;}
 table, td, th{border:1px solid #00BB64;}
 #dcontainer input[type=checkbox]{height:30px;width:10px;border:1px solid #fff;}
-tr,#dcontainer input,#dcontainer textarea{height:30px;width:180px;border:1px solid #fff;}\
+tr,#dcontainer input,#dcontainer textarea{height:30px;width:350px;border:1px solid #fff;}\
 #f{width:200px;}
-#dcontainer textarea{height:50px; width:100px;border:1px solid #fff;}
+#dcontainer textarea{height:50px; width:250px;border:1px solid #fff;}
 #dcontainer input:focus,#dcontainer input:focus{border:1px solid yellow;} 
 .space{margin-bottom: 2px;}
 #dcontainer{margin-left:0px;}
@@ -68,11 +75,11 @@ tr,#dcontainer input,#dcontainer textarea{height:30px;width:180px;border:1px sol
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png')}}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png')}}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
@@ -182,8 +189,8 @@ $(document).ready(function() {
   <div class="col-lg-12">
 
 
-        {{ HTML::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
-  {{ HTML::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
+        {{ Html::style('jquery-ui-1.11.4.custom/jquery-ui.css') }}
+  {{ Html::script('jquery-ui-1.11.4.custom/jquery-ui.js') }}
 
   <style>
     label, input#cname, input#ename { display:block; }
@@ -203,24 +210,24 @@ $(document).ready(function() {
 
 
     .ui-dialog-titlebar-close {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_888888_256x240.png') }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
   border: medium none;
 }
 .ui-dialog-titlebar-close:hover {
-  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png'); }}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
+  background: url("{{ URL::asset('jquery-ui-1.11.4.custom/images/ui-icons_222222_256x240.png')}}") repeat scroll -93px -128px rgba(0, 0, 0, 0);
 }
     
   </style>
 
-  <script>
+   <script>
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       cname = $( "#cname" ),
       
       allFields = $( [] ).add( cname ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips1" );
  
     function updateTips( t ) {
       tips
@@ -281,14 +288,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : cname.val()
+                              'name'  : cname.val(),
+                              '_token' : $("#cform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#citizenship').append($('<option>', {
                          value: s,
                          text: cname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -332,11 +340,11 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       ename = $( "#ename" ),
       
       allFields = $( [] ).add( ename ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips2" );
  
     function updateTips( t ) {
       tips
@@ -397,14 +405,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : ename.val()
+                              'name'  : ename.val(),
+                              '_token' : $("#eform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#education').append($('<option>', {
                          value: s,
                          text: ename.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -449,11 +458,11 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       bname = $( "#bname" ),
       bcode = $( "#bcode" ),
       allFields = $( [] ).add( bname ).add( bcode ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips3" );
  
     function updateTips( t ) {
       tips
@@ -515,14 +524,15 @@ $(document).ready(function() {
                       async   : false,
                       data    : {
                               'name'  : bname.val(),
-                              'code'  : bcode.val()
+                              'code'  : bcode.val(),
+                              '_token' : $("#bform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#bank_id').append($('<option>', {
                          value: s,
                          text: bname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
 
                          $("#bid").val($("#bank_id").val());
       
@@ -540,7 +550,7 @@ $(document).ready(function() {
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 330,
+      height: 350,
       width: 350,
       modal: true,
       buttons: {
@@ -574,12 +584,12 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       bname = $( "#bname" ),
       bcode = $( "#bcode" ),
       bid   = $( "#bid" ),
       allFields = $( [] ).add( bname ).add( bcode ).add( bid ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips4" );
  
     function updateTips( t ) {
       tips
@@ -644,14 +654,15 @@ $(document).ready(function() {
                       data    : {
                               'name'  : bname.val(),
                               'code'  : bcode.val(),
-                              'bid'   : bid.val()
+                              'bid'   : bid.val(),
+                              '_token' : $("#bbform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#bbranch_id').append($('<option>', {
                          value: s,
                          text: bname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -662,7 +673,7 @@ $(document).ready(function() {
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 330,
+      height: 350,
       width: 350,
       modal: true,
       buttons: {
@@ -697,10 +708,10 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       bname = $( "#bname" ),
       allFields = $( [] ).add( bname ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips5" );
  
     function updateTips( t ) {
       tips
@@ -763,14 +774,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : bname.val()
+                              'name'  : bname.val(),
+                              '_token' : $("#brform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#branch_id').append($('<option>', {
                          value: s,
                          text: bname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -781,7 +793,7 @@ $(document).ready(function() {
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 250,
+      height: 280,
       width: 350,
       modal: true,
       buttons: {
@@ -815,10 +827,11 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       dname = $( "#dname" ),
-      allFields = $( [] ).add( dname ),
-      tips = $( ".validateTips" );
+      dcode = $( "#dcode" ),
+      allFields = $( [] ).add( dname ).add(dcode),
+      tips = $( ".validateTips6" );
  
     function updateTips( t ) {
       tips
@@ -881,14 +894,16 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : dname.val()
+                              'name'  : dname.val(),
+                              'code'  : dcode.val(),
+                              '_token' : $("#dform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#department_id').append($('<option>', {
                          value: s,
-                         text: dname.val(),
+                         text: dname.val()+"("+dcode.val()+")",
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -899,7 +914,7 @@ $(document).ready(function() {
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 250,
+      height: 280,
       width: 350,
       modal: true,
       buttons: {
@@ -934,10 +949,10 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       jname = $( "#jname" ),
       allFields = $( [] ).add( jname ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips7" );
  
     function updateTips( t ) {
       tips
@@ -972,11 +987,11 @@ $(document).ready(function() {
       var valid = true;
       allFields.removeClass( "ui-state-error" );
  
-      valid = valid && checkLength( jname, "Please insert department name!" );
+      valid = valid && checkLength( jname, "Please insert job group!" );
 
       //valid = valid && checkLength( bid, "Please select bank for this branch!" );
  
-      valid = valid && checkRegexp( jname, /^[a-z]([0-9a-z_\s])+$/i, "Please insert a valid name for department name." );
+      valid = valid && checkRegexp( jname, /^[a-z]([0-9a-z_\s])+$/i, "Please insert a valid name for job group." );
  
       if ( valid ) {
 
@@ -1000,14 +1015,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : jname.val()
+                              'name'  : jname.val(),
+                              '_token' : $("#jform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#jgroup_id').append($('<option>', {
                          value: s,
                          text: jname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -1018,7 +1034,7 @@ $(document).ready(function() {
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 250,
+      height: 280,
       width: 350,
       modal: true,
       buttons: {
@@ -1052,10 +1068,10 @@ $(document).ready(function() {
   $(function() {
     var dialog, form,
  
-      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.Html#e-mail-state-%28type=email%29
       tname = $( "#tname" ),
       allFields = $( [] ).add( tname ),
-      tips = $( ".validateTips" );
+      tips = $( ".validateTips8" );
  
     function updateTips( t ) {
       tips
@@ -1118,14 +1134,15 @@ $(document).ready(function() {
                       type    : "POST",
                       async   : false,
                       data    : {
-                              'name'  : tname.val()
+                              'name'  : tname.val(),
+                              '_token' : $("#tform input[name=_token]").val()
                       },
                       success : function(s){
                          $('#type_id').append($('<option>', {
                          value: s,
                          text: tname.val(),
                          selected:true
-                         }));
+                         })).trigger('change');
                       }        
         });
         
@@ -1136,7 +1153,7 @@ $(document).ready(function() {
  
     dialog = $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 250,
+      height: 280,
       width: 350,
       modal: true,
       buttons: {
@@ -1166,12 +1183,13 @@ $(document).ready(function() {
   });
   </script>
 
-   {{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+   
 
 <div id="dialog-form" title="Create new citizenship name">
-  <p class="validateTips">Please insert citizenship name.</p>
+  <p class="validateTips1">Please insert citizenship name.</p>
  
-  <form>
+  <form id="cform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="cname" id="cname" value="" class="text ui-widget-content ui-corner-all">
@@ -1183,9 +1201,10 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new education level">
-  <p class="validateTips">Please insert education level.</p>
+  <p class="validateTips2">Please insert education level.</p>
  
-  <form>
+  <form id="eform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="ename" id="ename" value="" class="text ui-widget-content ui-corner-all">
@@ -1197,9 +1216,10 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new bank">
-  <p class="validateTips">Please insert bank name.</p>
+  <p class="validateTips3">Please insert bank name.</p>
  
-  <form>
+  <form id="bform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="bname" id="bname" value="" class="text ui-widget-content ui-corner-all">
@@ -1214,9 +1234,10 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new bank branch">
-  <p class="validateTips">Please fill fields in *.</p>
+  <p class="validateTips4">Please fill fields in *.</p>
  
-  <form>
+  <form id="bbform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="bname" id="bname" value="" class="text ui-widget-content ui-corner-all">
@@ -1233,9 +1254,10 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new branch">
-  <p class="validateTips">Please insert branch.</p>
+  <p class="validateTips5">Please insert branch.</p>
  
-  <form>
+  <form id="brform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="bname" id="bname" value="" class="text ui-widget-content ui-corner-all">
@@ -1247,10 +1269,14 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new department">
-  <p class="validateTips">Please insert department.</p>
+  <p class="validateTips6">Please insert fields in *.</p>
  
-  <form>
+  <form id="dform">
+    {{ csrf_field() }}
     <fieldset>
+      <label for="name">Code <span style="color:red">*</span></label>
+      <input type="text" name="dcode" id="dcode" value="" class="text ui-widget-content ui-corner-all">
+
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="dname" id="dname" value="" class="text ui-widget-content ui-corner-all">
  
@@ -1261,9 +1287,10 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new job group">
-  <p class="validateTips">Please insert job group.</p>
+  <p class="validateTips7">Please insert job group.</p>
  
-  <form>
+  <form id="jform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="jname" id="jname" value="" class="text ui-widget-content ui-corner-all">
@@ -1275,9 +1302,10 @@ $(document).ready(function() {
 </div>
 
 <div id="dialog-form" title="Create new employee type">
-  <p class="validateTips">Please insert employee type.</p>
+  <p class="validateTips8">Please insert employee type.</p>
  
-  <form>
+  <form id="tform">
+    {{ csrf_field() }}
     <fieldset>
       <label for="name">Name <span style="color:red">*</span></label>
       <input type="text" name="tname" id="tname" value="" class="text ui-widget-content ui-corner-all">
@@ -1289,16 +1317,16 @@ $(document).ready(function() {
 </div>
 
     <form method="POST" action="{{{ URL::to('employees/update/'.$employee->id) }}}" accept-charset="UTF-8" enctype="multipart/form-data">
-    
+  {{ csrf_field() }}   
   <div class="row">
   <div class="col-lg-12">
-  <h3>Update Employee<button style="margin-left:600px" type="submit" class="btn btn-primary btn-sm">Update Employee</button></h3>
+  <h3>Update Employee<button style="margin-left:600px" type="submit" class="btn btn-primary btn-sm">Update Details</button></h3>
 
   <hr>
   </div>  
   </div>
 
-  @if ($errors->has())
+  @if ( count( $errors ) > 0 )
         <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}<br>        
@@ -1310,7 +1338,7 @@ $(document).ready(function() {
     <li role="presentation" class="active"><a href="#personalinfo" aria-controls="personalinfo" role="tab" data-toggle="tab">Personal Info</a></li>
     <li role="presentation"><a href="#pininfo" aria-controls="pininfo" role="tab" data-toggle="tab">Government Info</a></li>
     <li role="presentation"><a href="#payment" aria-controls="payment" role="tab" data-toggle="tab">Payment Info</a></li>
-    <li role="presentation"><a href="#companyinfo" aria-controls="companyinfo" role="tab" data-toggle="tab">Company Info</a></li>
+    <!-- <li role="presentation"><a href="#companyinfo" aria-controls="companyinfo" role="tab" data-toggle="tab">Company Info</a></li> -->
     <li role="presentation"><a href="#contactinfo" aria-controls="contactinfo" role="tab" data-toggle="tab">Contact Info</a></li>
     <li role="presentation"><a href="#kins" aria-controls="kins" role="tab" data-toggle="tab">Next of Kin</a></li>
     <li role="presentation"><a href="#documents" aria-controls="documents" role="tab" data-toggle="tab">Documents</a></li>
@@ -1330,7 +1358,7 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Personal File Number <span style="color:red">*</span></label>
-                        <input class="form-control" placeholder="" readonly="readonly" type="text" name="personal_file_number" id="personal_file_number" value="{{{ $employee->personal_file_number}}}" >
+                        <input class="form-control" placeholder="" readonly="" type="text" name="personal_file_number" id="personal_file_number" value="{{{ $employee->personal_file_number}}}" >
                     </div>
 
                      <div class="form-group">
@@ -1344,6 +1372,7 @@ $(document).ready(function() {
                         <div id="signPreview"><img src="{{{ $employee->signature }}}" alt=""></div>
                         <input class="img" placeholder="" type="file" name="signature" id="signFile" value="{{{ $employee->signature }}}">
                     </div>
+                    <br><br><br>
                   </div>
 
                   <div class="col-lg-4">
@@ -1385,7 +1414,7 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Marital Status</label>
-                        <select name="status" class="form-control">
+                        <select name="status" class="form-control select2">
                             <option></option>
                             <option value="Single"<?= ($employee->marital_status=='Single')?'selected="selected"':''; ?>>Single</option>
                             <option value="Married"<?= ($employee->marital_status=='Married')?'selected="selected"':''; ?>>Married</option>
@@ -1399,9 +1428,9 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Citizenship</label>
-                        <select name="citizenship" id="citizenship" class="form-control">
+                        <select name="citizenship" id="citizenship" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($citizenships as $citizenship)
                             <option value="{{$citizenship->id }}"<?= ($employee->citizenship_id==$citizenship->id)?'selected="selected"':''; ?>> {{ $citizenship->name }}</option>
                             @endforeach
@@ -1411,9 +1440,9 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Education Background</label>
-                        <select name="education" id="education" class="form-control">
+                        <select name="education" id="education" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($educations as $education)
                             <option value="{{ $education->id }}"<?= ($employee->education_type_id==$education->id)?'selected="selected"':''; ?>> {{ $education->education_name }}</option>
                             @endforeach
@@ -1456,39 +1485,40 @@ $(document).ready(function() {
                         <label for="username">Nhif Number</label>
                         <input class="form-control" placeholder="" type="text" name="hospital_insurance_number" id="hospital_insurance_number" value="{{{ $employee->hospital_insurance_number }}}">
                     </div>
+                    <br><br><br>
                   </div>
-                     <div class="col-lg-4">
+                     <!-- <div class="col-lg-4">
                       
                       <div class="form-group"><h3 style='color:Green;strong;margin-top:15px'>Deductions Applicable</h3></div>
 
                         <div class="checkbox">
                         <label>
-                            <input type="checkbox" value="{{{ $employee->income_tax_applicable }}}" id="itax" name="i_tax"<?= ($employee->income_tax_applicable=='1')?'checked="checked"':''; ?>>
+                            <input type="checkbox" readonly="" value="{{{ $employee->income_tax_applicable }}}" id="itax" name="i_tax"<?= ($employee->income_tax_applicable=='1')?'checked="checked"':''; ?>>
                               Apply Income Tax
                         </label>
                     </div>
 
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" value="{{{ $employee->income_tax_relief_applicable }}}" id="irel" name="i_tax_relief"<?= ($employee->income_tax_relief_applicable=='1')?'checked="checked"':''; ?>>
+                            <input type="checkbox" readonly="" value="{{{ $employee->income_tax_relief_applicable }}}" id="irel" name="i_tax_relief"<?= ($employee->income_tax_relief_applicable=='1')?'checked="checked"':''; ?>>
                                Apply Income Tax Relief
                         </label>
                     </div>
 
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" value="{{{ $employee->social_security_applicable }}}" name="a_nssf"<?= ($employee->social_security_applicable=='1')?'checked="checked"':''; ?>>
+                            <input type="checkbox" readonly="" value="{{{ $employee->social_security_applicable }}}" name="a_nssf"<?= ($employee->social_security_applicable=='1')?'checked="checked"':''; ?>>
                                Apply Nssf
                         </label>
                     </div>
 
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" value="{{{ $employee->hospital_insurance_applicable }}}" name="a_nhif"<?= ($employee->hospital_insurance_applicable=='1')?'checked="checked"':''; ?>>
+                            <input type="checkbox" readonly="" value="{{{ $employee->hospital_insurance_applicable }}}" name="a_nhif"<?= ($employee->hospital_insurance_applicable=='1')?'checked="checked"':''; ?>>
                                 Apply Nhif
                         </label>
                       </div>
-                     </div>
+                     </div> -->
                    </div>
 
                    <div role="tabpanel" class="tab-pane" id="payment">
@@ -1497,7 +1527,7 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Mode of Payment</label>
-                        <select name="modep" id="modep" class="form-control">
+                        <select name="modep" id="modep" class="form-control select2">
                             <option></option>
                             <option value="Bank"<?= ($employee->mode_of_payment=='Bank')?'selected="selected"':''; ?>>Bank</option>
                             <option value="Mpesa"<?= ($employee->mode_of_payment=='Mpesa')?'selected="selected"':''; ?>>Mpesa</option>
@@ -1515,9 +1545,9 @@ $(document).ready(function() {
 
                     <div class="form-group">
                         <label for="username">Bank</label>
-                        <select id="bank_id" name="bank_id" class="form-control">
+                        <select id="bank_id" name="bank_id" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($banks as $bank)
                             <option value="{{ $bank->id }}"<?= ($employee->bank_id==$bank->id)?'selected="selected"':''; ?>> {{ $bank->bank_name }}</option>
                             @endforeach
@@ -1529,9 +1559,9 @@ $(document).ready(function() {
                       
                      <div class="form-group">
                         <label for="username">Bank Branch</label>
-                        <select id="bbranch_id" name="bbranch_id" class="form-control">
+                        <select id="bbranch_id" name="bbranch_id" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($bbranches as $bbranch)
                             <option value="{{$bbranch->id }}"<?= ($employee->bank_branch_id==$bbranch->id)?'selected="selected"':''; ?>> {{ $bbranch->bank_branch_name }}</option>
                             @endforeach
@@ -1558,7 +1588,7 @@ $(document).ready(function() {
                         <label for="username">Swift Code</label>
                         <input class="form-control" placeholder="" type="text" name="swift_code" id="swift_code" value="{{{ $employee->swift_code }}}">
                     </div>
-                     
+                     <br><br><br>
 
               </div>
 
@@ -1569,9 +1599,9 @@ $(document).ready(function() {
             <div class="col-lg-4">
                     <div class="form-group">
                         <label for="username">Employee Branch</label>
-                        <select name="branch_id" id="branch_id" class="form-control">
+                        <select name="branch_id" readonly="" id="branch_id" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($branches as $branch)
                             <option value="{{ $branch->id }}"<?= ($employee->branch_id==$branch->id)?'selected="selected"':''; ?>> {{ $branch->name }}</option>
                             @endforeach
@@ -1583,11 +1613,11 @@ $(document).ready(function() {
 
                      <div class="form-group">
                         <label for="username">Employee Department</label>
-                        <select name="department_id" id="department_id" class="form-control">
+                        <select name="department_id" readonly="" id="department_id" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($departments as $department)
-                            <option value="{{$department->id }}"<?= ($employee->department_id==$department->id)?'selected="selected"':''; ?>> {{ $department->department_name }}</option>
+                            <option value="{{$department->id }}"<?= ($employee->department_id==$department->id)?'selected="selected"':''; ?>> {{ $department->department_name.' ('.$department->codes.')' }}</option>
                             @endforeach
 
                         </select>
@@ -1596,9 +1626,9 @@ $(document).ready(function() {
 
                      <div class="form-group">
                         <label for="username">Job Group <span style="color:red">*</span></label>
-                        <select name="jgroup_id" id="jgroup_id" class="form-control">
+                        <select readonly="" name="jgroup_id" id="jgroup_id" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($jgroups as $jgroup)
                             <option value="{{ $jgroup->id }}"<?= ($employee->job_group_id==$jgroup->id)?'selected="selected"':''; ?>> {{ $jgroup->job_group_name }}</option>
                             @endforeach
@@ -1610,9 +1640,9 @@ $(document).ready(function() {
 
                      <div class="form-group">
                         <label for="username">Employee Type <span style="color:red">*</span></label>
-                        <select name="type_id" id="type_id" class="form-control">
+                        <select readonly="" name="type_id" id="type_id" class="form-control select2">
                             <option></option>
-                            <option value="cnew">Create New</option>
+                            
                             @foreach($etypes as $etype)
                             <option id="types" value="{{$etype->id }}"<?= ($employee->type_id==$etype->id)?'selected="selected"':''; ?>> {{ $etype->employee_type_name }}</option>
                             @endforeach
@@ -1638,7 +1668,7 @@ $(document).ready(function() {
                         <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="enddate" id="enddate" value="{{ $employee->end_date }}">
                         </div>
                      </div>
-
+                   <br><br><br>
                  </div>
 
                  </div>
@@ -1646,20 +1676,21 @@ $(document).ready(function() {
 
                          <div class="form-group">
                         <label for="username">Work Permit Number</label>
-                        <input class="form-control" placeholder="" type="text" name="work_permit_number" id="work_permit_number" value="{{{ $employee->work_permit_number }}}">
+                        <input class="form-control" placeholder="" type="text" name="work_permit_number" id="work_permit_number" readonly="" value="{{{ $employee->work_permit_number }}}">
                     </div>
 
                     <div class="form-group">
                         <label for="username">Job Title</label>
-                        <input class="form-control" placeholder="" type="text" name="jtitle" id="jtitle" value="{{{ $employee->job_title }}}">
+                        <input class="form-control" placeholder="" readonly="" type="text" name="jtitle" id="jtitle" value="{{{ $employee->job_title }}}">
                     </div>
                     
-                     <div class="form-group">
+                    
+                    <div class="form-group">
             
                         <label for="username">Basic Salary <span style="color:red">*</span></label>
                         <div class="input-group">
                         <span class="input-group-addon">{{$currency->shortname}}</span>
-                        <input class="form-control" placeholder="" type="text" name="pay" id="pay" value="{{{ $employee->basic_pay*100 }}}">
+                        <input class="form-control" readonly="" placeholder="" type="text" name="pay" id="pay" value="{{{ $employee->basic_pay*100 }}}">
                         </div>
                         <script type="text/javascript">
                        $(document).ready(function() {
@@ -1667,18 +1698,20 @@ $(document).ready(function() {
                        });
                        </script>
                     </div>
+
                      <div class="form-group">
                         <label for="username">Date joined <span style="color:red">*</span></label>
                         <div class="right-inner-addon ">
                         <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control datepicker"  readonly="readonly" placeholder="" type="text" name="djoined" id="djoined" value="{{{ $employee->date_joined }}}">
+                        <input class="form-control" readonly="" placeholder="" type="text" name="djoined" id="djoined" value="{{{ $employee->date_joined }}}">
                         </div>
                         </div>
+                        <br><br><br>
                   </div>
                   <div class="col-lg-4">
                   <div class="checkbox">
                         <label>
-                            <input type="checkbox" value="{{{ $employee->in_employment }}}"<?= ($employee->in_employment=='Y')?'checked="checked"':''; ?> name="active">
+                            <input type="checkbox" readonly="" value="{{{ $employee->in_employment }}}"<?= ($employee->in_employment=='Y')?'checked="checked"':''; ?> name="active">
                                 In Employment
                         </label>
                     </div>
@@ -1714,7 +1747,7 @@ $(document).ready(function() {
                         <label for="username">Postal Address</label>
                         <textarea class="form-control"  name="address" id="address">{{{ $employee->postal_address }}}</textarea>
                     </div>
-        
+                   <br><br><br>
                    </div>
                   
                    </div>
@@ -1769,6 +1802,7 @@ $(document).ready(function() {
 
 <button type="button" class='ndelete'>- Delete</button>
 <button type="button" class='naddmore'>+ Add More</button>
+<br><br><br>
 </div>
 <script>
 $(".ndelete").on('click', function() {
@@ -1784,7 +1818,7 @@ $(".ndelete").on('click', function() {
 }
 }
 });
-var i=2;
+var i={{$i}};
 $(".naddmore").on('click',function(){
   count=$('#nextkin tr').length;
     var data="<tr><td><input type='checkbox' class='ncase'/></td><td><span id='nsnum"+i+"'>"+count+".</span></td>";
@@ -1807,14 +1841,13 @@ function check(){
   obj=$('#nextkin tr').find('span');
   $.each( obj, function( key, value ) {
   id=value.id;
-  $('#'+id).html(key+1);
+  $('#'+id).Html(key+1);
   });
   }
 
 </script>
 
 </form>
-
 </div>
 
 
@@ -1823,15 +1856,13 @@ function check(){
 <h4 align="center"><strong>Employee Documents</strong></h4>
 <div id='dcontainer'>
 
-<table id="docEmp" width="500" border="1" cellspacing="0">
+<table id="docEmp" style="width: 85%" border="1" cellspacing="0">
   <tr>
     <th><input class='dcheck_all' type='checkbox' onclick="dselect_all()"/></th>
     <th>#</th>
     <th width="200">Document</th>
     <th>Name</th>
     <th>Description</th>
-    <th>Date From</th>
-    <th>End Date</th>
   </tr>
 
   @if($countd == 0)
@@ -1842,14 +1873,7 @@ function check(){
     <td id="f"><input class="docdata" type="file" name="path[0]" id="path" value="{{{ Input::old('path[0]') }}}"></td>
     <td><input class="docdata" type='text' id='doc_name' name='doc_name[0]' value="{{{ Input::old('doc_name[0]') }}}"/></td>
     <td><textarea class="docdata" style="width:150px" name="description[0]" id="description">{{{ Input::old('description[0]') }}}</textarea></td>
-    <td><div class="right-inner-addon">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="fdate[0]" id="fdate" value="{{{ Input::old('fdate[0]') }}}">
-                    </div> </td>
-    <td><div class="right-inner-addon">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="edate[0]" id="edate" value="{{{ Input::old('edate[0]') }}}">
-                    </div></td>
+   
   </tr>
 
   @else
@@ -1867,14 +1891,7 @@ function check(){
     <td id="f"><input class="docdata" type="file" name="path[{{$j-1}}]" id="path" value="{{$doc->document_path}}"></td>
     <td><input class="docdata" type='text' id='doc_name' name='doc_name[{{$j-1}}]' value="{{$file_name}}"/></td>
     <td><textarea class="docdata" style="width:150px" name="description[{{$j-1}}]" id="description">{{$doc->description}}</textarea></td>
-    <td><div class="right-inner-addon">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="fdate[{{$j-1}}]" id="fdate" value="{{$doc->from_date}}">
-                    </div> </td>
-    <td><div class="right-inner-addon">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control expiry" readonly="readonly" placeholder="" type="text" name="edate[{{$j-1}}]" id="edate" value="{{$doc->expiry_date}}">
-                    </div></td>
+    
   </tr>
    <?php $j++; ?>
   @endforeach
@@ -1884,11 +1901,11 @@ function check(){
 
 <button type="button" class='ddelete'>- Delete</button>
 <button type="button" class='daddmore'>+ Add More</button>
- 
+ <br><br><br>
   
 </div>
 
-{{ HTML::script('datepicker/js/bootstrap-datepicker.min.js') }}
+{{ Html::script('datepicker/js/bootstrap-datepicker.min.js') }}
 
 <script type="text/javascript">
 $(function(){ 
@@ -1917,11 +1934,11 @@ $(".ddelete").on('click', function() {
 }
 }
 });
-var j=2;
+var j={{$j}};
 $(".daddmore").on('click',function(){
   count=$('#docEmp tr').length;
     var data="<tr><td><input type='checkbox' class='dcase'/></td><td><span id='dsnum"+j+"'>"+count+".</span></td>";
-    data +="<td id='f'><input class='docdata' type='file' id='path"+j+"' name='path["+(j-1)+"]' value='{{{ Input::old('path["+(j-1)+"]') }}}'/></td><td><input class='docdata' type='text' id='doc_name"+j+"' name='doc_name["+(j-1)+"]' value='{{{ Input::old('doc_name["+(j-1)+"]') }}}'/></td><td><textarea class='docdata' name='description["+(j-1)+"]' id='description"+j+"'>{{{ Input::old('description["+(j-1)+"]') }}}</textarea></td><td><div class='right-inner-addon'><i class='glyphicon glyphicon-calendar'></i><input class='form-control expiry' readonly='readonly' type='text' name='fdate["+(j-1)+"]' id='fdate"+j+"' value='{{{ Input::old('fdate["+(j-1)+"]') }}}'></div></td><td><div class='right-inner-addon'><i class='glyphicon glyphicon-calendar'></i><input class='form-control expiry' readonly='readonly' type='text' name='edate["+(j-1)+"]' id='edate"+j+"' value='{{{ Input::old('edate["+(j-1)+"]') }}}'></div></td>";
+    data +="<td id='f'><input class='docdata' type='file' id='path"+j+"' name='path["+(j-1)+"]' value='{{{ Input::old('path["+(j-1)+"]') }}}'/></td><td><input class='docdata' type='text' id='doc_name"+j+"' name='doc_name["+(j-1)+"]' value='{{{ Input::old('doc_name["+(j-1)+"]') }}}'/></td><td><textarea class='docdata' name='description["+(j-1)+"]' id='description"+j+"'>{{{ Input::old('description["+(j-1)+"]') }}}</textarea></td>";
   
   $('.expiry').datepicker({
     format: 'yyyy-mm-dd',
@@ -1946,7 +1963,7 @@ function dcheck(){
   obj=$('#docEmp tr').find('span');
   $.each( obj, function( key, value ) {
   id=value.id;
-  $('#'+id).html(key+1);
+  $('#'+id).Html(key+1);
   });
   }
 

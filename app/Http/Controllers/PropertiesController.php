@@ -236,6 +236,11 @@ class PropertiesController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+		if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('Properties', 'view', 'employee '.Employee::getEmployeeName($property->employee_id).' viewed property '.$property->name);
+		return view('properties.cssview', compact('property','user','retuser'));
+		}else{
+
 		if ( !Entrust::can('view_property') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
@@ -243,6 +248,7 @@ class PropertiesController extends Controller {
         Audit::logaudit('Properties', 'view', 'viewed property '.$property->name.' for '.Employee::getEmployeeName($property->employee_id));
 		return view('properties.view', compact('property','user','retuser'));
 	}
+    }
 		
 	}
 

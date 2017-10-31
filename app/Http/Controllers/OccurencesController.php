@@ -245,13 +245,19 @@ class OccurencesController extends Controller {
 		$occurence = Occurence::find($id);
 
 		$organization = Organization::find(Auth::user()->organization_id);
+
+		if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('Occurrences', 'view', 'employee '.Employee::getEmployeeName($occurence->employee_id).' viewed occurrence '.$occurence->occurence_brief);
+		return view('occurences.cssview', compact('occurence'));
+		}else{
         if ( !Entrust::can('view_occurrence') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
-        Audit::logaudit('Occurences', 'view', 'viewed occurence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
+        Audit::logaudit('Occurrences', 'view', 'viewed occurrence '.$occurence->occurence_brief.' for '.Employee::getEmployeeName($occurence->employee_id));
 		return view('occurences.view', compact('occurence'));
 	}
+    }
 		
 	}
 

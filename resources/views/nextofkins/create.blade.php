@@ -73,7 +73,7 @@ use Illuminate\Support\Facades\Input;
         
           <button type="submit" class="btn btn-primary btn-sm">Create Kin</button>
         </div>
-
+       <br><br>
     </fieldset>
 </form>
 		

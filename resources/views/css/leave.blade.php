@@ -1,5 +1,10 @@
-@extends('layouts.membercss')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use App\Leavetype;
+use App\Leaveapplication;
+?>
 
 @if (Session::get('notice'))
             <div class="alert alert-info">{{ Session::get('notice') }}</div>
@@ -26,12 +31,27 @@
 
 
 <div class="row">
-  
-<a href="{{URL::to('css/leaveapply')}}" class="btn btn-info">New Application</a>
-<br><br>
-
   <div class="col-lg-12">
 
+    @if (Session::has('flash_message'))
+
+      <div class="alert alert-success">
+      {{ Session::get('flash_message') }}
+     </div>
+    @endif
+
+     @if (Session::has('delete_message'))
+
+      <div class="alert alert-danger">
+      {{ Session::get('delete_message') }}
+     </div>
+    @endif
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  
+<a href="{{URL::to('css/leaveapply')}}" class="btn btn-info">New Application</a>
+</div>
 
 
       <table class="table table-condensed table-bordered" id="mobile">
@@ -68,8 +88,9 @@
       </table>
   
 
-  </div>  
-
+  </div> 
+  </div> 
+</div>
 
 <div class="row">
 

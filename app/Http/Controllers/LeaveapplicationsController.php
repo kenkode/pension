@@ -106,9 +106,9 @@ class LeaveapplicationsController extends Controller {
 
 		Leaveapplication::createLeaveApplication($data);
 
-		if(Auth::user()->user_type == 'member'){
-
-			return Redirect::to('css/leave');
+		if(Auth::user()->role == 'Employee'){
+            Audit::logaudit('Vacation Application', 'create', 'employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' created vacation application for vacation type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
+			return Redirect::to('css/leave')->withFlashMessage('Vacation application successfully applied ... Please wait for approval!');
 		} else {
             Audit::logaudit('Vacation Application', 'create', 'created vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
 			return Redirect::to('leavemgmt')->withFlashMessage('Vacation application successfully created!');

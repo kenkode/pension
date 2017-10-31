@@ -271,7 +271,7 @@ class Leaveapplication extends Model {
 
 				$taken = Leaveapplication::getLeaveDays($leavetaken->approved_start_date, $leavetaken->approved_end_date);
 
-				$daystaken = $daystaken + $taken;
+				$daystaken = $daystaken + $taken + 1;
 
 			
 			

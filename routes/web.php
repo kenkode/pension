@@ -16,9 +16,10 @@ use App\Notification;
 use App\Jobgroup;
 use App\Appraisalquestion;
 use App\Currency;
-use App\TaxOrder;
+use App\Leavetype;
 use App\Account;
-use App\Accounts;
+use App\BBranch;
+use App\EType;
 use Illuminate\Support\Facades\PHPExcel;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 use Illuminate\Support\Facades\Input;
@@ -1658,7 +1659,9 @@ Route::post('employees/update/{id}', 'EmployeesController@update');
 Route::get('employees/deactivate/{id}', 'EmployeesController@deactivate');
 Route::get('employees/activate/{id}', 'EmployeesController@activate');
 Route::get('employees/edit/{id}', 'EmployeesController@edit');
+Route::get('employees/editdetails/{id}', 'EmployeesController@editdetails');
 Route::get('employees/view/{id}', 'EmployeesController@view');
+Route::get('employee/viewdetails/{id}', 'EmployeesController@viewdetails');
 Route::get('employees/viewdeactive/{id}', 'EmployeesController@viewdeactive');
 
 Route::post('createCitizenship', 'EmployeesController@createcitizenship');
@@ -1964,6 +1967,51 @@ Route::get('overtimes/view/{id}', 'OvertimesController@view');
 /*
 * employee documents routes
 */
+
+Route::get('css/payslips', function(){
+
+  $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', Auth::user()->name)->pluck('id')[0];
+
+  $employee = Employee::findorfail($employeeid);
+
+  return view('css.payslip', compact('employee'));
+});
+
+
+Route::get('css/leave', function(){
+
+  $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', Auth::user()->name)->pluck('id')[0];
+
+
+  $employee = Employee::findorfail($employeeid);
+
+   $leaveapplications = DB::table('leaveapplications')->where('organization_id',Auth::user()->organization_id)->where('employee_id', '=', $employee->id)->get();
+
+  return view('css.leave', compact('employee', 'leaveapplications'));
+});
+
+
+Route::get('css/leaveapply', function(){
+
+  $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', Auth::user()->name)->pluck('id')[0];
+
+  $employee = Employee::findorfail($employeeid);
+  $leavetypes = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
+
+  return view('css.leaveapply', compact('employee', 'leavetypes'));
+});
+
+
+Route::get('css/balances', function(){
+
+  $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', Auth::user()->name)->pluck('id')[0];
+
+  $employee = Employee::findorfail($employeeid);
+  $leavetypes = Leavetype::where('organization_id',Auth::user()->organization_id)->get();
+
+  return view('css.balances', compact('employee', 'leavetypes'));
+});
+
 
 Route::resource('documents', 'DocumentsController');
 Route::post('documents/update/{id}', 'DocumentsController@update');

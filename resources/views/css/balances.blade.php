@@ -1,5 +1,10 @@
-@extends('layouts.membercss')
+@extends('layouts.app')
 @section('content')
+
+<?php
+use App\Leavetype;
+use App\Leaveapplication;
+?>
 
 @if (Session::get('notice'))
             <div class="alert alert-info">{{ Session::get('notice') }}</div>

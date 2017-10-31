@@ -291,8 +291,22 @@
 <li><a href="{{ url('/emails') }}"><i class="fa fa-th-large"></i> <span class="nav-label">Emails</span> </a> </li>
 
 @elseif(Controller::role()=='Employee')
+<?php
+$employee = App\Employee::where('personal_file_number',Auth::user()->name)->first();
+?>
+<li><a href="{{ URL::to('employee/viewdetails/'.$employee->id) }}"><i class="fa fa-user fa-fw"></i>View Details </a></li>
+<li>
+<a href="#"><i class="fa fa-tasks fa-fw"></i>Vacation <i class="fa fa-caret-down"></i></a>
+<ul class="nav">
+<li><a href="{{ URL::to('css/leave') }}"><i class="fa fa-chevron-right fa-fw"></i> Vacation Applications</a>
+</li>
+<li><a href="{{ URL::to('css/balances') }}"><i class="fa fa-chevron-right fa-fw"></i> Vacation Balances</a>
+</li>
+</ul>
+</li>
+<li><a href="{{ URL::to('css/payslips') }}"><i class="fa fa-money fa-fw"></i> Payslips</a>
+</li>
 <li><a href="{{ url('/statement') }}"><i class="fa fa-th-large"></i> <span class="nav-label">My statement</span> </a> </li>
-<li><a href="{{ url('/documents') }}"><i class="fa fa-th-large"></i> <span class="nav-label">My Documents</span> </a> </li>
 <li><a href="{{ url('schemes') }}"><i class="fa fa-pencil"></i> <span class="nav-label"></span>AIU Scheme </a> </li>
 
 <li><a href="{{ url('/calendar') }}"><i class="fa fa-th-large"></i> <span class="nav-label">Calendar</span> </a> </li>

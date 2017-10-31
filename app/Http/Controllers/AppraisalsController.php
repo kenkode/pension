@@ -250,6 +250,11 @@ class AppraisalsController extends Controller {
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
+		if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('Employee Appraisal', 'view', 'employee '.Employee::getEmployeeName($appraisal->employee_id).' viewed appraisal '.$appraisal->question);
+		return view('appraisals.cssview', compact('appraisal','user'));
+		}else{
+
 		if ( !Entrust::can('view_appraisal') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
@@ -257,6 +262,7 @@ class AppraisalsController extends Controller {
         Audit::logaudit('Employee Appraisal', 'view', 'viewed appraisal '.$appraisal->question.' for '.Employee::getEmployeeName($appraisal->employee_id));
 		return view('appraisals.view', compact('appraisal','user'));
 	}
+}
 		
 	}
 

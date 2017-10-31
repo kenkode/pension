@@ -50,4 +50,11 @@ class Leavetype extends Model {
 
 	}
 
+	public static function getName($id){
+
+		$leavetype = Leavetype::find($id);
+
+		return $leavetype->name;
+	}
+
 }

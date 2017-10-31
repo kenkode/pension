@@ -70,10 +70,16 @@ class DocumentsController extends Controller
 
         $document->save();
 
+        if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('Documents', 'create', 'employee '.Employee::getEmployeeName($document->employee_id).' created document '.$document->document_name);
+        return Redirect::to('employee/viewdetails/'.$document->employee_id)->withFlashMessage('Successfully created document!');     
+        }else{
+
        Audit::logaudit('Documents', 'create', 'created document '.Input::get('type').' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
         
         return Redirect::to('employees/view/'.$document->employee_id)->withFlashMessage('Employee`s document successfully created!');
+    }
     }
 
     /**
@@ -140,9 +146,15 @@ class DocumentsController extends Controller
 
         $document->update();
 
+        if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('Documents', 'update', 'employee '.Employee::getEmployeeName($document->employee_id).' updated document '.$document->document_name);
+        return Redirect::to('employee/viewdetails/'.$document->employee_id)->withFlashMessage('Successfully updated document!');     
+        }else{
+
         Audit::logaudit('Documents', 'update', 'updated document '.$document->document_name.' for '.Employee::getEmployeeName($document->employee_id));
 
         return Redirect::to('employees/view/'.$document->employee_id)->withFlashMessage('Employee Document successfully updated!');
+    }
     }
 
     /**
@@ -160,9 +172,16 @@ class DocumentsController extends Controller
         
         unlink($file);
 
+        if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('Documents', 'delete', 'employee '.Employee::getEmployeeName($document->employee_id).' deleted document '.$document->document_name);
+        return Redirect::to('employee/viewdetails/'.$document->employee_id)->withDeleteMessage('Successfully deleted document!');     
+        }else{
+
+
         Audit::logaudit('Documents', 'delete', 'deleted document '.$document->document_name.' for '.Employee::getEmployeeName($document->employee_id));
 
         return Redirect::to('employees/view/'.$document->employee_id)->withDeleteMessage('Employee Document successfully deleted!');
+    }
     }
 
     public function getDownload($id){

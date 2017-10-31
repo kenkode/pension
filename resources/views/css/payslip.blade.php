@@ -1,4 +1,4 @@
-@extends('layouts.membercss')
+@extends('layouts.app')
 @section('content')
 
 <div class="row">
@@ -9,22 +9,23 @@
 </div>	
 </div>
 
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
 	<div class="col-lg-5">
 
     
 		
-		 @if ($errors->has())
+		@if (Session::has('errors'))
         <div class="alert alert-danger">
-            @foreach ($errors->all() as $error)
-                {{ $error }}<br>        
-            @endforeach
+              {{ Session::get('errors') }}
         </div>
         @endif
 
 		 <form target="blank" method="POST" action="{{URL::to('payrollReports/payslip')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
 
         <div class="form-group">

@@ -83,10 +83,16 @@ class NextOfKinsController extends Controller {
 		$kin->id_number = Input::get('id_number');
 		$kin->save();
 
+		if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('NextofKins', 'create', 'employee '.Employee::getEmployeeName($kin->employee_id).' created kin '.$kin->first_name.' '.$kin->last_name);
+		return Redirect::to('employee/viewdetails/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully updated!');
+		}else{
+
 		Audit::logaudit('NextofKins', 'create', 'created kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName(Input::get('employee_id')));
 
 
 		return Redirect::to('employees/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully created!');
+	}
 	}
 
 	/**
@@ -141,9 +147,15 @@ class NextOfKinsController extends Controller {
 
 		$kin->update();
 
+		if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('NextofKins', 'update', 'employee '.Employee::getEmployeeName($kin->employee_id).' updated kin '.$kin->first_name.' '.$kin->last_name);
+		return Redirect::to('employee/viewdetails/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully updated!');
+		}else{
+
 		Audit::logaudit('NextofKins', 'update', 'updated kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName($kin->employee_id));
 
 		return Redirect::to('employees/view/'.$kin->employee_id)->withFlashMessage('Employee`s next of kin successfully updated!');
+	}
 	}
 
 	public function kinupdate($id)
@@ -181,9 +193,16 @@ class NextOfKinsController extends Controller {
 	{
 		$kin = Nextofkin::findOrFail($id);
 		Nextofkin::destroy($id);
+
+        if(Auth::user()->role == 'Employee'){
+        Audit::logaudit('NextofKins', 'delete', 'employee '.Employee::getEmployeeName($kin->employee_id).' deleted kin '.$kin->first_name.' '.$kin->last_name);
+        return Redirect::to('employee/viewdetails/'.$kin->employee_id)->withDeleteMessage('Successfully deleted kin!');     
+        }else{
+
 		Audit::logaudit('NextofKins', 'delete', 'deleted kin '.$kin->first_name.' '.$kin->last_name.' for '.Employee::getEmployeeName($kin->employee_id));
 
 		return Redirect::to('employees/view/'.$kin->employee_id)->withDeleteMessage('Employee`s next of kin successfully deleted!');
+	}
 	}
 
 	public function view($id){
