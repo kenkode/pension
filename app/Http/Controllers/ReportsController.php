@@ -6381,9 +6381,14 @@ class ReportsController extends Controller {
   public function getDownload()
   {
      
+     if ( !Entrust::can('view_paye_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         $file= public_path(). "/templates/P10_Return_version_8.0_21032016093001.xlsm";
         
         return Response::download($file, 'P10_Return_version_8.0_21032016093001.xlsm');
+      }
   }
   
 

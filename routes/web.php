@@ -311,6 +311,7 @@ if ( !Entrust::can('view_approved_application') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
+  Audit::logaudit('Vacation', 'view', 'viewed approved vacations');
   return view('leaveapplications.approved', compact('leaveapplications'));
 }
 
@@ -325,7 +326,7 @@ Route::get('leaveamends', function(){
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
-
+  Audit::logaudit('Vacation', 'view', 'viewed amended vacations');
   return view('leaveapplications.amended', compact('leaveapplications'));
 }
 
@@ -342,21 +343,24 @@ Route::get('leaverejects', function(){
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
+  Audit::logaudit('Vacation', 'view', 'viewed rejected vacations');
   return view('leaveapplications.rejected', compact('leaveapplications'));
 }
 } );
 
 });
 
-Route::group(['before' => 'manage_settings'], function() {
 
 Route::get('migrate', function(){
-
+if ( !Entrust::can('data_migration') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
     return view('migration');
+  }
 
 });
 
-});
 
 
 /*
@@ -1453,8 +1457,13 @@ Route::group(['before' => 'leave_mgmt'], function() {
 Route::get('leavemgmt', function(){
 
   $leaveapplications = Leaveapplication::all();
-
+  if ( !Entrust::can('view_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+  Audit::logaudit('Vacation', 'view', 'viewed all vacations applied');
   return view('leavemgmt', compact('leaveapplications'));
+}
 
 });
 
@@ -1927,17 +1936,20 @@ Route::get('payrollmgmt', function(){
 
 });
 
-Route::group(['before' => 'leave_mgmt'], function() {
-
 Route::get('leavemgmt', function(){
  
   $leaveapplications = Leaveapplication::where('organization_id',Auth::user()->organization_id)->get();
 
+  if ( !Entrust::can('view_application') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Audit::logaudit('Vacation Application', 'view', 'viewed all vacations applied');
   return view('leavemgmt', compact('leaveapplications'));
+}
 
 });
 
-});
 
 Route::get('automatedreports', 'ReportsController@automated');
 

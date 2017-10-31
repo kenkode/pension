@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Audit;
 use Mail;
 use App\Mail\Company;
 use App\User;
@@ -78,8 +79,9 @@ class MailController extends Controller
     public function update(Request $request)
     {   
 
-       Mail::to($request->from)->send(new Company(Auth::user()->name,Auth::user()->email,$request->subject,$request->msg));     
+       Mail::to($request->to)->send(new Company(Auth::user()->name,Auth::user()->email,$request->subject,$request->msg));     
 
+       Audit::logaudit('Email', 'send', 'sent an email to user '.$request->name.' subject: '.$request->subject.' message: '.$request->msg);
        return redirect('emails')->with('success','Email successfully sent!');
     }
 

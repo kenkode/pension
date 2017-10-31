@@ -27,7 +27,12 @@ class payslipEmailController extends Controller {
     public function index()
     {
         $employees = Employee::all();
+        if ( !Entrust::can('email_payslip') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('payslips.index',compact('employees'));
+      }
     }
 
     public function sendEmail()

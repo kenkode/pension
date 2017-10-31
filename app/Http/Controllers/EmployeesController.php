@@ -1140,7 +1140,7 @@ class EmployeesController extends Controller {
         'role'=>'Employee',
         'confirmation_code'=> md5(uniqid(mt_rand(), true)),
         'confirmed'=> 1,
-        'organization_id'=> Auth::user()->organization_id
+        'organization_id'=> Auth::user()->organization_id,
         'created_at'=> date("Y-m-d H:i:s")
         )
     );
