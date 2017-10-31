@@ -99,6 +99,9 @@
                             @if ( Entrust::can('view_deduction') )
                             <li><a href="{{ URL::to('employee_deductions') }}"><i class="fa fa-barcode fa-fw"></i>Deductions</a></li>
                             @endif
+                            @if ( Entrust::can('view_deduction') )
+                            <li><a href="{{ URL::to('pensions') }}"><i class="fa fa-barcode fa-fw"></i>Pension</a></li>
+                            @endif
                             @if ( Entrust::can('view_relief') )
                             <li><a href="{{ URL::to('employee_relief') }}"><i class="fa fa-credit-card fa-fw"></i>Relief</a></li>
                             @endif

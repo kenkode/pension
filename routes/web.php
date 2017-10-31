@@ -60,10 +60,10 @@ Route::group( ['middleware' => 'auth' ], function()
 
 	Route::resource('users', 'UserController');
 	Route::resource('payroll', 'Payroll');
-	Route::get('deduction-users', 'UserController@deductions');
+	Route::get('deduction-users', 'PensionsController@deductions');
 	Route::get('employees', 'UserController@employees');
 	Route::get('detailed-employee/{id}', 'UserController@detailed_employee');
-	Route::resource('deductions', 'DeductionsController');
+	Route::resource('pensions', 'PensionsController');
 	Route::resource('statement', 'StatementController');
 	//Route::resource('education', 'EducationController');
 	Route::resource('calendar', 'CalendarController');

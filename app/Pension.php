@@ -4,11 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-class Deductions extends Model
+class Pension extends Model
 {
-    public $table = "transact_pensions";
     protected $fillable = [
-        'payroll_no','employee_contribution','employer_contribution','interest','monthly_deduction','month','year','entered_by','comments'
+        'employee_id','employee_contribution','employer_contribution','interest','comments'
     ];
 
 

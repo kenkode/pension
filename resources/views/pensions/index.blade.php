@@ -66,15 +66,12 @@
                       <tr>
                        
                         <th>Name</th>
-                        <th>Payroll No</th>
                         <th>Employee Contribution</th>
                         <th>Employee Percentage</th>
                         <th>Employer Contribution</th>
                         <th>Employer Percentage</th>
                         <th>Interest</th>
                         <th>Total Contribution</th>
-                        <th>Month</th>
-                        <th>Year</th>
                         <th>Comments</th>
                         <th width="280px">Action</th>
                       </tr>
@@ -84,12 +81,6 @@
 
                     @foreach ($deductions as $key => $deduction)
 
-                        <?php 
-                          $employee+=$deduction->employee_contribution;
-                          $employer+=$deduction->employer_contribution;
-                          $interest+=$deduction->interest;
-                          $total+=$deduction->monthly_deduction;
-                        ?>
                       <tr>
                           <td>{{ UserController::payroll_name($deduction->payroll_no)}}</td>
                           <td>{{ $deduction->payroll_no }}</td>
@@ -99,8 +90,6 @@
                           <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
                           <td> Ksh {{ number_format(floatval( $deduction->interest),2)  }}</td>
                           <td> Ksh {{ number_format(floatval( $deduction->monthly_deduction),2)  }}</td>
-                          <td>{{ $deduction->month }}</td>
-                          <td>{{ $deduction->year }}</td>
                           <td>{{ $deduction->comments }}</td>
                           <td>
                         
@@ -116,20 +105,7 @@
                         @endforeach
                     
                     </tbody>
-                    <tfooter>
-                      <tr>
-                       
-                        <th colspan="2">Totals</th>
-                        <th colspan="2"> Ksh {{ number_format($employee,2)}}</th>
-                        <th colspan="2">Ksh {{ number_format($employer,2)}}</th>
-                        <th width="120px">Ksh {{ number_format($interest,2)}}</th>
-                        <th colspan="2">Ksh {{ number_format($total,2)}}</th>
-                      
-                        <th></th>
-                        <th></th>
-                        <th width="200px"></th>
-                      </tr>
-                    </tfooter>
+                    
                     </table>
                         </div>                      
 
