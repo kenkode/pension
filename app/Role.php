@@ -17,4 +17,13 @@ class Role extends EntrustRole
 		return $role->name;
 	}
 
+	public static function check($id){
+		$role = DB::table("roles")
+		      ->join("assigned_roles","roles.id", '=',"assigned_roles.role_id")
+		      ->where("user_id",$id)
+		      ->select("roles.name")
+		      ->count();
+		return $role;
+	}
+
 }

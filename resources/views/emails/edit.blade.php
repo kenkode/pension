@@ -78,7 +78,7 @@
 
  <div class="row">
 
-   <input  type="hidden" name="to" value="{{$user->email}}"/>
+   <input  type="hidden" name="from" value="{{$user->email}}"/>
 
  <div class="col-xs-8 col-sm-8 col-md-8">
      <div class="form-group">

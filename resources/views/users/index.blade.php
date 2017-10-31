@@ -49,7 +49,11 @@ use Illuminate\Support\Facades\Input;
                			<td>{{ $user->name }}</td>
                			<td>{{ $user->email }}</td>
                     <td>{{ $user->role }}</td>
+                    @if(App\Role::check($user->id) > 0)
                     <td>{{ App\Role::getRole($user->id) }}</td>
+                    @else
+                    <td>Employee</td>
+                    @endif
                			<td>{{ $user->created_at }}</td>
                			<?php if($user->confirmed){ ?>
                			<td> confirmed </td>

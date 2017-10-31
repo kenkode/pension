@@ -69,8 +69,6 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Roles</th>
-                        <th>Payroll No</th>
-                        <th>Salary</th>
                         <th width="280px">Action</th>
                       </tr>
                     </thead>
@@ -80,9 +78,11 @@
                          
                           <td>{{ $user->name }}</td>
                           <td>{{ $user->email }}</td>
-                          <td>{{ $user->role }}</td>
-                           <td>{{ $user->payroll_no }}</td>
-                            <td>{{ $user->salary }}</td>
+                          @if(App\Role::check($user->id) > 0)
+                          <td>{{ App\Role::getRole($user->id) }}</td>
+                          @else
+                          <td>Employee</td>
+                          @endif
                           <td>
                         
                           <a class="btn btn-primary" href="{{ route('emails.edit',$user->id) }}">Send Email</a>

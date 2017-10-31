@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail;
+use Mail;
+use App\Mail\Company;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,11 +75,12 @@ class MailController extends Controller
      * @param  \App\Mail  $mail
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Mail $mail)
-    {        
+    public function update(Request $request)
+    {   
 
-       Controller::send_mail(Auth::user()->email,Auth::user()->name,$request->to,$request->subject,$request->msg);
-       return redirect('emails');
+       Mail::to($request->from)->send(new Company(Auth::user()->name,Auth::user()->email,$request->subject,$request->msg));     
+
+       return redirect('emails')->with('success','Email successfully sent!');
     }
 
     /**
