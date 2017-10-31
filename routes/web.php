@@ -20,6 +20,11 @@ use App\Leavetype;
 use App\Account;
 use App\BBranch;
 use App\EType;
+use App\Earnings;
+use App\Earningsetting;
+use App\EAllowances;
+use App\ERelief;
+use App\EDeduction;
 use Illuminate\Support\Facades\PHPExcel;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 use Illuminate\Support\Facades\Input;
@@ -1125,9 +1130,9 @@ Route::post('import/deductions', function(){
     
 
     
-    $employeeid = DB::table('employee')->where('personal_file_number', '=', $name[0])->pluck('id');
+    $employeeid = DB::table('employee')->where('personal_file_number', '=', $name[0])->pluck('id')[0];
 
-    $deductionid = DB::table('deductions')->where('deduction_name', '=', $result->deduction_type)->pluck('id');
+    $deductionid = DB::table('deductions')->where('deduction_name', '=', $result->deduction_type)->pluck('id')[0];
 
     $deduction = new EDeduction;
 
@@ -2251,14 +2256,15 @@ Route::get('template/allowances', function(){
 
 Route::get('template/earnings', function(){
    $data = Employee::where('organization_id',Auth::user()->organization_id)->get();
+   $earnings = Earningsetting::all();
 
- \Excel::create('Earnings', function($excel) use($data) {
+ Excel::create('Earnings', function($excel) use($data, $earnings) {
             require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
             require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/Cell/DataValidation.php");
 
               
 
-              $excel->sheet('Earnings', function($sheet) use($data) {
+              $excel->sheet('Earnings', function($sheet) use($data, $earnings) {
 
               $sheet->row(1, array(
              'EMPLOYEE', 'EARNING TYPE','NARRATIVE', 'FORMULAR', 'INSTALMENTS','AMOUNT','EARNING DATE',
@@ -2279,6 +2285,7 @@ Route::get('template/earnings', function(){
             ->setFormatCode('yyyy-mm-dd');
 
             $row = 2;
+            $r = 2;
             
             for($i = 0; $i<count($data); $i++){
             
@@ -2292,7 +2299,19 @@ Route::get('template/earnings', function(){
                         )
                 );
 
-                $objPHPExcel = new PHPExcel;
+                 for($i = 0; $i<count($earnings); $i++){
+            
+             $sheet->SetCellValue("YZ".$r, $earnings[$i]->earning_name);
+             $r++;
+            }  
+
+                $sheet->_parent->addNamedRange(
+                        new \PHPExcel_NamedRange(
+                        'earnings', $sheet, 'YZ2:YZ'.(count($data)+1)
+                        )
+                );
+
+                $objPHPExcel = new \PHPExcel;
                 $objSheet = $objPHPExcel->getActiveSheet();
 
                $objSheet->protectCells('ZZ2:ZZ'.(count($data)+1), 'PHP');
@@ -2326,7 +2345,7 @@ Route::get('template/earnings', function(){
                 $objValidation->setError('Value is not in list.');
                 $objValidation->setPromptTitle('Pick from list');
                 $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"Bonus, Commission, Others"'); //note this!
+                $objValidation->setFormula1('earnings'); //note this!
 
                 $objValidation = $sheet->getCell('D'.$i)->getDataValidation();
                 $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
@@ -2699,14 +2718,16 @@ Route::post('import/earnings', function(){
 
           
     
-    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id');
+    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id')[0];
+
+    $earningid = DB::table('earningsettings')->where('earning_name', '=', $result->earning_type)->pluck('id')[0];
 
          
     $earning = new Earnings;
 
     $earning->employee_id = $employeeid;
 
-    $earning->earnings_name = $result->earning_type;
+    $earning->earning_id = $earningid;
 
     $earning->narrative = $result->narrative;
 
@@ -2809,9 +2830,9 @@ Route::post('import/reliefs', function(){
     $name = explode(':', $result->employee);
 
     
-    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id');
+    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id')[0];
 
-    $reliefid = DB::table('relief')->where('relief_name', '=', $result->relief_type)->pluck('id');
+    $reliefid = DB::table('relief')->where('relief_name', '=', $result->relief_type)->pluck('id')[0];
 
     $relief = new ERelief;
 
@@ -2882,9 +2903,9 @@ Route::post('import/allowances', function(){
 
     $name = explode(':', $result->employee);
     
-    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id');
+    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id')[0];
 
-    $allowanceid = DB::table('allowances')->where('allowance_name', '=', $result->allowance_type)->pluck('id');
+    $allowanceid = DB::table('allowances')->where('allowance_name', '=', $result->allowance_type)->pluck('id')[0];
 
     $allowance = new EAllowances;
 
@@ -2994,9 +3015,9 @@ Route::post('import/deductions', function(){
 
     $name = explode(':', $result->employee);
     
-    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id');
+    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id')[0];
 
-    $deductionid = DB::table('deductions')->where('deduction_name', '=', $result->deduction_type)->pluck('id');
+    $deductionid = DB::table('deductions')->where('deduction_name', '=', $result->deduction_type)->pluck('id')[0];
 
     $deduction = new EDeduction;
 

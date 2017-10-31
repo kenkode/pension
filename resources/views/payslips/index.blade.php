@@ -1,4 +1,4 @@
-@extends('layouts.payroll')
+@extends('layouts.app')
 
 <script type="text/javascript">
 function YNconfirm() { 
@@ -12,6 +12,10 @@ var per = document.getElementById("period").value;
 
 @section('content')
 
+<style>
+    .select2 {z-index:10 !important; }
+</style>
+
 <div class="row">
     <div class="col-lg-12">
   <h3>Period</h3>
@@ -20,18 +24,21 @@ var per = document.getElementById("period").value;
 </div>  
 </div>
 
+<?php
+use Illuminate\Support\Facades\Input;
+?>
 
 <div class="row">
     <div class="col-lg-5">
-      @if (Session::has('success'))
+      @if (Session::has('errors'))
 
-      <div class="alert alert-success">
-      {{ Session::get('success') }}
+      <div class="alert alert-danger">
+      {{ Session::get('errors') }}
      </div>
     @endif
 
          <form method="POST" action="{{ URL::to('email/payslip/employees')}}" accept-charset="UTF-8">
-   
+   {{ csrf_field() }}
     <fieldset>
        <div class="form-group">
                         <label for="username">Period <span style="color:red">*</span></label>
@@ -43,7 +50,7 @@ var per = document.getElementById("period").value;
         
         <div class="form-group">
                         <label for="username">Select Employee <span style="color:red">*</span></label>
-                        <select name="employeeid" class="form-control">
+                        <select required="" name="employeeid" class="form-control select2">
                            <option></option>
                             @foreach($employees as $employee)
                             <option value="{{ $employee->id }}"> {{ $employee->personal_file_number.' '.$employee->first_name.' '.$employee->last_name }}</option>

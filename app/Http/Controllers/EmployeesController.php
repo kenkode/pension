@@ -911,6 +911,7 @@ class EmployeesController extends Controller {
       $files = Input::file('path');
       $j = 0;
 
+       if(Input::file('path')){
        foreach($files as $file){
        
        if ( Input::get('doc_name')[$j] != null || Input::get('doc_name')[$j] != ''){
@@ -942,6 +943,7 @@ class EmployeesController extends Controller {
        }
        }
      }
+   }
 
     //return Auth::user()->role;
 

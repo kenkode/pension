@@ -28,6 +28,7 @@
   </div>
     
     <form method="post" action="{{URL::to('import/employees')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
 <div class="col-lg-4">
     <div class="form-group">
 
@@ -58,6 +59,7 @@
   </div>
 
    <form method="post" action="{{URL::to('import/earnings')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+    {{ csrf_field() }}
 <div class="col-lg-4">
       <div class="form-group">
 
@@ -88,6 +90,7 @@
     <p>&nbsp;</p>
   </div>
     <form method="post" action="{{URL::to('import/allowances')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
     <div class="col-lg-4">
       <div class="form-group">
 
@@ -121,6 +124,7 @@
     <p>&nbsp;</p>
   </div>
     <form method="post" action="{{URL::to('import/reliefs')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
    <div class="col-lg-4">
       <div class="form-group">
 
@@ -153,6 +157,7 @@
   </div>
 
     <form method="post" action="{{URL::to('import/deductions')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
 <div class="col-lg-4">
       <div class="form-group">
 
@@ -185,6 +190,7 @@
   </div>
 
     <form method="post" action="{{URL::to('import/banks')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
     <div class="col-lg-4">
       <div class="form-group">
 
@@ -216,6 +222,7 @@
   </div>
 
     <form method="post" action="{{URL::to('import/bankBranches')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
 <div class="col-lg-4">
       <div class="form-group">
 

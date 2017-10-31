@@ -1768,6 +1768,8 @@ $(document).ready(function() {
     <th>Relationship</th>
     <th>Contact</th>
   </tr>
+
+  <?php $i = 2; ?>
  
   @if($countk == 0)
 
@@ -1864,6 +1866,8 @@ function check(){
     <th>Name</th>
     <th>Description</th>
   </tr>
+
+  <?php $j = 2;?>
 
   @if($countd == 0)
 
