@@ -382,6 +382,8 @@ Route::get('template/employees', function(){
 
   $jobgroup_data = JGroup::all();
 
+  Audit::logaudit('Employee', 'download', 'downloaded employee template');
+
   Excel::create('Employees', function($excel) use($bank_data, $bankbranch_data, $branch_data, $department_data, $employeetype_data, $jobgroup_data, $employees) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -471,6 +473,7 @@ Route::get('template/allowances', function(){
   $data = Allowance::all();
   $employees = Employee::all();
 
+  Audit::logaudit('Allowance', 'download', 'downloaded allowance template');
 
   Excel::create('Allowances', function($excel) use($data, $employees) {
 
@@ -562,6 +565,7 @@ Route::get('template/earnings', function(){
 
   $employees = Employee::all();
 
+  Audit::logaudit('Earning', 'download', 'downloaded earning template');
 
   Excel::create('Earnings', function($excel) use($employees) {
 
@@ -645,6 +649,8 @@ Route::get('template/reliefs', function(){
   $employees = Employee::all();
   
   $data = Relief::all();
+
+  Audit::logaudit('Relief', 'download', 'downloaded relief template');
 
   Excel::create('Reliefs', function($excel) use($employees, $data) {
 
@@ -738,6 +744,7 @@ Route::get('template/deductions', function(){
   $data = Deduction::all();
   $employees = Employee::all();
 
+  Audit::logaudit('Deduction', 'download', 'downloaded deduction template');
 
   Excel::create('Deductions', function($excel) use($data, $employees) {
 
@@ -876,7 +883,7 @@ Route::post('import/employees', function(){
 
   });
 
-
+    Audit::logaudit('Employee', 'upload', 'uploaded employees template');
 
       
     }
@@ -942,7 +949,7 @@ Route::post('import/earnings', function(){
 
   });
 
-
+   Audit::logaudit('Earning', 'upload', 'uploaded earning template');
 
       
     }
@@ -1006,8 +1013,7 @@ Route::post('import/reliefs', function(){
 
   });
 
-
-
+    Audit::logaudit('Relief', 'upload', 'uploaded relief template');
       
     }
 
@@ -1083,7 +1089,7 @@ Route::post('import/allowances', function(){
   });
 
 
-
+    Audit::logaudit('Allowance', 'upload', 'uploaded allowance template');
       
     }
 
@@ -1159,7 +1165,7 @@ Route::post('import/deductions', function(){
 
   });
 
-
+    Audit::logaudit('Deduction', 'upload', 'uploaded deduction template');
 
       
     }
