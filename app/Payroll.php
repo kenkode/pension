@@ -964,6 +964,205 @@ public static $rules = [
     return round($other_ded,2);
    }
 
+   public static function totalpension($period){
+    
+    $part = explode("-", $period);
+    $start = $part[1]."-".$part[0]."-01";
+    $end  = date('Y-m-t', strtotime($start));
+
+    $other_ded = 0.00;
+
+    $month = '';
+    if($part[0] == 01){
+         $month = 'Jan';
+        }else if($part[0] == 02){
+         $month = 'Feb';
+        }else if($part[0] == 03){
+         $month = 'Mar';
+        }else if($part[0] == 04){
+         $month = 'Apr';
+        }else if($part[0] == 05){
+         $month = 'May';
+        }else if($part[0] == 06){
+         $month = 'Jun';
+        }else if($part[0] == 07){
+         $month = 'Jul';
+        }else if($part[0] == 8){
+         $month = 'Aug';
+        }else if($part[0] == 9){
+         $month = 'Sep';
+        }else if($part[0] == 10){
+         $month = 'Oct';
+        }else if($part[0] == 11){
+         $month = 'Nov';
+        }else if($part[0] == 12){
+         $month = 'Dec';
+        }
+
+   $deds = DB::table('pensions')
+                     ->join('employee', 'pensions.employee_id', '=', 'employee.id')
+                     ->select(DB::raw('COALESCE(sum(employee_contribution),0.00) as total_contribution')) 
+                     ->where('employee.organization_id',Auth::user()->organization_id)
+                     ->where('in_employment','Y')
+                     ->where('month',$month)
+                     ->where('year',$part[1])
+                     ->get();
+    foreach($deds as $ded){
+    $other_ded = $ded->total_contribution;
+    
+    }
+    
+    
+    return round($other_ded,2);
+   }
+
+   public static function pension($employeeid,$period){
+    
+    $part = explode("-", $period);
+    $start = $part[1]."-".$part[0]."-01";
+    $end  = date('Y-m-t', strtotime($start));
+
+    $other_ded = 0.00;
+
+    $month = '';
+    if($part[0] == 01){
+         $month = 'Jan';
+        }else if($part[0] == 02){
+         $month = 'Feb';
+        }else if($part[0] == 03){
+         $month = 'Mar';
+        }else if($part[0] == 04){
+         $month = 'Apr';
+        }else if($part[0] == 05){
+         $month = 'May';
+        }else if($part[0] == 06){
+         $month = 'Jun';
+        }else if($part[0] == 07){
+         $month = 'Jul';
+        }else if($part[0] == 8){
+         $month = 'Aug';
+        }else if($part[0] == 9){
+         $month = 'Sep';
+        }else if($part[0] == 10){
+         $month = 'Oct';
+        }else if($part[0] == 11){
+         $month = 'Nov';
+        }else if($part[0] == 12){
+         $month = 'Dec';
+        }
+
+   $deds = DB::table('pensions')
+                     ->join('employee', 'pensions.employee_id', '=', 'employee.id')
+                     ->select(DB::raw('COALESCE(sum(employee_contribution),0.00) as total_contribution')) 
+                     ->where('employee.organization_id',Auth::user()->organization_id)
+                     ->where('in_employment','Y')
+                     ->where('employee_id',$employeeid)
+                     ->where('month',$month)
+                     ->where('year',$part[1])
+                     ->get();
+    foreach($deds as $ded){
+    $other_ded = $ded->total_contribution;
+    
+    }
+    
+    
+    return round($other_ded,2);
+   }
+
+   public static function totaltransactpension($period){
+    
+    $part = explode("-", $period);
+    $start = $part[1]."-".$part[0]."-01";
+    $end  = date('Y-m-t', strtotime($start));
+
+    $other_ded = 0.00;
+
+    $month = '';
+    if($part[0] == 01){
+         $month = 'Jan';
+        }else if($part[0] == 02){
+         $month = 'Feb';
+        }else if($part[0] == 03){
+         $month = 'Mar';
+        }else if($part[0] == 04){
+         $month = 'Apr';
+        }else if($part[0] == 05){
+         $month = 'May';
+        }else if($part[0] == 06){
+         $month = 'Jun';
+        }else if($part[0] == 07){
+         $month = 'Jul';
+        }else if($part[0] == 8){
+         $month = 'Aug';
+        }else if($part[0] == 9){
+         $month = 'Sep';
+        }else if($part[0] == 10){
+         $month = 'Oct';
+        }else if($part[0] == 11){
+         $month = 'Nov';
+        }else if($part[0] == 12){
+         $month = 'Dec';
+        }
+
+   $pension = DB::table('transact_pensions')
+                     ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+                     ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee,COALESCE(sum(employer_amount),0.00) as employer')) 
+                     ->where('employee.organization_id',Auth::user()->organization_id)
+                     ->where('month',$month)
+                     ->where('year',$part[1])
+                     ->first();
+  
+    
+    return $pension;
+   }
+
+   public static function transactpension($employeeid,$period){
+    
+    $part = explode("-", $period);
+    $start = $part[1]."-".$part[0]."-01";
+    $end  = date('Y-m-t', strtotime($start));
+
+    $other_ded = 0.00;
+
+    $month = '';
+    if($part[0] == 01){
+         $month = 'Jan';
+        }else if($part[0] == 02){
+         $month = 'Feb';
+        }else if($part[0] == 03){
+         $month = 'Mar';
+        }else if($part[0] == 04){
+         $month = 'Apr';
+        }else if($part[0] == 05){
+         $month = 'May';
+        }else if($part[0] == 06){
+         $month = 'Jun';
+        }else if($part[0] == 07){
+         $month = 'Jul';
+        }else if($part[0] == 8){
+         $month = 'Aug';
+        }else if($part[0] == 9){
+         $month = 'Sep';
+        }else if($part[0] == 10){
+         $month = 'Oct';
+        }else if($part[0] == 11){
+         $month = 'Nov';
+        }else if($part[0] == 12){
+         $month = 'Dec';
+        }
+
+   $pension = DB::table('transact_pensions')
+                     ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+                     ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee,COALESCE(sum(employer_amount),0.00) as employer')) 
+                     ->where('employee.organization_id',Auth::user()->organization_id)
+                     ->where('personal_file_number',$employeeid)
+                     ->where('month',$month)
+                     ->where('year',$part[1])
+                     ->first();
+    
+    return $pension;
+   }
+
    public static function deductionall($id,$period){
     
     $part = explode("-", $period);
@@ -1001,7 +1200,7 @@ public static $rules = [
    public static function total_deductions($id,$period){
     $total_deds = 0.00;
     
-    $total_deds = static::tax($id,$period)+static::nssf($id,$period)+static::nhif($id,$period)+static::deductionall($id,$period);
+    $total_deds = static::tax($id,$period)+static::nssf($id,$period)+static::nhif($id,$period)+static::deductionall($id,$period)+static::pension($id,$period);
 
     return round($total_deds,2);
 

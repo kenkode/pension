@@ -288,17 +288,10 @@ class Leaveapplication extends Model {
 
 		$currentyear = date('Y');
 
-		$joined_year = date('Y', strtotime($employee->date_joined));
+		$joined_year = date('Y', strtotime($employee->created_at));
 
-		if($currentyear == $joined_year){
-			$years = 1;
-		} else {
+		$years = $currentyear - $joined_year + 1;
 
-			$years = $currentyear - $joined_year;
-
-		}
-
-		
 		$entitled = ($years * $leavetype->days);
 
 		$daystaken = Leaveapplication::getDaysTaken($employee, $leavetype);

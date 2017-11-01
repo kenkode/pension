@@ -41,18 +41,19 @@
     <?php 
 
     use App\Deductions;
+    use App\Employee;
 
     if(Auth::user()->role=="Employee"){
-
-        $deductions=Deductions::groupBy('month','year')
+        $employeeid = Employee::where("personal_file_number",Auth::user()->name)->pluck("id")[0];
+        $deductions=DB::table("transact_pensions")->groupBy('month','year')
                    ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
-                   ->where('payroll_no','=',Auth::user()->payroll_no)
+                   ->where('employee_id','=',$employeeid)
                    ->get();
         $max=10000;
 
     }else{
 
-        $deductions=Deductions::groupBy('month','year')
+        $deductions=DB::table("transact_pensions")->groupBy('month','year')
                    ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
                    ->get();
 

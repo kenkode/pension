@@ -2429,7 +2429,7 @@ Route::post('import/pensions', function(){
     }
     $pension->interest = $result->interest;
     $pension->comments = $result->comment;
-    $pension->month = $result->year;
+    $pension->year = $result->year;
     $pension->month = $result->month;
     $pension->save();
 

@@ -8679,13 +8679,21 @@ class ReportsController extends Controller {
 
               $columnLetter4 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7); 
 
-              $sheet->SetCellValue($columnLetter4.$row,"TOTAL DEDUCTIONS");
+              $sheet->SetCellValue($columnLetter4.$row,"PENSION EMPLOYEE CONTRIBUTION");
 
-              $columnLetter5 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8); 
+              $columnLetter5 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8);
 
-              $sheet->SetCellValue($columnLetter5.$row,"NET PAY");
+              $sheet->SetCellValue($columnLetter5.$row,"PENSION EMPLOYER CONTRIBUTION");
 
-              $sheet->mergeCells('A6:'.$columnLetter5.'6');
+              $columnLetter6 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9);
+
+              $sheet->SetCellValue($columnLetter6.$row,"TOTAL DEDUCTIONS");
+
+              $columnLetter7 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10); 
+
+              $sheet->SetCellValue($columnLetter7.$row,"NET PAY");
+
+              $sheet->mergeCells('A6:'.$columnLetter7.'6');
 
               $sheet->row(6, function ($r) {
 
@@ -8713,6 +8721,7 @@ class ReportsController extends Controller {
               $totalpaye = 0;
               $totalnssf = 0;
               $totalnhif = 0;
+              $totalpension = 0;
               $totaldeduction = 0;
               $totalnet = 0;
               
@@ -8887,9 +8896,13 @@ class ReportsController extends Controller {
               $rn = 8;
 
               for($u = 0; $u<count($data); $u++){
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee);
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employer);
                
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $data[$u]->total_deductions);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $data[$u]->net);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $data[$u]->total_deductions);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $data[$u]->net);
                $totaldeduction = $totaldeduction + $data[$u]->total_deductions;
                $totalnet = $totalnet + $data[$u]->net;
                $rn++;
@@ -8931,8 +8944,12 @@ class ReportsController extends Controller {
                  $sheet->setCellValue($column.$r, Payroll::totaltransactdeductions($data_deduction[$s]->deduction_name,'All','All',Input::get("period")));
                 } 
 
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totaldeduction);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalnet);
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, Payroll::totaltransactpension(Input::get("period"))->employee);
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, Payroll::totaltransactpension(Input::get("period"))->employer);
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $totaldeduction);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $totalnet);
                
                
               $sheet->row($r, function ($rls) {
@@ -9384,15 +9401,24 @@ class ReportsController extends Controller {
                $sheet->setCellValue($column.$row, strtoupper($deductions[$m]->deduction_name));
               } 
 
+
               $columnLetter4 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7); 
 
-              $sheet->SetCellValue($columnLetter4.$row,"TOTAL DEDUCTIONS");
+              $sheet->SetCellValue($columnLetter4.$row,"PENSION EMPLOYER CONTRIBUTION");
 
               $columnLetter5 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8); 
 
-              $sheet->SetCellValue($columnLetter5.$row,"NET PAY");
+              $sheet->SetCellValue($columnLetter5.$row,"PENSION EMPLOYER CONTRIBUTION");
 
-              $sheet->mergeCells('A6:'.$columnLetter5.'6');
+              $columnLetter6 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9); 
+
+              $sheet->SetCellValue($columnLetter6.$row,"TOTAL DEDUCTIONS");
+
+              $columnLetter7 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10); 
+
+              $sheet->SetCellValue($columnLetter7.$row,"NET PAY");
+
+              $sheet->mergeCells('A6:'.$columnLetter7.'6');
 
               $sheet->row(6, function ($r) {
 
@@ -9592,11 +9618,21 @@ class ReportsController extends Controller {
               }
 
               $rn = 8;
+              $totalpensionemployee = 0;
+              $totalpensionemployer = 0;
 
               for($u = 0; $u<count($data); $u++){
-               
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $data[$u]->total_deductions);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $data[$u]->net);
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee);
+
+               $totalpensionemployee = $totalpensionemployee + Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee;
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employer);
+
+               $totalpensionemployer = $totalpensionemployer + Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee;
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $data[$u]->total_deductions);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $data[$u]->net);
                $totaldeduction = $totaldeduction + $data[$u]->total_deductions;
                $totalnet = $totalnet + $data[$u]->net;
                $rn++;
@@ -9638,8 +9674,13 @@ class ReportsController extends Controller {
                  $sheet->setCellValue($column.$r, Payroll::totaltransactdeductions($data_deduction[$s]->deduction_name,Input::get('branch'),'All',Input::get("period")));
                 } 
 
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totaldeduction);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalnet);
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totalpensionemployee);
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalpensionemployer);
+
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $totaldeduction);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $totalnet);
                
                
               $sheet->row($r, function ($rls) {
@@ -10093,13 +10134,22 @@ class ReportsController extends Controller {
 
               $columnLetter4 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7); 
 
-              $sheet->SetCellValue($columnLetter4.$row,"TOTAL DEDUCTIONS");
+              $sheet->SetCellValue($columnLetter4.$row,"PENSION EMPLOYER CONTRIBUTION");
 
               $columnLetter5 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8); 
 
-              $sheet->SetCellValue($columnLetter5.$row,"NET PAY");
+              $sheet->SetCellValue($columnLetter5.$row,"PENSION EMPLOYER CONTRIBUTION");
 
-              $sheet->mergeCells('A6:'.$columnLetter5.'6');
+              $columnLetter6 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9); 
+
+              $sheet->SetCellValue($columnLetter6.$row,"TOTAL DEDUCTIONS");
+
+              $columnLetter7 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10); 
+
+              $sheet->SetCellValue($columnLetter7.$row,"NET PAY");
+
+              $sheet->mergeCells('A6:'.$columnLetter7.'6');
+
 
               $sheet->row(6, function ($r) {
 
@@ -10300,10 +10350,21 @@ class ReportsController extends Controller {
 
               $rn = 8;
 
+              $totalpensionemployee = 0;
+              $totalpensionemployer = 0;
+
               for($u = 0; $u<count($data); $u++){
-               
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $data[$u]->total_deductions);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $data[$u]->net);
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee);
+
+               $totalpensionemployee = $totalpensionemployee + Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee;
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employer);
+
+               $totalpensionemployer = $totalpensionemployer + Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee;
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $data[$u]->total_deductions);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $data[$u]->net);
                $totaldeduction = $totaldeduction + $data[$u]->total_deductions;
                $totalnet = $totalnet + $data[$u]->net;
                $rn++;
@@ -10345,8 +10406,13 @@ class ReportsController extends Controller {
                  $sheet->setCellValue($column.$r, Payroll::totaltransactdeductions($data_deduction[$s]->deduction_name,'All',Input::get('department'),Input::get("period")));
                 } 
 
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totaldeduction);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalnet);
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totalpensionemployee);
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalpensionemployer);
+
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $totaldeduction);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $totalnet);
                
                
               $sheet->row($r, function ($rls) {
@@ -10815,15 +10881,25 @@ class ReportsController extends Controller {
                $sheet->setCellValue($column.$row, strtoupper($deductions[$m]->deduction_name));
               } 
 
+              
               $columnLetter4 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7); 
 
-              $sheet->SetCellValue($columnLetter4.$row,"TOTAL DEDUCTIONS");
+              $sheet->SetCellValue($columnLetter4.$row,"PENSION EMPLOYER CONTRIBUTION");
 
               $columnLetter5 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8); 
 
-              $sheet->SetCellValue($columnLetter5.$row,"NET PAY");
+              $sheet->SetCellValue($columnLetter5.$row,"PENSION EMPLOYER CONTRIBUTION");
 
-              $sheet->mergeCells('A6:'.$columnLetter5.'6');
+              $columnLetter6 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9); 
+
+              $sheet->SetCellValue($columnLetter6.$row,"TOTAL DEDUCTIONS");
+
+              $columnLetter7 = PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10); 
+
+              $sheet->SetCellValue($columnLetter7.$row,"NET PAY");
+
+              $sheet->mergeCells('A6:'.$columnLetter7.'6');
+
 
               $sheet->row(6, function ($r) {
 
@@ -11024,10 +11100,21 @@ class ReportsController extends Controller {
 
               $rn = 8;
 
+              $totalpensionemployee = 0;
+              $totalpensionemployer = 0;
+
               for($u = 0; $u<count($data); $u++){
-               
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $data[$u]->total_deductions);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $data[$u]->net);
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee);
+
+               $totalpensionemployee = $totalpensionemployee + Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee;
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employer);
+
+               $totalpensionemployer = $totalpensionemployer + Payroll::transactpension($data[$u]->personal_file_number,Input::get("period"))->employee;
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $data[$u]->total_deductions);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $data[$u]->net);
                $totaldeduction = $totaldeduction + $data[$u]->total_deductions;
                $totalnet = $totalnet + $data[$u]->net;
                $rn++;
@@ -11069,8 +11156,14 @@ class ReportsController extends Controller {
                  $sheet->setCellValue($column.$r, Payroll::totaltransactdeductions($data_deduction[$s]->deduction_name,Input::get('branch'),Input::get('department'),Input::get("period")));
                 } 
 
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totaldeduction);
-               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalnet);
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+7).$rn, $totalpensionemployee);
+
+                $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+8).$rn, $totalpensionemployer);
+
+
+
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+9).$rn, $totaldeduction);
+               $sheet->setCellValue(PHPExcel_Cell::stringFromColumnIndex($colIndex+count($data_earnings)+count($data_allowance)+count($data_nontax)+count($data_relief)+count($deductions)+10).$rn, $totalnet);
                
                
               $sheet->row($r, function ($rls) {

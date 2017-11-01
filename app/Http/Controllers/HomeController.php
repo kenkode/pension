@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Document;
-use App\Deductions;
+use App\Pension;
+use App\Employee;
 use Auth;
+use DB;
 
 class HomeController extends Controller
 {
@@ -58,22 +60,23 @@ class HomeController extends Controller
 
         if(Auth::user()->role=="Employee"){
 
-          $data['employee'] = Deductions::all()
-                                           ->where('payroll_no','=',Auth::user()->payroll_no)
-                                           ->sum('employee_contribution');
+          $employeeid = Employee::where("personal_file_number",Auth::user()->name)->pluck("id")[0];
+          $data['employee'] = DB::table("transact_pensions")
+                                           ->where('employee_id','=',$employeeid)
+                                           ->sum('employee_amount');
 
 
-            $data['employer'] = Deductions::all()
-                                          ->where('payroll_no','=',Auth::user()->payroll_no)
-                                          ->sum('employer_contribution');
+            $data['employer'] = DB::table("transact_pensions")
+                                          ->where('employee_id','=',$employeeid)
+                                          ->sum('employer_amount');
 
             
 
           }else{
         
-            $data['employer'] = Deductions::all()->sum('employer_contribution');
+            $data['employer'] = DB::table("transact_pensions")->sum('employer_amount');
 
-            $data['employee'] = Deductions::all()->sum('employee_contribution');
+            $data['employee'] = DB::table("transact_pensions")->sum('employee_amount');
 
           }
       

@@ -13,12 +13,13 @@ $start  = date('Y-m-01', strtotime($end_date));
 
      $per = DB::table('transact')
           ->where('financial_month_year','=',$period)
-          ->where('process_type','=',$type)
           ->where('organization_id','=',Auth::user()->organization_id)
           ->count();
      if($per>0){?>
 
       <script type="text/javascript">
+
+      var per = <?php echo $per;?>
        
       if (window.confirm("Do you wish to process payroll for this period again?"))
       {
@@ -27,7 +28,7 @@ $start  = date('Y-m-01', strtotime($end_date));
                   var p1 = <?php echo $part[0]?>;
                   var p2 = "-";
                   var p3 = <?php echo $part[1]?>;
-                  var type = <?php echo $type?>;
+                  var type = 'normal';
 
                   console.log(p1+p2+p3);
 
@@ -201,6 +202,7 @@ th{
          @foreach($deductions as $deduction)
          <th>{{$deduction->deduction_name}}</th>
          @endforeach
+         <th>Pension Contribution</th>
          <th>Total Deductions</th>
          <th>Net Pay</th>
 
@@ -222,6 +224,7 @@ th{
          $totalnssf = 0.00;
          $totalnhif = 0.00;
          $otherdeduction = 0.00;
+         $totalpension = 0.00;
          $totaldeduction = 0.00;
          $totalnet = 0.00;
         ?>
@@ -297,7 +300,9 @@ th{
           @foreach($deductions as $deduction)
           <td align="right">{{ asMoney((double)Payroll::deductions($employee->id,$deduction->id,$period)) }}</td>
           @endforeach
+          <td align="right">{{ asMoney((double)Payroll::pension($employee->id,$period)) }}</td>
           <?php
+           $totalpension = $totalpension + (double)Payroll::pension($employee->id,$period);
            $totaldeduction = $totaldeduction + (double)Payroll::total_deductions($employee->id,$period);
           ?>
           <?php
@@ -356,6 +361,7 @@ th{
           ?>
           <td align='right'><strong>{{asMoney($otherdeduction.$deduction->id)}}</strong></td>
           @endforeach
+          <td align='right'><strong>{{asMoney($totalpension)}}</strong></td>
           <td align='right'><strong>{{asMoney($totaldeduction)}}</strong></td>
           <td align='right'><strong>{{asMoney($totalnet)}}</strong></td>
         </tr>
@@ -363,11 +369,12 @@ th{
       </tbody>
 
     </table>
+
      
      </div>
 
   </div>
-
+<br><br>
 
   </div>
 

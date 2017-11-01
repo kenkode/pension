@@ -25,7 +25,7 @@ th {
 }
 .table {
   width: 100%;
-  margin-bottom: 50px;
+  margin-bottom: 20px;
 }
 hr {
   margin-top: 1px;
