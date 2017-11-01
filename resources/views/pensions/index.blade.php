@@ -2,31 +2,31 @@
 @section('content')
 <?php use App\Http\Controllers\UserController;?>
 
-     <div class="row wrapper border-bottom white-bg page-heading">
-                <div class="col-lg-10">
-                    <h2>Deductions</h2>
-                    <ol class="breadcrumb">
-                        <li>
-                            <a href="index.html">Home</a>
-                        </li>
-                        <li>
-                            <a>Deductions</a>
-                        </li>
-                        <li class="active">
-                            <strong>summary</strong>
-                        </li>
-                    </ol>
-                </div>
-                <div class="col-lg-2">
+     <div class="row">
+      <div class="col-lg-12">
+       <h3>Pension</h3>
 
-                </div>
-      </div>            
+       <hr>
+      </div>  
+     </div>
             
-        <div class="wrapper wrapper-content animated fadeInRight">
             <div class="row">
                 <div class="col-lg-12">
-                <div class="ibox float-e-margins">
-                    <div class="ibox-title">
+                  @if (Session::has('flash_message'))
+
+      <div class="alert alert-success">
+      {{ Session::get('flash_message') }}
+     </div>
+    @endif
+
+     @if (Session::has('delete_message'))
+
+      <div class="alert alert-danger">
+      {{ Session::get('delete_message') }}
+     </div>
+    @endif
+                <!-- <div class="ibox float-e-margins">
+                    <div class="ibox-title"> -->
 
                       @if ($message = Session::get('success'))
                        <div class="alert alert-success">
@@ -34,71 +34,63 @@
                          </div>
                         @endif
 
-                        <h5>Deductions summary</h5>                      
+                        <!-- <h5>Deductions summary</h5>     -->                  
 
-                        <div class="ibox-tools">
-                           
-
-                            <a class="btn btn-primary" href="{{ url('/deduction-users') }}">Enter a deduction</a>
-                            <a class="collapse-link">
-                                <i class="fa fa-chevron-up"></i>
-                            </a>
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                <i class="fa fa-wrench"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-user">
-                                <li><a href="#">Config option 1</a>
-                                </li>
-                                <li><a href="#">Config option 2</a>
-                                </li>
-                            </ul>
-                            <a class="close-link">
-                                <i class="fa fa-times"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="ibox-content">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <a class="btn btn-info btn-sm" href="{{ URL::to('pensions/create')}}">new pension</a>
+                          </div>
+                        <div class="panel-body">
 
 
                   <div class="table-responsive">
                     <table class="table table-striped table-bordered table-hover deductions_tbl" >
                     <thead>
                       <tr>
-                       
-                        <th>Name</th>
+                        <th>#</th>
+                        <th>Employee</th>
                         <th>Employee Contribution</th>
-                        <th>Employee Percentage</th>
+                        <th>Employee Percentage (%)</th>
                         <th>Employer Contribution</th>
-                        <th>Employer Percentage</th>
+                        <th>Employer Percentage (%)</th>
                         <th>Interest</th>
                         <th>Total Contribution</th>
                         <th>Comments</th>
-                        <th width="280px">Action</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <?php $employee=0;$employer=0;$interest=0; $total=0;?>
+                      <?php $i=1; $employee=0;$employer=0;$interest=0; $total=0;?>
 
                     @foreach ($deductions as $key => $deduction)
 
                       <tr>
-                          <td>{{ UserController::payroll_name($deduction->payroll_no)}}</td>
-                          <td>{{ $deduction->payroll_no }}</td>
+                          <td>{{ $i }}</td>
+                          <td>{{ $deduction->employee->personal_file_number.' : '.$deduction->employee->first_name.' '.$deduction->employee->last_name }}</td>
                           <td> Ksh {{ number_format(floatval($deduction->employee_contribution),2) }}</td>
                           <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
                           <td> Ksh {{ number_format(floatval( $deduction->employer_contribution),2)  }}</td>
-                          <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
+                          <td>{{ number_format(floatval($deduction->employer_percentage),2) }}</td>
                           <td> Ksh {{ number_format(floatval( $deduction->interest),2)  }}</td>
-                          <td> Ksh {{ number_format(floatval( $deduction->monthly_deduction),2)  }}</td>
+                          <td> Ksh {{ number_format(floatval( $deduction->employee_contribution + $deduction->employer_contribution),2)  }}</td>
                           <td>{{ $deduction->comments }}</td>
                           <td>
-                        
-                          <a class="btn btn-primary" href="{{ route('deductions.edit',$deduction->id) }}">Edit</a>
 
-                         {!! Form::open(['method' => 'DELETE','route' => ['deductions.destroy', $deduction->id],'style'=>'display:inline']) !!}
-                         {!! Form::submit('Delete', ['class' => 'btn btn-danger']) !!}
-                          {!! Form::close() !!}
-                         </td>
+                  <div class="btn-group">
+                  <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    Action <span class="caret"></span>
+                  </button>
+          
+                  <ul class="dropdown-menu" role="menu">
+                     <li><a href="{{URL::to('pensions/view/'.$deduction->id)}}">View</a></li> 
+                    <li><a href="{{URL::to('pensions/edit/'.$deduction->id)}}">Update</a></li>
+                   
+                    <li><a href="{{URL::to('pensions/delete/'.$deduction->id)}}" onclick="return (confirm('Are you sure you want to delete this employee pension?'))">Delete</a></li>
+                    
+                  </ul>
+              </div>
+
+                    </td>
 
                         </tr>
 
@@ -113,7 +105,6 @@
                 </div>
             </div>
             </div>
-        </div>
         
-
+<?php $i++;?>
 @endsection

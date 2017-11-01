@@ -25,6 +25,7 @@ use App\Earningsetting;
 use App\EAllowances;
 use App\ERelief;
 use App\EDeduction;
+use App\Pension;
 use Illuminate\Support\Facades\PHPExcel;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 use Illuminate\Support\Facades\Input;
@@ -64,6 +65,10 @@ Route::group( ['middleware' => 'auth' ], function()
 	Route::get('employees', 'UserController@employees');
 	Route::get('detailed-employee/{id}', 'UserController@detailed_employee');
 	Route::resource('pensions', 'PensionsController');
+  Route::post('pensions/update/{id}', 'PensionsController@update');
+  Route::get('pensions/delete/{id}', 'PensionsController@destroy');
+  Route::get('pensions/edit/{id}', 'PensionsController@edit');
+  Route::get('pensions/view/{id}', 'PensionsController@show');
 	Route::resource('statement', 'StatementController');
 	//Route::resource('education', 'EducationController');
 	Route::resource('calendar', 'CalendarController');
@@ -364,129 +369,28 @@ if ( !Entrust::can('data_migration') ) // Checks the current user
 
 
 /*
-* Template routes and generators 
-*/
-
-
-Route::get('template/employees', function(){
-
-  $bank_data = Bank::all();
-
-  $bankbranch_data = BBranch::all();
- 
-  $branch_data = Branch::all();
-
-  $department_data = Department::all();
-
-  $employeetype_data = EType::all();
-
-  $jobgroup_data = JGroup::all();
-
-  Audit::logaudit('Employee', 'download', 'downloaded employee template');
-
-  Excel::create('Employees', function($excel) use($bank_data, $bankbranch_data, $branch_data, $department_data, $employeetype_data, $jobgroup_data, $employees) {
-
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/Cell/DataValidation.php");
-
-    
-
-    $excel->sheet('employees', function($sheet) use($bank_data, $bankbranch_data, $branch_data, $department_data, $employeetype_data, $jobgroup_data, $employees){
-
-
-              $sheet->row(1, array(
-     'PERSONAL FILE NUMBER','EMPLOYEE', 'FIRST NAME', 'LAST NAME', 'ID', 'KRA PIN', 'BASIC PAY', ''
-));
-
-             
-                $empdata = array();
-
-                foreach($employees as $d){
-
-                  $empdata[] = $d->personal_file_number.':'.$d->first_name.' '.$d->last_name.' '.$d->middle_name;
-                }
-
-                $emplist = implode(", ", $empdata);
-
-                
-
-                $listdata = array();
-
-                foreach($data as $d){
-
-                  $listdata[] = $d->allowance_name;
-                }
-
-                $list = implode(", ", $listdata);
-   
-
-    for($i=2; $i <= 250; $i++){
-
-                $objValidation = $sheet->getCell('B'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$list.'"'); //note this!
-
-
-
-                $objValidation = $sheet->getCell('A'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$emplist.'"'); //note this!
-
-    }
-
-                
-
-                
-        
-
-    });
-
-  })->export('xls');
-});
-
-
-/*
-*allowance template
+*pension template
 *
 */
 
-Route::get('template/allowances', function(){
+Route::get('template/pensions', function(){
 
-  $data = Allowance::all();
-  $employees = Employee::all();
+  $employees = Employee::where('in_employment','Y')->get();
 
-  Audit::logaudit('Allowance', 'download', 'downloaded allowance template');
+  Audit::logaudit('Pension', 'download', 'downloaded pension template');
 
-  Excel::create('Allowances', function($excel) use($data, $employees) {
+  Excel::create('Pensions', function($excel) use($employees) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/Cell/DataValidation.php");
 
     
 
-    $excel->sheet('allowances', function($sheet) use($data, $employees){
+    $excel->sheet('pensions', function($sheet) use($employees){
 
 
               $sheet->row(1, array(
-     'EMPLOYEE', 'ALLOWANCE TYPE', 'AMOUNT'
+     'EMPLOYEE', 'FORMULAR', 'EMPLOYEE PERCENTAGE', 'EMPLOYEE CONTRIBUTION', 'EMPLOYER PERCENTAGE', 'EMPLOYER CONTRIBUTION', 'INTEREST', 'COMMENT', 'MONTH', 'YEAR'
 ));
 
              
@@ -501,33 +405,8 @@ Route::get('template/allowances', function(){
 
                 
 
-                $listdata = array();
-
-                foreach($data as $d){
-
-                  $listdata[] = $d->allowance_name;
-                }
-
-                $list = implode(", ", $listdata);
-   
-
+                
     for($i=2; $i <= 250; $i++){
-
-                $objValidation = $sheet->getCell('B'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$list.'"'); //note this!
-
-
-
                 $objValidation = $sheet->getCell('A'.$i)->getDataValidation();
                 $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
                 $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
@@ -540,6 +419,19 @@ Route::get('template/allowances', function(){
                 $objValidation->setPromptTitle('Pick from list');
                 $objValidation->setPrompt('Please pick a value from the drop-down list.');
                 $objValidation->setFormula1('"'.$emplist.'"'); //note this!
+
+                $objValidation = $sheet->getCell('B'.$i)->getDataValidation();
+                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
+                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
+                $objValidation->setAllowBlank(false);
+                $objValidation->setShowInputMessage(true);
+                $objValidation->setShowErrorMessage(true);
+                $objValidation->setShowDropDown(true);
+                $objValidation->setErrorTitle('Input error');
+                $objValidation->setError('Value is not in list.');
+                $objValidation->setPromptTitle('Pick from list');
+                $objValidation->setPrompt('Please pick a value from the drop-down list.');
+                $objValidation->setFormula1('"Flat Value, Percentage"'); //note this!
 
     }
 
@@ -555,633 +447,6 @@ Route::get('template/allowances', function(){
 
 
 });
-
-/*
-*earning template
-*
-*/
-
-Route::get('template/earnings', function(){
-
-  $employees = Employee::all();
-
-  Audit::logaudit('Earning', 'download', 'downloaded earning template');
-
-  Excel::create('Earnings', function($excel) use($employees) {
-
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/Cell/DataValidation.php");
-
-    
-
-    $excel->sheet('earnings', function($sheet) use($employees){
-
-
-              $sheet->row(1, array(
-     'EMPLOYEE', 'EARNING TYPE','NARRATIVE', 'AMOUNT'
-));
-
-             
-                $empdata = array();
-
-                foreach($employees as $d){
-
-                  $empdata[] = $d->personal_file_number.':'.$d->first_name.' '.$d->last_name.' '.$d->middle_name;
-                }
-
-                $emplist = implode(", ", $empdata);
-
-                
-   
-
-    for($i=2; $i <= 250; $i++){
-
-                $objValidation = $sheet->getCell('B'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"Bonus, Commission, Others"'); //note this!
-
-
-
-                $objValidation = $sheet->getCell('A'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$emplist.'"'); //note this!
-
-    }
-
-                
-
-                
-        
-
-    });
-
-  })->export('xls');
-
-
-
-});
-
-/*
-*Relief template
-*
-*/
-
-Route::get('template/reliefs', function(){
-
-  $employees = Employee::all();
-  
-  $data = Relief::all();
-
-  Audit::logaudit('Relief', 'download', 'downloaded relief template');
-
-  Excel::create('Reliefs', function($excel) use($employees, $data) {
-
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/Cell/DataValidation.php");
-
-    
-
-    $excel->sheet('reliefs', function($sheet) use($employees, $data){
-
-
-              $sheet->row(1, array(
-     'EMPLOYEE', 'RELIEF TYPE', 'AMOUNT'
-));
-
-             
-                $empdata = array();
-
-                foreach($employees as $d){
-
-                  $empdata[] = $d->personal_file_number.':'.$d->first_name.' '.$d->last_name.' '.$d->middle_name;
-                }
-
-                $emplist = implode(", ", $empdata);
-
-                
-                $listdata = array();
-
-                foreach($data as $d){
-
-                  $listdata[] = $d->relief_name;
-                }
-
-                $list = implode(", ", $listdata);
-   
-
-    for($i=2; $i <= 250; $i++){
-
-                $objValidation = $sheet->getCell('B'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$list.'"'); //note this!
-
-
-
-                $objValidation = $sheet->getCell('A'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$emplist.'"'); //note this!
-
-    }
-
-                
-
-                
-        
-
-    });
-
-  })->export('xls');
-
-
-
-});
-
-
-
-/*
-*deduction template
-*
-*/
-
-Route::get('template/deductions', function(){
-
-  $data = Deduction::all();
-  $employees = Employee::all();
-
-  Audit::logaudit('Deduction', 'download', 'downloaded deduction template');
-
-  Excel::create('Deductions', function($excel) use($data, $employees) {
-
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
-    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/Cell/DataValidation.php");
-
-    
-
-    $excel->sheet('deductions', function($sheet) use($data, $employees){
-
-
-              $sheet->row(1, array(
-     'EMPLOYEE', 'DEDUCTION TYPE', 'AMOUNT','Date'
-));
-
-             
-                $empdata = array();
-
-                foreach($employees as $d){
-
-                  $empdata[] = $d->personal_file_number.':'.$d->first_name.' '.$d->last_name.' '.$d->middle_name;
-                }
-
-                $emplist = implode(", ", $empdata);
-
-                
-
-                $listdata = array();
-
-                foreach($data as $d){
-
-                  $listdata[] = $d->deduction_name;
-                }
-
-                $list = implode(", ", $listdata);
-   
-
-    for($i=2; $i <= 250; $i++){
-
-                $objValidation = $sheet->getCell('B'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$list.'"'); //note this!
-
-
-
-                $objValidation = $sheet->getCell('A'.$i)->getDataValidation();
-                $objValidation->setType(\PHPExcel_Cell_DataValidation::TYPE_LIST);
-                $objValidation->setErrorStyle(\PHPExcel_Cell_DataValidation::STYLE_INFORMATION);
-                $objValidation->setAllowBlank(false);
-                $objValidation->setShowInputMessage(true);
-                $objValidation->setShowErrorMessage(true);
-                $objValidation->setShowDropDown(true);
-                $objValidation->setErrorTitle('Input error');
-                $objValidation->setError('Value is not in list.');
-                $objValidation->setPromptTitle('Pick from list');
-                $objValidation->setPrompt('Please pick a value from the drop-down list.');
-                $objValidation->setFormula1('"'.$emplist.'"'); //note this!
-
-    }
-
-                
-
-                
-        
-
-    });
-
-  })->export('xls');
-
-
-
-});
-
-
-
-/* #################### IMPORT EMPLOYEES ################################## */
-
-Route::post('import/employees', function(){
-
-  
-  if(Input::hasFile('employees')){
-
-      $destination = public_path().'/migrations/';
-
-      $filename = str_random(12);
-
-      $ext = Input::file('employees')->getClientOriginalExtension();
-      $file = $filename.'.'.$ext;
-
-
-
-      
-      
-     
-      Input::file('employees')->move($destination, $file);
-
-
-  
-
-
-    Excel::selectSheetsByIndex(0)->load(public_path().'/migrations/'.$file, function($reader){
-
-          $results = $reader->get();    
-  
-    foreach ($results as $result) {
-
-
-
-      $employee = new Employee;
-
-      $employee->personal_file_number = $result->employment_number;
-      
-      $employee->first_name = $result->first_name;
-      $employee->last_name = $result->surname;
-      $employee->middle_name = $result->other_names;
-      $employee->identity_number = $result->id_number;
-      $employee->pin = $result->kra_pin;
-      $employee->social_security_number = $result->nssf_number;
-      $employee->hospital_insurance_number = $result->nhif_number;
-      $employee->email_office = $result->email_address;
-      $employee->save();
-      
-    }
-    
-
-    
-
-  });
-
-    Audit::logaudit('Employee', 'upload', 'uploaded employees template');
-
-      
-    }
-
-
-
-  return Redirect::back()->with('notice', 'Employees have been succeffully imported');
-
-
-
-  
-
-});
-
-
-
-
-/* #################### IMPORT EARNINGS ################################## */
-
-Route::post('import/earnings', function(){
-
-  
-  if(Input::hasFile('earnings')){
-
-      $destination = public_path().'/migrations/';
-
-      $filename = str_random(12);
-
-      $ext = Input::file('earnings')->getClientOriginalExtension();
-      $file = $filename.'.'.$ext;
-
-     
-      Input::file('earnings')->move($destination, $file);
-
-
-    Excel::selectSheetsByIndex(0)->load(public_path().'/migrations/'.$file, function($reader){
-
-          $results = $reader->get();    
-  
-    foreach ($results as $result) {
-
-    $name = explode(':', $result->employee);
-
-    
-    $employeeid = DB::table('employee')->where('personal_file_number', '=', $name[0])->pluck('id');
-
-    $earning = new Earnings;
-
-    $earning->employee_id = $employeeid;
-
-    $earning->earnings_name = $result->earning_type;
-
-    $earning->narrative = $result->narrative;
-
-    $earning->earnings_amount = $result->amount;
-
-    $earning->save();
-      
-    }
-    
-
-    
-
-  });
-
-   Audit::logaudit('Earning', 'upload', 'uploaded earning template');
-
-      
-    }
-
-
-
-  return Redirect::back()->with('notice', 'earnings have been succeffully imported');
-
-
-
-  
-
-});
-
-
-/* #################### IMPORT RELIEFS ################################## */
-
-Route::post('import/reliefs', function(){
-
-  
-  if(Input::hasFile('reliefs')){
-
-      $destination = public_path().'/migrations/';
-
-      $filename = str_random(12);
-
-      $ext = Input::file('reliefs')->getClientOriginalExtension();
-      $file = $filename.'.'.$ext;
-
-     
-      Input::file('reliefs')->move($destination, $file);
-
-
-    Excel::selectSheetsByIndex(0)->load(public_path().'/migrations/'.$file, function($reader){
-
-          $results = $reader->get();    
-  
-    foreach ($results as $result) {
-
-    $name = explode(':', $result->employee);
-
-    
-    $employeeid = DB::table('employee')->where('personal_file_number', '=', $name[0])->pluck('id');
-
-    $reliefid = DB::table('relief')->where('relief_name', '=', $result->relief_type)->pluck('id');
-
-    $relief = new ERelief;
-
-    $relief->employee_id = $employeeid;
-
-    $relief->relief_id = $reliefid;
-
-    $relief->relief_amount = $result->amount;
-
-    $relief->save();
-      
-    }
-    
-
-    
-
-  });
-
-    Audit::logaudit('Relief', 'upload', 'uploaded relief template');
-      
-    }
-
-
-
-  return Redirect::back()->with('notice', 'reliefs have been succeffully imported');
-
-
-
-  
-
-});
-
-
-
-/* #################### IMPORT ALLOWANCES ################################## */
-
-Route::post('import/allowances', function(){
-
-  
-  if(Input::hasFile('allowances')){
-
-      $destination = public_path().'/migrations/';
-
-      $filename = str_random(12);
-
-      $ext = Input::file('allowances')->getClientOriginalExtension();
-      $file = $filename.'.'.$ext;
-
-
-
-      
-      
-     
-      Input::file('allowances')->move($destination, $file);
-
-
-  
-
-
-  Excel::selectSheetsByIndex(0)->load(public_path().'/migrations/'.$file, function($reader){
-
-    $results = $reader->get();    
-  
-    foreach ($results as $result) {
-
-    $name = explode(':', $result->employee);
-
-    
-
-    
-    $employeeid = DB::table('employee')->where('personal_file_number', '=', $name[0])->pluck('id');
-
-    $allowanceid = DB::table('allowances')->where('allowance_name', '=', $result->allowance_type)->pluck('id');
-
-    $allowance = new EAllowances;
-
-    $allowance->employee_id = $employeeid;
-
-    $allowance->allowance_id = $allowanceid;
-
-    $allowance->allowance_amount = $result->amount;
-
-    $allowance->save();
-
-    
-      
-    }
-    
-
-    
-
-  });
-
-
-    Audit::logaudit('Allowance', 'upload', 'uploaded allowance template');
-      
-    }
-
-
-
-  return Redirect::back()->with('notice', 'allowances have been succefully imported');
-
-
-
-  
-
-});
-
-
-/* #################### IMPORT DEDUCTIONS ################################## */
-
-Route::post('import/deductions', function(){
-
-  
-  if(Input::hasFile('deductions')){
-
-      $destination = public_path().'/migrations/';
-
-      $filename = str_random(12);
-
-      $ext = Input::file('deductions')->getClientOriginalExtension();
-      $file = $filename.'.'.$ext;
-
-
-
-      
-      
-     
-      Input::file('deductions')->move($destination, $file);
-
-
-  
-
-
-  Excel::selectSheetsByIndex(0)->load(public_path().'/migrations/'.$file, function($reader){
-
-    $results = $reader->get();    
-  
-    foreach ($results as $result) {
-
-    $name = explode(':', $result->employee);
-
-    
-
-    
-    $employeeid = DB::table('employee')->where('personal_file_number', '=', $name[0])->pluck('id')[0];
-
-    $deductionid = DB::table('deductions')->where('deduction_name', '=', $result->deduction_type)->pluck('id')[0];
-
-    $deduction = new EDeduction;
-
-    $deduction->employee_id = $employeeid;
-
-    $deduction->deduction_id = $deductionid;
-
-    $deduction->deduction_amount = $result->amount;
-
-    $deduction->deduction_date = $result->date;
-
-    $deduction->save();
-
-    
-      
-    }
-    
-
-    
-
-  });
-
-    Audit::logaudit('Deduction', 'upload', 'uploaded deduction template');
-
-      
-    }
-
-
-
-  return Redirect::back()->with('notice', 'deductions have been succefully imported');
-
-
-
-  
-
-});
-
-
-
 
 
 
@@ -2096,6 +1361,8 @@ Route::get('template/employees', function(){
 
   $jobgroup_data = Jobgroup::where('organization_id',Auth::user()->organization_id)->get();
 
+  Audit::logaudit('Employee', 'download', 'downloaded employee template');
+
   Excel::create('Employees', function($excel) use($bank_data, $bankbranch_data, $branch_data, $department_data, $employeetype_data, $jobgroup_data,$employees, $data) {
 
 
@@ -2156,6 +1423,7 @@ Route::get('template/allowances', function(){
   $data = Allowance::where('organization_id',Auth::user()->organization_id)->get();
   $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
+  Audit::logaudit('Allowance', 'download', 'downloaded allowance template');
 
   Excel::create('Allowances', function($excel) use($data, $employees) {
 
@@ -2275,6 +1543,8 @@ Route::get('template/allowances', function(){
 Route::get('template/earnings', function(){
    $data = Employee::where('organization_id',Auth::user()->organization_id)->get();
    $earnings = Earningsetting::all();
+
+   Audit::logaudit('Earning', 'download', 'downloaded earning template');
 
  Excel::create('Earnings', function($excel) use($data, $earnings) {
             require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -2396,6 +1666,8 @@ Route::get('template/reliefs', function(){
   
   $data = Relief::where('organization_id',Auth::user()->organization_id)->get();
 
+  Audit::logaudit('Relief', 'download', 'downloaded relief template');
+
   Excel::create('Reliefs', function($excel) use($employees, $data) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
@@ -2506,6 +1778,7 @@ Route::get('template/deductions', function(){
   $data = Deduction::where('organization_id',Auth::user()->organization_id)->get();
   $employees = Employee::where('organization_id',Auth::user()->organization_id)->get();
 
+  Audit::logaudit('Deduction', 'download', 'downloaded deduction template');
 
   Excel::create('Deductions', function($excel) use($data, $employees) {
 
@@ -2691,7 +1964,7 @@ Route::post('import/employees', function(){
    
   }
 
-
+  Audit::logaudit('Employee', 'import', 'imported employees');
 
   return Redirect::back()->with('notice', 'Employees have been succeffully imported');
 
@@ -2807,7 +2080,7 @@ Route::post('import/earnings', function(){
       
     }
 
-
+Audit::logaudit('Earning', 'import', 'imported employee earnings');
 
  return Redirect::back()->with('notice', 'earnings have been successfully imported');
 
@@ -2875,7 +2148,7 @@ Route::post('import/reliefs', function(){
     }
 
 
-
+  Audit::logaudit('Relief', 'import', 'imported employee reliefs');
   return Redirect::back()->with('notice', 'reliefs have been succeffully imported');
 
 
@@ -2987,7 +2260,7 @@ Route::post('import/allowances', function(){
     }
 
 
-
+Audit::logaudit('allowance', 'import', 'imported employee allowances');
   return Redirect::back()->with('notice', 'allowances have been succefully imported');
 
 
@@ -3087,11 +2360,93 @@ Route::post('import/deductions', function(){
       
     }
 
+    Audit::logaudit('Deduction', 'import', 'imported employee deductions');
+
   return Redirect::back()->with('notice', 'deductions have been succefully imported');
   
 
 });
 
+/* #################### IMPORT PENSIONS ################################## */
+
+Route::post('import/pensions', function(){
+
+  
+  if(Input::hasFile('pensions')){
+
+
+      $destination = public_path().'/migrations/';
+
+      $filename = str_random(12);
+
+      $ext = Input::file('pensions')->getClientOriginalExtension();
+      $file = $filename.'.'.$ext;
+
+
+
+      
+      
+     
+      Input::file('pensions')->move($destination, $file);
+
+
+  
+
+
+  Excel::selectSheetsByIndex(0)->load(public_path().'/migrations/'.$file, function($reader){
+
+    $results = $reader->get();    
+  
+    foreach ($results as $result) {
+
+      if($result->employee != null){
+
+
+    $name = explode(':', $result->employee);
+    
+    $employeeid = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('id')[0];
+    $salary = DB::table('employee')->where('organization_id',Auth::user()->organization_id)->where('personal_file_number', '=', $name[0])->pluck('basic_pay')[0];
+
+    $pension = new Pension;
+
+    $pension->employee_id = $employeeid;
+
+    $pension->type = $result->formular;
+
+    if($result->formular == "Percentage"){
+    $pension->employee_percentage = str_replace( '%', '', $result->employee_percentage);
+    $pension->employee_contribution = str_replace( '%', '', $result->employee_percentage) * $salary/100;
+    }else{
+    $pension->employer_percentage = 0;
+    $pension->employee_contribution = str_replace( ',', '', $result->employee_contribution);
+    }
+    if($result->formular == "Percentage"){
+    $pension->employer_percentage = str_replace( '%', '', $result->employee_percentage);
+    $pension->employer_contribution = str_replace( '%', '', $result->employer_percentage) * $salary/100;
+    }else{
+    $pension->employer_percentage = 0;
+    $pension->employer_contribution = str_replace( ',', '', $result->employer_contribution);
+    }
+    $pension->interest = $result->interest;
+    $pension->comments = $result->comment;
+    $pension->month = $result->year;
+    $pension->month = $result->month;
+    $pension->save();
+
+    }
+      
+    }
+    
+
+  });
+      
+    }
+
+  Audit::logaudit('Pension', 'import', 'imported employee pension contributions');
+  return Redirect::back()->with('notice', 'pension contributions have been succefully imported');
+  
+
+});
 
 
 /* #################### IMPORT BANK BRANCHES ################################## */
@@ -3143,7 +2498,7 @@ Route::post('import/bankBranches', function(){
   });
       
     }
-
+  Audit::logaudit('Bank Branch', 'import', 'imported bank branches');
 
   return Redirect::back()->with('notice', 'bank branches have been succefully imported');
 
@@ -3199,6 +2554,7 @@ Route::post('import/banks', function(){
       
     }
 
+  Audit::logaudit('Bank', 'import', 'imported banks');
 
   return Redirect::back()->with('notice', 'banks have been succefully imported');
 

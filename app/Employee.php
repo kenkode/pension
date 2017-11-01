@@ -170,6 +170,11 @@ class Employee extends Model {
 		return $this->hasMany('App\Education');
 	}
 
+	public function pension(){
+
+		return $this->hasMany('App\Pension');
+	}
+
 
 	public static function getEmployeeName($id){
 

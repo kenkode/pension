@@ -178,6 +178,38 @@
 
 <div class="col-lg-12">
     <hr>
+</div>
+<div class="col-lg-12">
+<div class="col-lg-4">
+<p><strong>Migrate Pension Contributions</strong></p>
+
+<a href="{{URL::to('template/pensions')}}" > <i class="glyphicon glyphicon-file"></i> Download Pension Contributions Template</a>
+    <p>&nbsp;</p>
+  </div>
+
+    <form method="post" action="{{URL::to('import/pensions')}}" accept-charset="UTF-8" enctype="multipart/form-data">
+      {{ csrf_field() }}
+<div class="col-lg-4">
+      <div class="form-group">
+
+        <label>Upload Pension Contributions (excel)</label>
+        <input type="file" class="" name="pensions" />
+            
+    </div>
+    </div>
+
+    <div class="col-lg-4">
+      
+      <button type="submit" class="btn btn-primary">Import Pension Contributions</button>
+</div>
+    </form>
+</div>
+
+ <!-- ############################################################  -->
+
+
+<div class="col-lg-12">
+    <hr>
   </div>
 
 <div class="col-lg-12">

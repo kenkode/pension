@@ -23,4 +23,9 @@ class Pension extends Model
         $this->save();
      }
 
+     public function employee(){
+
+        return $this->belongsTo('App\Employee');
+    }
+
 }

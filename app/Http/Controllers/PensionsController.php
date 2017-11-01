@@ -7,6 +7,11 @@ use App\User;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use DB;
+use Entrust;
+use Redirect;
+use App\Audit;
+
 class PensionsController extends Controller
 {
     /**
@@ -18,7 +23,14 @@ class PensionsController extends Controller
     {
          $data['deductions']= Pension::all();
 
+         if ( !Entrust::can('view_pension') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Audit::logaudit('Pension', 'view', 'viewed employee pension');
+
          return view('pensions.index',$data);
+       }
       
     }
 
@@ -38,7 +50,16 @@ class PensionsController extends Controller
      */
     public function create()
     {
-      return view('pensions.import'); 
+      $employees = DB::table('employee')
+              ->where('in_employment','=','Y')
+              ->where('employee.organization_id',Auth::user()->organization_id)
+              ->get();
+      if ( !Entrust::can('create_pension') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+      return view('pensions.create',compact('employees')); 
+    }
     }
 
     /**
@@ -51,9 +72,25 @@ class PensionsController extends Controller
     {
 
     
-    Pension::create($request->all());
+    //Pension::create($request->all());
 
-    return redirect('pensions');
+        $pension = new Pension;
+
+        $pension->employee_id = $request->employee;
+        $pension->employee_contribution=str_replace(",","",$request->employeecont);
+        $pension->employer_contribution=str_replace(",","",$request->employercont);
+        $pension->employee_percentage=str_replace(",","",$request->pemployeecont);
+        $pension->employer_percentage=str_replace(",","",$request->pemployercont);
+        $pension->interest=str_replace(",","",$request->interest);
+        $pension->comments =$request->comment;
+        $pension->month= $request->month;
+        $pension->year= $request->year;
+        $pension->type=$request->formular;
+        $pension->save();
+
+    Audit::logaudit('Pension', 'create', 'created pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' for month '.$pension->month.' and year '.$pension->year);
+
+    return redirect('pensions')->withFlashMessage('Pension contribution successfully created!');
     }
 
     /**
@@ -64,9 +101,9 @@ class PensionsController extends Controller
      */
     public function show($id)
     {
-      $data['user']=User::find($id);
+      $data['pension']=Pension::find($id);
 
-      return view('pensions.create',$data);
+      return view('pensions.view',$data);
     }
 
     /**
@@ -77,11 +114,15 @@ class PensionsController extends Controller
      */
     public function edit($id)
     {
-        $data['deduction']=Pension::find($id);
+        $data['pension']=Pension::find($id);
 
        // return $data;
-
+        if ( !Entrust::can('update_pension') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
         return view('pensions.edit',$data);
+      }
     }
 
     /**
@@ -91,18 +132,31 @@ class PensionsController extends Controller
      * @param  \App\Deductions  $deductions
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Deductions $deductions)
+    public function update($id, Request $request)
     {
 
-       $deduction=Pension::find($request->id);
+       $pension=Pension::find($id);
        
-       $deduction->update(array('employee_contribution'=>$request->employee_contribution,
+       /*$deduction->update(array('employee_contribution'=>$request->employee_contribution,
                                  'employer_contribution'=>$request->employer_contribution,
                                  'interest'=>$request->interest,
                                  'monthly_deduction'=>$request->monthly_deduction,
-                                 'comments'=>$request->comments)); 
+                                 'comments'=>$request->comments)); */
 
-       return redirect('pensions');
+        $pension->employee_contribution=str_replace(",","",$request->employeecont);
+        $pension->employer_contribution=str_replace(",","",$request->employercont);
+        $pension->employee_percentage=str_replace(",","",$request->pemployeecont);
+        $pension->employer_percentage=str_replace(",","",$request->pemployercont);
+        $pension->interest=str_replace(",","",$request->interest);
+        $pension->comments =$request->comment;
+        $pension->month= $request->month;
+        $pension->year= $request->year;
+        $pension->type=$request->formular;
+        $pension->update();
+
+       Audit::logaudit('Pension', 'update', 'updated pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' for month '.$pension->month.' and year '.$pension->year);
+
+    return redirect('pensions')->withFlashMessage('Pension contribution successfully created!');
     }
 
     /**
@@ -113,9 +167,16 @@ class PensionsController extends Controller
      */
     public function destroy($id)
     {
-        
-         Deductions::find($id)->delete();
-        return redirect('pensions');
+        $pension=Pension::find($id);
+        if ( !Entrust::can('delete_pension') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+        Pension::find($id)->delete();
+        Audit::logaudit('Pension', 'delete', 'deleted pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' for month '.$pension->month.' and year '.$pension->year);
+
+    return redirect('pensions')->withDeleteMessage('Pension contribution successfully deleted!');
+    }
     }
 
 
