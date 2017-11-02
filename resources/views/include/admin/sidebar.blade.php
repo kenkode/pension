@@ -239,6 +239,11 @@
                                 <a href="{{ URL::to('payrollReports/selectDeduction') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Deduction Report</a>
                             </li>  
                              @endif
+                             @if ( Entrust::can('pension_report') )
+                            <li>
+                                <a href="{{ URL::to('payrollReports/selectPension') }}" ><i class="glyphicon glyphicon-file fa-fw"></i> Pension Report</a>
+                            </li>  
+                             @endif
                              @if ( Entrust::can('view_relief_report') )
                             <li>
                                 <a href="{{ URL::to('payrollReports/selectRelief') }}"><i class="glyphicon glyphicon-file fa-fw"></i> Relief Report</a>

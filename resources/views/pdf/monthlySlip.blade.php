@@ -185,6 +185,9 @@ body {
         @else
         @endif
 
+        <tr><td>Pension Contribution
+            : </td><td align='right'>{{ Payroll::processedpensions($emp->personal_file_number,$period) }}</td></tr>
+
         <tr><td><strong>TOTAL DEDUCTIONS
             : </strong></td><td align='right'><strong>{{ Payroll::processedtotaldeds($emp->personal_file_number,$period) }}</strong></td></tr>
 
@@ -375,6 +378,9 @@ body {
         @else
         @endif
        @endforeach
+
+       <tr><td>Pension Contribution
+            : </td><td align='right'>{{ Payroll::asMoney($pension->employee_amount) }}</td></tr>
 
         <tr><td><strong>TOTAL DEDUCTIONS
             : </strong></td><td align='right'><strong>{{ Payroll::asMoney($transact->total_deductions) }}</strong></td></tr>

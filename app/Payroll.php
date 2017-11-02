@@ -1241,6 +1241,19 @@ public static $rules = [
 
     }
 
+    public static function processedpensions($id,$period){
+    
+    $pension = DB::table('transact_pensions')
+                     ->join('employee','transact_pensions.employee_id','=','employee.id')
+                     ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee_amount'))
+                     ->where('financial_month_year' ,'=', $period)
+                     ->where('employee.personal_file_number', '=', $id)
+                     ->first();
+    
+    return  number_format($pension->employee_amount,2);
+
+    }
+
     public static function processedgross($id,$period){
 
     $gross = 0.00;

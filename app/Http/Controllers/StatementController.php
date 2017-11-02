@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Deductions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use DB;
+use App\Employee;
 
 class StatementController extends Controller
 {
@@ -15,8 +17,9 @@ class StatementController extends Controller
      */
     public function index()
     {
-        $data['deductions'] = Deductions::select('*')
-               ->where('payroll_no', '=',Auth::user()->payroll_no)
+        $employeeid = Employee::where("personal_file_number",Auth::user()->name)->pluck("id")[0];
+        $data['deductions'] = DB::table("transact_pensions")->select('*')
+               ->where('employee_id', '=',$employeeid)
                ->orderby('year','DESC') 
                ->orderby('id','DESC') 
                ->get();

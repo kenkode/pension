@@ -2028,6 +2028,14 @@ class ReportsController extends Controller {
             ->select('relief_name',DB::raw('COALESCE(sum(relief_amount),0.00) as relief_amount'))
             ->get();
 
+        $pension = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('financial_month_year' ,'=', Input::get('period'))
+            ->where('employee.id' ,'=', $employee->id)
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee_amount'))
+            ->first();
+
           $save = '';
 
           $name = '';
@@ -2065,7 +2073,7 @@ class ReportsController extends Controller {
         
      
     
-  Excel::create('Payslips', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency) {
+  Excel::create('Payslips', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$pension,$organization,$currency) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -2076,7 +2084,7 @@ class ReportsController extends Controller {
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Payslip', function($sheet) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency,$objPHPExcel){
+    $excel->sheet('Payslip', function($sheet) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$pension,$organization,$currency,$objPHPExcel){
               
 
               $sheet->row(1, array(
@@ -2377,10 +2385,14 @@ class ReportsController extends Controller {
              }
 
              $sheet->row($c, array(
+              'PENSION CONTRIBUTION:',$pension->employes_amount
+              ));
+
+             $sheet->row($c, array(
               'TOTAL DEDUCTIONS:',$data->total_deductions
               ));
 
-             $sheet->row($c, function($cell) {
+             $sheet->row($c+1, function($cell) {
 
                // manipulate the cell
                 $cell->setFontWeight('bold');
@@ -2394,7 +2406,7 @@ class ReportsController extends Controller {
 
               }); 
 
-              $sheet->row($c+1, array(
+              $sheet->row($c+2, array(
               'NET PAY:',$data->net
               ));
 
@@ -2406,6 +2418,20 @@ class ReportsController extends Controller {
               });
 
               $sheet->cell('B'.($c+1), function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              }); 
+
+              $sheet->row($c+2, function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->cell('B'.($c+2), function($cell) {
 
                // manipulate the cell
                 $cell->setAlignment('right');
@@ -2484,6 +2510,14 @@ class ReportsController extends Controller {
             ->select('relief_name',DB::raw('COALESCE(sum(relief_amount),0.00) as relief_amount'))
             ->get();
 
+         $pension = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('financial_month_year' ,'=', Input::get('period'))
+            ->where('employee.id' ,'=', Input::get('employeeid'))
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee_amount'))
+            ->first();
+
           $save = '';
 
           $name = '';
@@ -2521,7 +2555,7 @@ class ReportsController extends Controller {
         Audit::logaudit('Payslip', 'view', 'viewed payslip for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.Input::get('period'));
      
     
-  Excel::create($save.'_'.$month.' Payslip', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency) {
+  Excel::create($save.'_'.$month.' Payslip', function($excel) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$pension,$organization,$currency) {
 
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
     require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
@@ -2532,7 +2566,7 @@ class ReportsController extends Controller {
    $objPHPExcel->setActiveSheetIndex(0); 
     
 
-    $excel->sheet('Payslip', function($sheet) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency,$objPHPExcel){
+    $excel->sheet('Payslip', function($sheet) use($data,$nontaxables,$name,$period,$employee,$allws,$earnings,$overtimes,$rels,$deds,$organization,$currency,$pension,$objPHPExcel){
               
 
               $sheet->row(1, array(
@@ -2833,7 +2867,7 @@ class ReportsController extends Controller {
              }
 
              $sheet->row($c, array(
-              'TOTAL DEDUCTIONS:',$data->total_deductions
+              'PENSION CONTRIBUTION:',$pension->employee_amount
               ));
 
              $sheet->row($c, function($cell) {
@@ -2851,7 +2885,7 @@ class ReportsController extends Controller {
               }); 
 
               $sheet->row($c+1, array(
-              'NET PAY:',$data->net
+              'TOTAL DEDUCTIONS:',$data->total_deductions
               ));
 
              $sheet->row($c+1, function($cell) {
@@ -2861,7 +2895,25 @@ class ReportsController extends Controller {
 
               });
 
-              $sheet->cell('B'.($c+1), function($cell) {
+              $sheet->cell('B'.$c+1, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              }); 
+
+              $sheet->row($c+2, array(
+              'NET PAY:',$data->net
+              ));
+
+             $sheet->row($c+2, function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->cell('B'.($c+2), function($cell) {
 
                // manipulate the cell
                 $cell->setAlignment('right');
@@ -3027,11 +3079,19 @@ class ReportsController extends Controller {
             ->select('shortname')
             ->first();
 
+        $pension = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('financial_month_year' ,'=', Input::get('period'))
+            ->where('employee.id' ,'=', Input::get('employeeid'))
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee_amount'))
+            ->first();
+
     $organization = Organization::find(Auth::user()->organization_id);
 
     Audit::logaudit('Payslip', 'view', 'viewed payslip for '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.Input::get('period'));
 
-    $pdf = PDF::loadView('pdf.monthlySlip', compact('nontaxables','empall','select','name','employee','transact','allws','deds','earnings','overtimes','rels','period','currency', 'organization','id'))->setPaper('a5');
+    $pdf = PDF::loadView('pdf.monthlySlip', compact('nontaxables','empall','select','name','employee','transact','allws','deds','earnings','overtimes','pension','rels','period','currency', 'organization','id'))->setPaper('a5');
   
     return $pdf->stream($employee->personal_file_number.'_'.$employee->first_name.'_'.$employee->last_name.'_'.$month.'.pdf');
     }
@@ -5863,6 +5923,740 @@ class ReportsController extends Controller {
     
   }
 
+
+  public function employee_pensions()
+  {
+
+    if ( !Entrust::can('view_deduction_report') ) // Checks the current user
+        {
+        return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
+        }else{
+    $employees = Employee::all();
+    $branches = Branch::all();
+    $departments = Department::all();
+    return view('pdf.pensionSelect',compact('employees','branches','departments'));
+  }
+  }
+
+    public function pensions(){
+
+     //$to   = explode("-", Input::get('to'));
+      //return $to[0];
+      
+         if(Input::get('format') == "excel"){
+          if(Input::get('employeeid') == 'All'){
+            $from = explode("-", Input::get('from'));
+              $to   = explode("-", Input::get('to'));
+            if(Input::get('type') == 'All'){
+              
+     $data = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();    
+
+     $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+    }else{
+      $data = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();   
+
+            //return $data; 
+
+     $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+    }
+    $organization = Organization::find(Auth::user()->organization_id);
+
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+    //$part = explode("-", Input::get('period'));
+              
+              $f = "";
+              $t = "";
+
+
+              if(strlen($from[0]) == 1){
+                $f = "0".$from[0];
+              }else{
+                $f = $from[0];
+              }
+
+              if(strlen($to[0]) == 1){
+                $t = "0".$to[0];
+              }else{
+                $t = $to[0];
+              }
+              
+              $month = $f."-".$from[1].$t."-".$to[1];
+              $period = $f."-".$from[1]." to ".$t."-".$to[1];
+
+  Audit::logaudit('Pension Report', 'view', 'viewed pension contribution report for period '.Input::get('period'));
+    
+  Excel::create('Pension Contributions Report '.$month, function($excel) use($data,$currency,$total,$organization,$period) {
+
+    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
+    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
+
+
+   $objPHPExcel = new PHPExcel(); 
+   // Set the active Excel worksheet to sheet 0
+   $objPHPExcel->setActiveSheetIndex(0); 
+    
+
+    $excel->sheet('Pension', function($sheet) use($data,$total,$currency,$organization,$objPHPExcel,$period){
+              $sheet->row(1, array(
+              'Organization Name: ',$organization->name
+              ));
+              
+              $sheet->cell('A1', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              
+
+              $sheet->row(2, array(
+              'Report name: ', 'Pension Contributions Report'
+              ));
+
+              $sheet->cell('A2', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->row(3, array(
+              'Currency: ', $currency->shortname
+              ));
+
+              $sheet->cell('A3', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->row(4, array(
+              'Period: ',$period
+              ));
+
+              $sheet->cell('A4', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+                 
+              $sheet->mergeCells('A6:H6');
+              $sheet->row(6, array(
+              'Pension Contributions Report'
+              ));
+
+              $sheet->row(6, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('center');
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->row(8, array(
+              'YEAR','MONTH','PERSONAL FILE NUMBER', 'EMPLOYEE', 'EMPLOYEE CONTRIBUTION', 'EMPLOYEE PERCENTAGE (%)', 'EMPLOYER CONTRIBUTION', 'EMPLOYER PERCENTAGE (%)', 'INTEREST', 'MONTH CONTRIBUTION','COMMENTS'
+              ));
+
+              $sheet->row(8, function ($r) {
+
+             // call cell manipulation methods
+              $r->setFontWeight('bold');
+ 
+              });
+               
+            $row = 9;
+             
+             $cont = 0;
+             for($i = 0; $i<count($data); $i++){
+
+              $name = '';
+
+              if($data[$i]->middle_name == '' || $data[$i]->middle_name == null){
+               $name= $data[$i]->first_name.' '.$data[$i]->last_name;
+             }else{
+               $name=$data[$i]->first_name.' '.$data[$i]->middle_name.' '.$data[$i]->last_name;
+             }
+
+             $interest = 0;
+             if($data[$i]->interest == '' || $data[$i]->interest == null){
+               $interest = 0;
+             }else{
+               $interest = $data[$i]->interest;
+             }
+            
+             $sheet->row($row, array(
+             $data[$i]->year,date('F',strtotime(date("Y") ."-".$data[$i]->month."-01")),$data[$i]->personal_file_number,$name,$data[$i]->employee_amount,$data[$i]->employee_percentage,$data[$i]->employer_amount,$data[$i]->employer_percentage,$interest,($data[$i]->employee_amount+$data[$i]->employer_amount),$data[$i]->comments
+             ));
+
+             $cont = $cont + $data[$i]->employee_amount+$data[$i]->employer_amount;
+
+             $sheet->cell('E'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+             $sheet->cell('G'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+             $sheet->cell('I'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+             $sheet->cell('J'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+             $row++;
+             
+             }       
+             $sheet->row($row, array(
+             '','','','Total',$total->total_employee,'',$total->total_employer,'',$total->total_interest,$cont
+             ));
+            $sheet->row($row, function ($r) {
+
+            // call cell manipulation methods
+            $r->setFontWeight('bold');
+
+        });
+
+            
+            $sheet->cell('E'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+            $sheet->cell('G'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+            $sheet->cell('I'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+            $sheet->cell('J'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+             
+    });
+
+  })->download('xls');
+  }else{
+    $type = Input::get('employeeid');
+    $from = explode("-", Input::get('from'));
+    $to   = explode("-", Input::get('to'));
+    if(Input::get('type') == 'All'){
+    $data = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('transact_pensions.employee_id' ,'=', Input::get('employeeid'))
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();    
+
+     $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->where('transact_pensions.employee_id' ,'=', Input::get('employeeid'))
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+
+
+    }else{
+    $data = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('transact_pensions.employee_id' ,'=', Input::get('employeeid'))
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();
+
+    $total = DB::table('transact_pensions')
+                  ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+                  ->where('employee.organization_id',Auth::user()->organization_id)
+                  ->where('transact_pensions.employee_id' ,'=', Input::get('employeeid'))
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+    }
+    $organization = Organization::find(Auth::user()->organization_id);
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+    $employee = Employee::find(Input::get("employeeid"));
+
+    $f = "";
+              $t = "";
+
+
+              if(strlen($from[0]) == 1){
+                $f = "0".$from[0];
+              }else{
+                $f = $from[0];
+              }
+
+              if(strlen($to[0]) == 1){
+                $t = "0".$to[0];
+              }else{
+                $t = $to[0];
+              }
+              
+              $month = $f."-".$from[1].$t."-".$to[1];
+              $period = $f."-".$from[1]." to ".$t."-".$to[1];
+
+  Audit::logaudit('Pension Report', 'view', 'viewed pension contribution report for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.Input::get('period'));
+    
+  Excel::create('Pension Contributions Report '.$month, function($excel) use($data,$total,$type,$currency,$organization,$employee,$period) {
+
+    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/NamedRange.php");
+    require_once(base_path()."/vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
+
+
+   $objPHPExcel = new PHPExcel(); 
+   // Set the active Excel worksheet to sheet 0
+   $objPHPExcel->setActiveSheetIndex(0); 
+    
+
+    $excel->sheet('Pension', function($sheet) use($data,$total,$type,$currency,$organization,$objPHPExcel,$employee,$period){
+
+    $sheet->row(1, array(
+              'Organization Name: ',$organization->name
+              ));
+              
+              $sheet->cell('A1', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              
+
+              $sheet->row(2, array(
+              'Report name: ', 'Pension Contributions Report'
+              ));
+
+              $sheet->cell('A2', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->row(3, array(
+              'Currency: ', $currency->shortname
+              ));
+
+              $sheet->cell('A3', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->row(4, array(
+              'Period: ', $period
+              ));
+
+              $sheet->cell('A4', function($cell) {
+
+               // manipulate the cell
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->mergeCells('A6:F6');
+              $sheet->row(6, array(
+              'Pension Contribution Report for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name
+              ));
+
+              $sheet->row(6, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('center');
+                $cell->setFontWeight('bold');
+
+              });
+
+              $sheet->row(8, array(
+               'YEAR','MONTH','EMPLOYEE CONTRIBUTION','EMPLOYEE PERCENTAGE (%)','EMPLOYER CONTRIBUTION','EMPLOYER PERCENTAGE (%)','INTEREST','MONTH CONTRIBUTION','COMMENTS'
+              ));
+
+              $sheet->row(8, function ($r) {
+
+             // call cell manipulation methods
+              $r->setFontWeight('bold');
+ 
+              });
+               
+            $row = 9;
+
+            $cont = 0;
+             
+             for($i = 0; $i<count($data); $i++){
+
+              $name = '';
+              $interest = 0;
+
+              if($data[$i]->middle_name == '' || $data[$i]->middle_name == null){
+               $name= $data[$i]->first_name.' '.$data[$i]->last_name;
+             }else{
+               $name=$data[$i]->first_name.' '.$data[$i]->middle_name.' '.$data[$i]->last_name;
+             }
+
+             if($data[$i]->interest == '' || $data[$i]->interest == null){
+               $interest = 0;
+             }else{
+               $interest = $data[$i]->interest;
+             }
+            
+             $sheet->row($row, array(
+             $data[$i]->year,date('F',strtotime(date("Y") ."-".$data[$i]->month."-01")),$data[$i]->employee_amount,$data[$i]->employee_percentage,$data[$i]->employer_amount,$data[$i]->employer_percentage,$interest,($data[$i]->employee_amount+$data[$i]->employer_amount),$data[$i]->comments
+             ));
+
+             $cont = $cont + $data[$i]->employee_amount+$data[$i]->employer_amount;
+
+             $sheet->cell('C'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+             $sheet->cell('E'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+             $sheet->cell('G'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+             $sheet->cell('H'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+             
+             $row++;
+             
+             }       
+             $sheet->row($row, array(
+             '','',$total->total_employee,'',$total->total_employer,'',$total->total_interest,$cont
+             ));
+            $sheet->row($row, function ($r) {
+
+            // call cell manipulation methods
+            $r->setFontWeight('bold');
+
+        });
+
+            $sheet->cell('C'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+            $sheet->cell('E'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+            $sheet->cell('G'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+
+            $sheet->cell('H'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
+             
+    });
+
+  })->download('xls');
+  }
+  }else if(Input::get('format') == "pdf"){
+    $from = explode("-", Input::get('from'));
+    $to   = explode("-", Input::get('to'));
+      if(Input::get('employeeid') == 'All'){
+        $type = "All";
+
+        if(Input::get('type') == 'All'){
+        $pensions = DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();   
+
+            //return $data; 
+
+     $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+        }else{
+          $pensions =DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();   
+
+            //return $data; 
+
+         $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+        }
+        $currencies = DB::table('currencies')
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
+            ->select('shortname')
+            ->get();
+
+              
+          
+    $organization = Organization::find(Auth::user()->organization_id);
+
+    $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
+
+    //$part = explode("-", Input::get('period'));
+              
+              $f = "";
+              $t = "";
+
+
+              if(strlen($from[0]) == 1){
+                $f = "0".$from[0];
+              }else{
+                $f = $from[0];
+              }
+
+              if(strlen($to[0]) == 1){
+                $t = "0".$to[0];
+              }else{
+                $t = $to[0];
+              }
+              
+              $month = $f."_".$from[1].$t."_".$to[1];
+              $period = $f."-".$from[1]." to ".$t."-".$to[1];
+
+    $organization = Organization::find(Auth::user()->organization_id);
+
+    Audit::logaudit('Pension Report', 'view', 'viewed pension contributions report for period '.$period);
+
+    $pdf = PDF::loadView('pdf.pensionReport', compact('pensions','type','period','currencies','total', 'organization'))->setPaper('a4');
+  
+    return $pdf->stream('Pension_Contrbutions_Report_'.$month.'.pdf');
+    }else{
+        $type = Input::get("employeeid");
+        if(Input::get('type') == 'All'){
+      $pensions =DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->where('employee_id',Input::get("employeeid"))
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();   
+
+            //return $data; 
+
+         $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->where('employee_id',Input::get("employeeid"))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+        }else{
+        $pensions =DB::table('transact_pensions')
+            ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->where('employee_id',Input::get("employeeid"))
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->get();   
+
+            //return $data; 
+
+         $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->where('employee_id',Input::get("employeeid"))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first(); 
+        }
+        $currencies = DB::table('currencies')
+            ->whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)
+            ->select('shortname')
+            ->get();
+
+            $f = "";
+              $t = "";
+
+
+              if(strlen($from[0]) == 1){
+                $f = "0".$from[0];
+              }else{
+                $f = $from[0];
+              }
+
+              if(strlen($to[0]) == 1){
+                $t = "0".$to[0];
+              }else{
+                $t = $to[0];
+              }
+              
+              $month = $f."_".$from[1].$t."_".$to[1];
+              $period = $f."-".$from[1]." to ".$t."-".$to[1];
+
+              $employee = Employee::find(Input::get("employeeid"));
+
+    Audit::logaudit('Pension Report', 'view', 'viewed pension contributions report for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.$period);
+
+    $organization = Organization::find(Auth::user()->organization_id);
+
+    $pdf = PDF::loadView('pdf.pensionReport', compact('pensions','employee','type','period','currencies', 'total','organization'))->setPaper('a4');
+  
+    return $pdf->stream('Pension_Contributions_Report_'.$month.'.pdf');
+    }
+    }else{
+      $from = explode("-", Input::get('from'));
+      $to   = explode("-", Input::get('to'));
+      if(Input::get("employeeid") == "All"){
+        return Redirect::to('payrollReports/selectPension')->withDeleteMessage('Please select an employee!');
+      }else if(Input::get("from") == "" || Input::get("to") == ""){
+        return Redirect::to('payrollReports/selectPension')->withDeleteMessage('Please select period!');
+      }else{
+        $pensions =DB::table('transact_pensions')
+            ->where('employee_id',Input::get("employeeid"))
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->groupBy('month','year')
+            ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
+            ->get();   
+
+        $m=DB::table("transact_pensions")->groupBy('month','year')
+                   ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
+                   ->where('employee_id','=',Input::get("employeeid"))
+                   ->orderBy('sum')
+                   ->first();
+
+        $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->where('employee_id',Input::get("employeeid"))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->first();
+
+        $max = 0;
+
+        if(count($pensions) > 0){
+        $max = $m->sum;
+        }else{
+        $max = 0;  
+        }
+        $employee = Employee::find(Input::get("employeeid"));
+        $f = "";
+              $t = "";
+
+
+              if(strlen($from[0]) == 1){
+                $f = "0".$from[0];
+              }else{
+                $f = $from[0];
+              }
+
+              if(strlen($to[0]) == 1){
+                $t = "0".$to[0];
+              }else{
+                $t = $to[0];
+              }
+              
+              $month = $f."_".$from[1].$t."_".$to[1];
+              $period = $f."-".$from[1]." to ".$t."-".$to[1];
+
+        Audit::logaudit('Pension Graph', 'view', 'viewed pension contributions graph for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' for period '.$period);
+        return view('pdf.graph',compact('max','pensions','employee','total','period'));
+      }
+    }
+  
+    
+  }
 
   public function employeenontaxableselect()
   {

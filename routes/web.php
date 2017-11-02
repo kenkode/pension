@@ -657,6 +657,8 @@ Route::get('payrollReports/selectRelief', 'ReportsController@employee_reliefs');
 Route::post('payrollReports/reliefs', 'ReportsController@reliefs');
 Route::get('payrollReports/selectDeduction', 'ReportsController@employee_deductions');
 Route::post('payrollReports/deductions', 'ReportsController@deductions');
+Route::get('payrollReports/selectPension', 'ReportsController@employee_pensions');
+Route::post('payrollReports/pensions', 'ReportsController@pensions');
 Route::get('payrollReports/selectnontaxableincome', 'ReportsController@employeenontaxableselect');
 Route::post('payrollReports/nontaxables', 'ReportsController@employeenontaxables');
 Route::get('payrollReports/selectPayePeriod', 'ReportsController@period_paye');

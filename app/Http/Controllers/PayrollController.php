@@ -1830,7 +1830,8 @@ $display .="
         'employer_percentage' => $pension->employer_percentage,
         'financial_month_year'=>Input::get('period'),
         'interest'=>$pension->interest,
-        'month'=>$pension->month,
+        'comments'=>$pension->comments,
+        'month'=>date('n',strtotime($pension->month)),
         'year'=>$pension->year
         ]
         );
