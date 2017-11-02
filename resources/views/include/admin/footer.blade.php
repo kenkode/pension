@@ -92,7 +92,7 @@
 
         foreach($deductions as $deduction){
        
-           $data4.="[gd(".$deduction->year.", ".date('n',strtotime($deduction->month)).", 1), ".$deduction->sum."],";
+           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".$deduction->sum."],";
 
         }
 
