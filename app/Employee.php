@@ -175,6 +175,11 @@ class Employee extends Model {
 		return $this->hasMany('App\Pension');
 	}
 
+	public function remittedemployee(){
+
+		return $this->hasMany('App\Remittedemployee');
+	}
+
 
 	public static function getEmployeeName($id){
 

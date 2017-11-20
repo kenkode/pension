@@ -438,75 +438,13 @@ $('#employee').change(function(){
           </script> 
         </div>
 
-        <div class="form-group int">
-            <label for="username">Interest </label>
-            
-            <input class="form-control" placeholder="" type="text" name="interest" id="interest" value="{{$pension->interest}}">
-           
-           <script type="text/javascript">
-           $(document).ready(function() {
-           $('#interest').priceFormat();
-           });
-          </script> 
-        </div>
-
         <div class="form-group bal_amt" id="bal">
             <label for="username">Total (Click on input field to display total) </label>
             
             <input class="form-control" placeholder="" readonly="readonly" type="text" name="balance" id="balance" value="{{{ Input::old('balance') }}}" onblur="totalBalance()" onfocus="totalBalance()">
             
         </div>
-
-        <div class="form-group">
-            <label for="username">Comment</label>
-            <textarea class="form-control" placeholder="" name="comment" id="comment">{{$pension->comments}}</textarea>
-        </div>
-
-        
-        <div class="form-group">
-                        <label for="username">Month <span style="color:red">*</span></label>
-                        <div class="right-inner-addon ">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control pensionmonth" readonly="readonly" placeholder="" type="text" name="month" id="month" value="{{$pension->month}}">
-                        </div>
-        </div>
-
-        <script type="text/javascript">
-$(function(){ 
-
-$('.pensionmonth').datepicker({
-    format: 'M',
-    viewMode: "months", 
-    minViewMode: "months",
-    autoclose: true
-});
-});
-
-</script>
-
-
-<div class="form-group">
-                        <label for="username">Year <span style="color:red">*</span></label>
-                        <div class="right-inner-addon ">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                        <input class="form-control pensionyear" readonly="readonly" placeholder="" type="text" name="year" id="year" value="{{$pension->year}}">
-                        </div>
-        </div>
-
-        <script type="text/javascript">
-$(function(){ 
-
-$('.pensionyear').datepicker({
-    format: " yyyy", // Notice the Extra space at the beginning
-    viewMode: "years", 
-    minViewMode: "years",
-    autoclose: true
-});
-});
-
-</script>
-
-        
+    
         <div class="form-actions form-group">
         
           <button type="submit" class="btn btn-primary btn-sm">Create Pension</button>

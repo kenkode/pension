@@ -45,12 +45,8 @@ function asMoney($value) {
       <tr><td><strong>Employee Contribution: </strong></td><td>{{number_format($pension->employee_contribution,2)}}</td></tr>
       <tr><td><strong>Employer Percentange: </strong></td><td>{{$pension->employer_percentage}}%</td></tr>
       <tr><td><strong>Employer Contribution: </strong></td><td>{{number_format($pension->employer_contribution,2)}}</td></tr>
-      <tr><td><strong>Interest: </strong></td><td>{{number_format($pension->interest,2)}}</td></tr>
       <tr><td><strong>Total Contribution: </strong></td><td>{{number_format($pension->employee_contribution+$pension->employer_contribution,2)}}</td></tr>
-      <tr><td><strong>Comment: </strong></td><td>{{$pension->comments}}</td></tr>
-      <tr><td><strong>Month: </strong></td><td>{{$pension->month}}</td></tr>
-      <tr><td><strong>Year: </strong></td><td>{{$pension->year}}</td></tr>
-     
+      
 </table>
 </div>
 

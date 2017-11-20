@@ -279,8 +279,8 @@ class EmployeesController extends Controller {
 
             $file = Input::file('image');
             $name = time().'-'.$file->getClientOriginalName();
-            $file = $file->move('public/uploads/employees/photo', $name);
-            $input['file'] = '/public/uploads/employees/photo'.$name;
+            $file = $file->move('uploads/employees/photo', $name);
+            $input['file'] = '/uploads/employees/photo'.$name;
             $employee->photo = $name;
         }else{
         	$employee->photo = 'default_photo.png';
@@ -290,8 +290,8 @@ class EmployeesController extends Controller {
 
             $file = Input::file('signature');
             $name = time().'-'.$file->getClientOriginalName();
-            $file = $file->move('public/uploads/employees/signature/', $name);
-            $input['file'] = '/public/uploads/employees/signature/'.$name;
+            $file = $file->move('uploads/employees/signature/', $name);
+            $input['file'] = '/uploads/employees/signature/'.$name;
             $employee->signature = $name;
         }else{
         	$employee->signature = 'sign_av.jpg';
@@ -617,8 +617,8 @@ class EmployeesController extends Controller {
 
             $file = Input::file('image');
             $name = time().'-'.$file->getClientOriginalName();
-            $file = $file->move('public/uploads/employees/photo', $name);
-            $input['file'] = '/public/uploads/employees/photo'.$name;
+            $file = $file->move('uploads/employees/photo', $name);
+            $input['file'] = '/uploads/employees/photo'.$name;
             $employee->photo = $name;
         }else{
         	$employee->photo = Input::get('photo');
@@ -628,8 +628,8 @@ class EmployeesController extends Controller {
 
             $file = Input::file('signature');
             $name = time().'-'.$file->getClientOriginalName();
-            $file = $file->move('public/uploads/employees/signature/', $name);
-            $input['file'] = '/public/uploads/employees/signature/'.$name;
+            $file = $file->move('uploads/employees/signature/', $name);
+            $input['file'] = '/uploads/employees/signature/'.$name;
             $employee->signature = $name;
         }else{
         	$employee->signature = Input::get('sign');

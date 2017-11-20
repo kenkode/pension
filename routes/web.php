@@ -625,8 +625,24 @@ Route::post('employees/update/{id}', 'EmployeesController@update');
 Route::get('employees/delete/{id}', 'EmployeesController@destroy');
 
 
-
-
+/*
+* Remittances routes
+*/
+Route::get('remitpension', 'RemittancesController@remitpension');
+Route::get('remitpension/create', 'RemittancesController@createpension');
+Route::post('remitpension/store', 'RemittancesController@storepension');
+Route::get('remitpension/view/{id}', 'RemittancesController@employees');
+Route::get('remitpension/finalize/{id}', 'RemittancesController@finalizepension');
+Route::post('remitpension/finalizeupdate/{id}', 'RemittancesController@finalizeupdate');
+Route::get('remitpaye', 'RemittancesController@remitpaye');
+Route::get('remitpaye/create', 'RemittancesController@createpaye');
+Route::post('remitpaye/store', 'RemittancesController@storepaye');
+Route::get('remitnhif', 'RemittancesController@remitnhif');
+Route::get('remitnhif/create', 'RemittancesController@createnhif');
+Route::post('remitnhif/store', 'RemittancesController@storenhif');
+Route::get('remitnssf', 'RemittancesController@remitnssf');
+Route::get('remitnssf/create', 'RemittancesController@createnssf');
+Route::post('remitnssf/store', 'RemittancesController@storenssf');
 
 Route::get('payrollReports', function(){
 

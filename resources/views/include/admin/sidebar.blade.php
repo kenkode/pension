@@ -123,6 +123,31 @@
                             @endif
                             </ul>
                             </li>
+                            <li>
+                            <a href="#"><i class="fa fa-cog fa-fw"></i>Remittances <i class="fa fa-caret-down"></i></a>
+                            <ul class="nav"> 
+                            @if ( Entrust::can('remit_pension') )
+                            <li>
+                              <a href="{{ URL::to('remitpension') }}"><i class="fa fa-credit-card fa-fw"></i>Pension</a>
+                            </li>
+                            @endif
+                            @if ( Entrust::can('remit_tax') )
+                            <li>
+                              <a href="{{ URL::to('remittax') }}"><i class="fa fa-credit-card fa-fw"></i> Paye</a>
+                            </li>
+                            @endif
+                            @if ( Entrust::can('remit_nhif') )
+                            <li>
+                              <a href="{{ URL::to('remitnhif') }}"><i class="fa fa-credit-card fa-fw"></i> NHIF</a>
+                            </li>
+                            @endif
+                            @if ( Entrust::can('remit_nssf') )
+                            <li>
+                              <a href="{{ URL::to('remitnssf') }}"><i class="fa fa-credit-card fa-fw"></i> NSSF</a>
+                            </li>
+                            @endif
+                            </ul>
+                            </li>
                             <li><a href="{{ URL::to('payrollcalculator') }}"><i class="fa fa-calculator fa-fw"></i>Payroll Calculator</a></li>
                             @if ( Entrust::can('email_payslip') )
                             <li><a href="{{ URL::to('email/payslip') }}"><i class="fa fa-envelope fa-fw"></i>Email Payslips</a> </li>

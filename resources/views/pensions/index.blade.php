@@ -53,9 +53,7 @@
                         <th>Employee Percentage (%)</th>
                         <th>Employer Contribution</th>
                         <th>Employer Percentage (%)</th>
-                        <th>Interest</th>
                         <th>Total Contribution</th>
-                        <th>Comments</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -71,9 +69,7 @@
                           <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
                           <td> Ksh {{ number_format(floatval( $deduction->employer_contribution),2)  }}</td>
                           <td>{{ number_format(floatval($deduction->employer_percentage),2) }}</td>
-                          <td> Ksh {{ number_format(floatval( $deduction->interest),2)  }}</td>
                           <td> Ksh {{ number_format(floatval( $deduction->employee_contribution + $deduction->employer_contribution),2)  }}</td>
-                          <td>{{ $deduction->comments }}</td>
                           <td>
 
                   <div class="btn-group">

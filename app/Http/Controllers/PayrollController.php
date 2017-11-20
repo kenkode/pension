@@ -1804,17 +1804,13 @@ $display .="
 
         $cp = DB::table('pensions')
             ->join('employee', 'pensions.employee_id', '=', 'employee.id')
-            ->where('month',$month)
             ->where('in_employment','Y')
-            ->where('year',$part[1])
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->count();
 
         $pensions = DB::table('pensions')
             ->join('employee', 'pensions.employee_id', '=', 'employee.id')
-            ->where('month',$month)
             ->where('in_employment','Y')
-            ->where('year',$part[1])
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->get();
 
@@ -1829,10 +1825,8 @@ $display .="
         'employee_percentage' => $pension->employee_percentage,
         'employer_percentage' => $pension->employer_percentage,
         'financial_month_year'=>Input::get('period'),
-        'interest'=>$pension->interest,
-        'comments'=>$pension->comments,
-        'month'=>date('n',strtotime($pension->month)),
-        'year'=>$pension->year
+        'month'=>$part[0],
+        'year'=>$part[1]
         ]
         );
         }

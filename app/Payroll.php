@@ -1004,8 +1004,6 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(employee_contribution),0.00) as total_contribution')) 
                      ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
-                     ->where('month',$month)
-                     ->where('year',$part[1])
                      ->get();
     foreach($deds as $ded){
     $other_ded = $ded->total_contribution;
@@ -1057,8 +1055,6 @@ public static $rules = [
                      ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('in_employment','Y')
                      ->where('employee_id',$employeeid)
-                     ->where('month',$month)
-                     ->where('year',$part[1])
                      ->get();
     foreach($deds as $ded){
     $other_ded = $ded->total_contribution;
@@ -1108,8 +1104,6 @@ public static $rules = [
                      ->join('employee', 'transact_pensions.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee,COALESCE(sum(employer_amount),0.00) as employer')) 
                      ->where('employee.organization_id',Auth::user()->organization_id)
-                     ->where('month',$month)
-                     ->where('year',$part[1])
                      ->first();
   
     
@@ -1156,8 +1150,6 @@ public static $rules = [
                      ->select(DB::raw('COALESCE(sum(employee_amount),0.00) as employee,COALESCE(sum(employer_amount),0.00) as employer')) 
                      ->where('employee.organization_id',Auth::user()->organization_id)
                      ->where('personal_file_number',$employeeid)
-                     ->where('month',$month)
-                     ->where('year',$part[1])
                      ->first();
     
     return $pension;

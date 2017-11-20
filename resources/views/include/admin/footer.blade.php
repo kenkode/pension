@@ -246,7 +246,7 @@
     <script>
         $(document).ready(function(){
             $('.deductions_tbl').DataTable({
-                pageLength: 25,
+                pageLength: 10,
                 responsive: true,
                 sort:false,
                 dom: '<"html5buttons"B>lTfgitp',

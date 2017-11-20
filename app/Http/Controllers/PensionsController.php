@@ -81,14 +81,10 @@ class PensionsController extends Controller
         $pension->employer_contribution=str_replace(",","",$request->employercont);
         $pension->employee_percentage=str_replace(",","",$request->pemployeecont);
         $pension->employer_percentage=str_replace(",","",$request->pemployercont);
-        $pension->interest=str_replace(",","",$request->interest);
-        $pension->comments =$request->comment;
-        $pension->month= $request->month;
-        $pension->year= $request->year;
         $pension->type=$request->formular;
         $pension->save();
 
-    Audit::logaudit('Pension', 'create', 'created pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' for month '.$pension->month.' and year '.$pension->year);
+    Audit::logaudit('Pension', 'create', 'created pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' employee contribution '.str_replace(",","",$request->employeecont).' and employer contribution '.str_replace(",","",$request->employercont));
 
     return redirect('pensions')->withFlashMessage('Pension contribution successfully created!');
     }
@@ -147,14 +143,10 @@ class PensionsController extends Controller
         $pension->employer_contribution=str_replace(",","",$request->employercont);
         $pension->employee_percentage=str_replace(",","",$request->pemployeecont);
         $pension->employer_percentage=str_replace(",","",$request->pemployercont);
-        $pension->interest=str_replace(",","",$request->interest);
-        $pension->comments =$request->comment;
-        $pension->month= $request->month;
-        $pension->year= $request->year;
         $pension->type=$request->formular;
         $pension->update();
 
-       Audit::logaudit('Pension', 'update', 'updated pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' for month '.$pension->month.' and year '.$pension->year);
+       Audit::logaudit('Pension', 'update', 'updated pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' employee contribution '.str_replace(",","",$request->employeecont).' and employer contribution '.str_replace(",","",$request->employercont));
 
     return redirect('pensions')->withFlashMessage('Pension contribution successfully created!');
     }
@@ -173,7 +165,7 @@ class PensionsController extends Controller
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
         Pension::find($id)->delete();
-        Audit::logaudit('Pension', 'delete', 'deleted pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' for month '.$pension->month.' and year '.$pension->year);
+        Audit::logaudit('Pension', 'delete', 'deleted pension for employee '.$pension->personal_file_number.' : '.$pension->first_name.' '.$pension->last_name.' employee contribution '.str_replace(",","",$request->employeecont).' and employer contribution '.str_replace(",","",$request->employercont));
 
     return redirect('pensions')->withDeleteMessage('Pension contribution successfully deleted!');
     }
