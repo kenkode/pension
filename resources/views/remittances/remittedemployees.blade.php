@@ -37,7 +37,7 @@
 
                         <div class="panel panel-default">
                           <div class="panel-heading">
-                            @if(App\Remittedemployee::getCount($period) < $emps)
+                            @if(App\Remittedemployee::getCount($period,'pension') < $emps)
                             <a class="btn btn-info btn-sm" href="{{ URL::to('remitpension/finalize/'.$id)}}">Finalize Remittance</a>
                             @endif
                             <a class="btn btn-warning btn-sm" href="{{ URL::to('remitpension')}}">Go Back</a>

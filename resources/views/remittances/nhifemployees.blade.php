@@ -1,11 +1,9 @@
 @extends('layouts.app')
 @section('content')
-<?php use App\Http\Controllers\UserController;
-?>
 
      <div class="row">
       <div class="col-lg-12">
-       <h3>Pension</h3>
+       <h3>Nhif</h3>
 
        <hr>
       </div>  
@@ -39,7 +37,10 @@
 
                         <div class="panel panel-default">
                           <div class="panel-heading">
-                            <a class="btn btn-info btn-sm" href="{{ URL::to('remitpension/create')}}">remit pension</a>
+                            @if(App\Remittedemployee::getCount($period,'nhif') < $emps)
+                            <a class="btn btn-info btn-sm" href="{{ URL::to('remitnhif/finalize/'.$id)}}">Finalize Remittance</a>
+                            @endif
+                            <a class="btn btn-warning btn-sm" href="{{ URL::to('remitnhif')}}">Go Back</a>
                           </div>
                         <div class="panel-body">
 
@@ -49,37 +50,20 @@
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Mode</th>
-                        <th>Transaction No.</th>
+                        <th>Employee</th>
+                        <th>Amount</th>
                         <th>Period</th>
-                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       <?php $i=1; ?>
-                    @foreach ($remittances as $remittance)
+                    @foreach ($remittedemployees as $remittedemployee)
 
                       <tr>
                           <td>{{ $i }}</td>
-                          <td>{{ $remittance->mode }}</td>
-                          <td>{{ $remittance->transaction_number }}</td>
-                          <td>{{ $remittance->period }}</td>
-                          <td>
-
-                  <div class="btn-group">
-                  <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    Action <span class="caret"></span>
-                  </button>
-          
-                  <ul class="dropdown-menu" role="menu">
-                     <li><a href="{{URL::to('remitpension/view/'.$remittance->id)}}">View Remitted Employees</a></li> 
-                     @if(App\Remittedemployee::getCount($remittance->period,'pension') < $employees)
-                    <li><a href="{{URL::to('remitpension/finalize/'.$remittance->id)}}">Finalize Remittance</a></li>
-                    @endif
-                  </ul>
-              </div>
-
-                    </td>
+                          <td>{{ $remittedemployee->employee->personal_file_number.' : '.$remittedemployee->employee->first_name.' '.$remittedemployee->employee->last_name }}</td>
+                          <td>Ksh. {{ number_format(App\Transact::getNhif($remittedemployee->employee_id,$period),2) }}</td>
+                          <td>{{ App\Pensioninterest::getPeriod($remittedemployee->employee_id) }}</td>
 
                         </tr>
                         <?php $i++;?>

@@ -5,7 +5,7 @@
 
      <div class="row">
       <div class="col-lg-12">
-       <h3>Pension</h3>
+       <h3>NSSF</h3>
 
        <hr>
       </div>  
@@ -39,7 +39,7 @@
 
                         <div class="panel panel-default">
                           <div class="panel-heading">
-                            <a class="btn btn-info btn-sm" href="{{ URL::to('remitpension/create')}}">remit pension</a>
+                            <a class="btn btn-info btn-sm" href="{{ URL::to('remitnssf/create')}}">remit nssf</a>
                           </div>
                         <div class="panel-body">
 
@@ -72,9 +72,9 @@
                   </button>
           
                   <ul class="dropdown-menu" role="menu">
-                     <li><a href="{{URL::to('remitpension/view/'.$remittance->id)}}">View Remitted Employees</a></li> 
-                     @if(App\Remittedemployee::getCount($remittance->period,'pension') < $employees)
-                    <li><a href="{{URL::to('remitpension/finalize/'.$remittance->id)}}">Finalize Remittance</a></li>
+                     <li><a href="{{URL::to('remitnssf/view/'.$remittance->id)}}">View Remitted Employees</a></li> 
+                     @if(App\Remittedemployee::getCount($remittance->period,'nssf') < $employees)
+                    <li><a href="{{URL::to('remitnssf/finalize/'.$remittance->id)}}">Finalize Remittance</a></li>
                     @endif
                   </ul>
               </div>

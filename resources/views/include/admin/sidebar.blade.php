@@ -131,9 +131,9 @@
                               <a href="{{ URL::to('remitpension') }}"><i class="fa fa-credit-card fa-fw"></i>Pension</a>
                             </li>
                             @endif
-                            @if ( Entrust::can('remit_tax') )
+                            @if ( Entrust::can('remit_paye') )
                             <li>
-                              <a href="{{ URL::to('remittax') }}"><i class="fa fa-credit-card fa-fw"></i> Paye</a>
+                              <a href="{{ URL::to('remitpaye') }}"><i class="fa fa-credit-card fa-fw"></i> Paye</a>
                             </li>
                             @endif
                             @if ( Entrust::can('remit_nhif') )

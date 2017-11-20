@@ -634,15 +634,27 @@ Route::post('remitpension/store', 'RemittancesController@storepension');
 Route::get('remitpension/view/{id}', 'RemittancesController@employees');
 Route::get('remitpension/finalize/{id}', 'RemittancesController@finalizepension');
 Route::post('remitpension/finalizeupdate/{id}', 'RemittancesController@finalizeupdate');
+
 Route::get('remitpaye', 'RemittancesController@remitpaye');
 Route::get('remitpaye/create', 'RemittancesController@createpaye');
 Route::post('remitpaye/store', 'RemittancesController@storepaye');
+Route::get('remitpaye/view/{id}', 'RemittancesController@paye');
+Route::get('remitpaye/finalize/{id}', 'RemittancesController@finalizepaye');
+Route::post('remitpaye/finalizepayeupdate/{id}', 'RemittancesController@finalizepayeupdate');
+
 Route::get('remitnhif', 'RemittancesController@remitnhif');
 Route::get('remitnhif/create', 'RemittancesController@createnhif');
 Route::post('remitnhif/store', 'RemittancesController@storenhif');
+Route::get('remitnhif/view/{id}', 'RemittancesController@nhif');
+Route::get('remitnhif/finalize/{id}', 'RemittancesController@finalizenhif');
+Route::post('remitnhif/finalizenhifupdate/{id}', 'RemittancesController@finalizenhifupdate');
+
 Route::get('remitnssf', 'RemittancesController@remitnssf');
 Route::get('remitnssf/create', 'RemittancesController@createnssf');
 Route::post('remitnssf/store', 'RemittancesController@storenssf');
+Route::get('remitnssf/view/{id}', 'RemittancesController@nssf');
+Route::get('remitnssf/finalize/{id}', 'RemittancesController@finalizenssf');
+Route::post('remitnssf/finalizenssfupdate/{id}', 'RemittancesController@finalizenssfupdate');
 
 Route::get('payrollReports', function(){
 
