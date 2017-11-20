@@ -130,6 +130,24 @@ class EarningsController extends Controller {
 
         $earning->last_day_month = $Last;
 
+	    }else if(Input::get('formular') == 'Periodic'){
+	    $earning->periodic = Input::get('periodic');
+	    $earning->instalments = '1';
+        $a = str_replace( ',', '', Input::get('amount') );
+        $earning->earnings_amount = $a;
+
+        $d=strtotime(Input::get('ddate'));
+
+        $earning->earning_date = date("Y-m-d", $d);
+
+        $First  = date('Y-m-01', strtotime(Input::get('ddate')));
+        $Last   = date('Y-m-t', strtotime(Input::get('ddate')));
+        
+
+        $earning->first_day_month = $First;
+
+        $earning->last_day_month = $Last;
+
 	    }else{
 	    $earning->instalments = '1';
         $a = str_replace( ',', '', Input::get('amount') );
@@ -236,6 +254,24 @@ class EarningsController extends Controller {
 
         $First  = date('Y-m-01', strtotime(Input::get('ddate')));
         $Last   = date('Y-m-t', strtotime($effectiveDate));
+
+        $earning->first_day_month = $First;
+
+        $earning->last_day_month = $Last;
+
+	    }else if(Input::get('formular') == 'Periodic'){
+	    $earning->periodic = Input::get('periodic');
+	    $earning->instalments = '1';
+        $a = str_replace( ',', '', Input::get('amount') );
+        $earning->earnings_amount = $a;
+
+        $d=strtotime(Input::get('ddate'));
+
+        $earning->earning_date = date("Y-m-d", $d);
+
+        $First  = date('Y-m-01', strtotime(Input::get('ddate')));
+        $Last   = date('Y-m-t', strtotime(Input::get('ddate')));
+        
 
         $earning->first_day_month = $First;
 

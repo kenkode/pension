@@ -46,6 +46,14 @@ $('#formular option#instals').each(function() {
      }
 });
 
+$('#formular option#pers').each(function() {
+    if (this.selected){
+       $('#period').show();
+     }else{
+       $('#period').hide();
+     }
+});
+
 $('#formular').change(function(){
 if($(this).val() == "Instalments"){
     $('#insts').show();
@@ -55,7 +63,13 @@ if($(this).val() == "Instalments"){
     $('#bal').hide();
 }
 });
-
+$('#formular').change(function(){
+if($(this).val() == "Periodic"){
+    $('#period').show();
+}else{
+    $('#period').hide();
+}
+});
 
 });
 </script>
@@ -286,6 +300,18 @@ if($(this).val() == "Instalments"){
                             <option value="One Time"<?= ($earning->formular=='One Time')?'selected="selected"':''; ?>>One Time</option>
                             <option value="Recurring"<?= ($earning->formular=='Recurring')?'selected="selected"':''; ?>>Recurring</option>
                             <option id="instals" value="Instalments"<?= ($earning->formular=='Instalments')?'selected="selected"':''; ?>>Instalments</option>
+                            <option id="pers" value="Periodic"<?= ($earning->formular=='Periodic')?'selected="selected"':''; ?>>Periodic</option>
+                        </select>
+                
+                    </div>
+
+        <div class="form-group" id="period">
+                        <label for="username">Type <span style="color:red">*</span></label>
+                        <select name="periodic" id="periodic" class="form-control forml select2">
+                            <option></option>
+                            <option value="3"<?= ($earning->periodic==3)?'selected="selected"':''; ?>>Quarterly</option>
+                            <option value="6"<?= ($earning->periodic==6)?'selected="selected"':''; ?>>Half an year</option>
+                            <option value="12"<?= ($earning->periodic==12)?'selected="selected"':''; ?>>Yearly</option>
                         </select>
                 
                     </div>

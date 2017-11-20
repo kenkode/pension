@@ -32,6 +32,7 @@ function totalB() {
 $(document).ready(function(){
 $('#insts').hide();
 $('#bal').hide();
+$('#period').hide();
 $('#formular').change(function(){
 if($(this).val() == "Instalments"){
     $('#insts').show();
@@ -41,7 +42,13 @@ if($(this).val() == "Instalments"){
     $('#bal').hide();
 }
 });
-
+$('#formular').change(function(){
+if($(this).val() == "Periodic"){
+    $('#period').show();
+}else{
+    $('#period').hide();
+}
+});
 });
 </script>
 
@@ -277,6 +284,18 @@ if($(this).val() == "Instalments"){
                             <option value="One Time">One Time</option>
                             <option value="Recurring">Recurring</option>
                             <option value="Instalments">Instalments</option>
+                            <option value="Periodic">Periodic</option>
+                        </select>
+                
+                    </div>
+
+        <div class="form-group" id="period">
+                        <label for="username">Type <span style="color:red">*</span></label>
+                        <select name="periodic" id="periodic" class="form-control forml select2">
+                            <option></option>
+                            <option value="3">Quarterly</option>
+                            <option value="6">Half an year</option>
+                            <option value="12">Yearly</option>
                         </select>
                 
                     </div>

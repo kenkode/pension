@@ -44,10 +44,23 @@ use App\Earningsetting;
       <tr><td><strong>Earning Type: </strong></td><td>{{Earningsetting::getType($earning->earning_id)}}</td></tr>
       <tr><td><strong>Narrative: </strong></td><td>{{$earning->narrative}}</td></tr>
        <tr><td><strong>Formular: </strong></td><td>{{$earning->formular}}</td></tr>
+
       @if($earning->instalments > 1)
       <tr><td><strong>Instalments: </strong></td><td>{{$earning->instalments}}</td></tr>
       <tr><td><strong>Earning Amount: </strong></td><td align="right">{{asMoney($earning->earnings_amount)}}</td></tr>
       <tr><td><strong>Total Amount: </strong></td><td align="right">{{asMoney((double)$earning->earnings_amount*(double)$earning->instalments)}}</td></tr>
+      @elseif($earning->formular == 'Periodic')
+      <tr>
+      <td><strong>Type: </strong></td>
+      @if($earning->periodic == 3)
+      <td>Quarterly</td>
+      @elseif($earning->periodic == 6)
+      <td>Half an year</td>
+      @else
+      <td>Yearly</td>
+      @endif
+      </tr>
+      <tr><td><strong>Earning Amount: </strong></td><td align="right">{{asMoney($earning->earnings_amount)}}</td></tr>
       @else
       <tr><td><strong>Earning Amount: </strong></td><td align="right">{{asMoney($earning->earnings_amount)}}</td></tr>
       @endif
