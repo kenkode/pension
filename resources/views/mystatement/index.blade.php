@@ -92,8 +92,8 @@
                         <?php 
                           $employee+=$deduction->employee_amount;
                           $employer+=$deduction->employer_amount;
-                          $interest+=$deduction->interest;
-                          $total+=$employee+$employer;
+                          $interest+=App\Pensioninterest::getInterest($deduction->employee_id);
+                          $total+=$deduction->employee_amount+$deduction->employer_amount;
                         ?>
 
 
@@ -103,15 +103,16 @@
                         ?>
                       <tr>                      
                           <td>{{ $i+1}}</td>
-                          <td>{{ $display_year}}</td>
+                          <td>{{ $deduction->year}}</td>
                           <td>{{ $deduction->month }}</td>
                           <td> {{ number_format(floatval($deduction->employee_amount),2) }}</td>
                           <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
                           <td> {{ number_format(floatval( $deduction->employer_amount),2)  }}</td>
                           <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
-                          <td> {{ number_format(floatval( $deduction->interest),2)  }}</td>
+
+                          <td> {{ number_format(floatval( App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year)),2)  }}</td>
                           <td> {{ number_format(floatval( $deduction->employee_amount+$deduction->employer_amount),2)  }}</td>                         
-                          <td>{{ $deduction->comments }}</td>                         
+                          <td>{{ App\Pensioninterest::getTransactComment($deduction->employee_id,$deduction->financial_month_year) }}</td>                         
 
                         </tr>
                         <?php $i++; ?>
@@ -123,7 +124,7 @@
                      <tfoot>
                       <tr>
                        
-                        <th colspan="2">Totals</th>
+                        <th colspan="3">Totals</th>
                         <th colspan="2"> Ksh {{ number_format($employee,2)}}</th>
                         <th colspan="2">Ksh {{ number_format($employer,2)}}</th>
                         <th width="120px">Ksh {{ number_format($interest,2)}}</th>

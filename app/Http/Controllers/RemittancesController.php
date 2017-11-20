@@ -116,6 +116,14 @@ class RemittancesController extends Controller
           $pensioninterest->comment = "Interest accrued for period ".Input::get('period');
           $pensioninterest->period = Input::get('period');
           $pensioninterest->save();
+        }else{
+          $pension = Pension::where('employee_id',Input::get('employee')[$i])->first();
+          $pensioninterest = new Pensioninterest;
+          $pensioninterest->employee_id = Input::get('employee')[$i];
+          $pensioninterest->interest = 0.00;
+          $pensioninterest->comment = "";
+          $pensioninterest->period = Input::get('period');
+          $pensioninterest->save();
         }
         }
 
@@ -163,6 +171,14 @@ class RemittancesController extends Controller
           $pensioninterest->employee_id = Input::get('employee')[$i];
           $pensioninterest->interest = $pension->employee_contribution * 0.03;
           $pensioninterest->comment = "Interest accrued for period ".Input::get('period');
+          $pensioninterest->period = Input::get('period');
+          $pensioninterest->save();
+        }else{
+          $pension = Pension::where('employee_id',Input::get('employee')[$i])->first();
+          $pensioninterest = new Pensioninterest;
+          $pensioninterest->employee_id = Input::get('employee')[$i];
+          $pensioninterest->interest = 0.00;
+          $pensioninterest->comment = "";
           $pensioninterest->period = Input::get('period');
           $pensioninterest->save();
         }
