@@ -19,7 +19,7 @@
                        
                     </div>
                     <div class="logo-element">
-                        BMS
+                        PMS
                     </div>
                 </li>
 
@@ -45,7 +45,14 @@
                
 
                 <li class="dropdown">
+                    @if(Auth::user()->role == 'Employee')
+                    <?php 
+                    $employee = App\Employee::where('personal_file_number',Auth::user()->name)->first(); 
+                    ?>
+                    <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">{{ $employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name }}</a>
+                    @else
                     <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">{{ Auth::user()->name }}</a>
+                    @endif
                     <ul class="dropdown-menu">
                         <li>
                            <a href="{{ URL::to('users/profile/'.Auth::user()->id) }}"><i class="fa fa-user fa-fw"></i> Profile</a>

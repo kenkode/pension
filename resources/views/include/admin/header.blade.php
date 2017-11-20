@@ -1,9 +1,9 @@
 <!-- Logo -->
   <a href="#" class="logo">
     <!-- mini logo for sidebar mini 50x50 pixels -->
-    <span class="logo-mini"><b>B</b>MS</span>
+    <span class="logo-mini"><b>P</b>MS</span>
     <!-- logo for regular state and mobile devices -->
-    <span class="logo-lg"><b>BOARD</b>&nbsp;MS</span>
+    <span class="logo-lg"><b>PENSION</b>&nbsp;MS</span>
   </a>
 
   <!-- Header Navbar: style can be found in header.less -->
