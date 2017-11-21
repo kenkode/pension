@@ -92,8 +92,10 @@
                         <?php 
                           $employee+=$deduction->employee_amount;
                           $employer+=$deduction->employer_amount;
-                          $interest+=App\Pensioninterest::getInterest($deduction->employee_id);
-                          $total+=$deduction->employee_amount+$deduction->employer_amount;
+                          $interest+=App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+                          $total+=$deduction->employee_amount+$deduction->employer_amount+App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+                          
+                          
                         ?>
 
 
@@ -111,7 +113,7 @@
                           <td>{{ number_format(floatval($deduction->employee_percentage),2) }}</td>
 
                           <td> {{ number_format(floatval( App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year)),2)  }}</td>
-                          <td> {{ number_format(floatval( $deduction->employee_amount+$deduction->employer_amount),2)  }}</td>                         
+                          <td> {{ number_format(floatval( $deduction->employee_amount+$deduction->employer_amount+App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year)),2)  }}</td>                         
                           <td>{{ App\Pensioninterest::getTransactComment($deduction->employee_id,$deduction->financial_month_year) }}</td>                         
 
                         </tr>
