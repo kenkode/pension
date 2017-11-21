@@ -160,15 +160,18 @@
 
 <?php
 
-$data4="";    
-$interest = 0;
+$data4="";   
+        if($employee == "All"){
         foreach($pensions as $deduction){
-           $interest = $interest + App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
-           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+$interest)."],";
+           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+App\Pensioninterest::getTransactTotalInterest($deduction->financial_month_year))."],";
+        }
+        }else{ 
+        foreach($pensions as $deduction){
+           
+           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year))."],";
 
         }
-
-
+        }
         
     ?>
     <script>

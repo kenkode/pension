@@ -6628,7 +6628,7 @@ class ReportsController extends Controller {
         if(count($pensions) > 0){
         $intr = 0;
         foreach($pensions as $deduction){
-           $intr = $intr + Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+           $intr = $intr + Pensioninterest::getTransactTotalInterest($deduction->financial_month_year);
         }
         $max = $m->sum+$intr;
         }else{

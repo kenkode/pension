@@ -101,10 +101,9 @@
 
    
         $data4="";    
-        $interest = 0;
         foreach($deductions as $deduction){
-           $interest = $interest + App\Pensioninterest::getTransactTotalInterest($deduction->financial_month_year);
-           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+$interest)."],";
+           
+           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+App\Pensioninterest::getTransactTotalInterest($deduction->financial_month_year))."],";
 
         }
 
