@@ -62,21 +62,27 @@ class HomeController extends Controller
 
           $employeeid = Employee::where("personal_file_number",Auth::user()->name)->pluck("id")[0];
           $data['employee'] = DB::table("transact_pensions")
+                                           ->where('year','=',date('Y'))
                                            ->where('employee_id','=',$employeeid)
                                            ->sum('employee_amount');
 
 
             $data['employer'] = DB::table("transact_pensions")
                                           ->where('employee_id','=',$employeeid)
+                                          ->where('year','=',date('Y'))
                                           ->sum('employer_amount');
+
+            $data['pensions'] = DB::table("transact_pensions")->where('year','=',date('Y'))->where('employee_id','=',$employeeid)->get();
 
             
 
           }else{
         
-            $data['employer'] = DB::table("transact_pensions")->sum('employer_amount');
+            $data['employer'] = DB::table("transact_pensions")->where('year','=',date('Y'))->sum('employer_amount');
 
-            $data['employee'] = DB::table("transact_pensions")->sum('employee_amount');
+            $data['employee'] = DB::table("transact_pensions")->where('year','=',date('Y'))->sum('employee_amount');
+
+            $data['pensions'] = DB::table("transact_pensions")->where('year','=',date('Y'))->get();
 
           }
       

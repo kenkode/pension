@@ -138,15 +138,11 @@ body {
          @endforeach
          <td><strong>Comments </strong></td> 
       </tr>
-      <?php $i =1; $totalamount = 0; ?>
+      <?php $i =1; $totalamount = 0; $total_interest = 0; ?>
       @foreach($pensions as $ded)
-      <?php $totalamount = $totalamount + $ded->employee_amount + $ded->employer_amount;
-      $interest = 0;
-        if($ded->interest == '' || $ded->interest == null){
-               $interest = 0;
-             }else{
-               $interest = $ded->interest;
-             }
+      <?php $totalamount = $totalamount + $ded->employee_amount + $ded->employer_amount + App\Pensioninterest::getTransactInterest($ded->employee_id,$ded->financial_month_year);
+      $total_interest = $total_interest + App\Pensioninterest::getTransactInterest($ded->employee_id,$ded->financial_month_year);
+        
       ?>
       <tr>
 
@@ -166,19 +162,19 @@ body {
         <td align="right"> {{ asMoney($ded->employee_percentage) }}</td>
         <td align="right"> {{ asMoney($ded->employer_amount )}}</td>
         <td align="right"> {{ asMoney($ded->employer_percentage )}}</td>
-        <td align="right"> {{ asMoney($interest )}}</td>
-        <td align="right"> {{ asMoney($ded->employee_amount + $ded->employer_amount )}}</td>
-        <td> {{ $ded->comments }}</td>
+        <td align="right"> {{ asMoney(App\Pensioninterest::getTransactInterest($ded->employee_id,$ded->financial_month_year) )}}</td>
+        <td align="right"> {{ asMoney($ded->employee_amount + $ded->employer_amount + App\Pensioninterest::getTransactInterest($ded->employee_id,$ded->financial_month_year) )}}</td>
+        <td> {{ App\Pensioninterest::getTransactComment($ded->employee_id,$ded->financial_month_year) }}</td>
         </tr>
       <?php $i++; ?>
    
     @endforeach
       @if($type == 'All')
-     <tr><td colspan="4" align="right"><strong>Total</strong></td><td align="right"><strong>{{asMoney($total->total_employee)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total->total_employer)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total->total_interest)}}<strong></td>
+     <tr><td colspan="4" align="right"><strong>Total</strong></td><td align="right"><strong>{{asMoney($total->total_employee)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total->total_employer)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total_interest)}}<strong></td>
       <td align="right"><strong>{{asMoney($totalamount)}}<strong></td>
       <td></td></tr>
       @else
-      <tr><td colspan="3" align="right"><strong>Total</strong></td><td align="right"><strong>{{asMoney($total->total_employee)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total->total_employer)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total->total_interest)}}<strong></td>
+      <tr><td colspan="3" align="right"><strong>Total</strong></td><td align="right"><strong>{{asMoney($total->total_employee)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total->total_employer)}}<strong></td><td></td><td align="right"><strong>{{asMoney($total_interest)}}<strong></td>
       <td align="right"><strong>{{asMoney($totalamount)}}<strong></td>
       <td></td></tr>
       @endif

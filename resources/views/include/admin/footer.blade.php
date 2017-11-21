@@ -48,17 +48,23 @@
     if(Auth::user()->role=="Employee"){
         $employeeid = Employee::where("personal_file_number",Auth::user()->name)->pluck("id")[0];
         $deductions=DB::table("transact_pensions")->groupBy('month','year')
-                   ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
+                   ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year,employee_id,financial_month_year')
                    ->where('employee_id','=',$employeeid)
+                   ->where('year',date('Y'))
                    ->get();
         $m=DB::table("transact_pensions")->groupBy('month','year')
                    ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
                    ->where('employee_id','=',$employeeid)
                    ->orderBy('sum')
+                   ->where('year',date('Y'))
                    ->first();
 
         if(count($deductions) > 0){
-        $max = $m->sum;
+        $intr = 0;
+        foreach($deductions as $deduction){
+           $intr = $intr + App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+        }
+        $max = $m->sum+$intr;
         }else{
         $max = 0;  
         }
@@ -66,17 +72,23 @@
     }else{
 
         $deductions=DB::table("transact_pensions")->groupBy('month','year')
-                   ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
+                   ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year,employee_id,financial_month_year')
+                   ->where('year',date('Y'))
                    ->get();
 
 
         $m=DB::table("transact_pensions")->groupBy('month','year')
                    ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
                    ->orderBy('sum')
+                   ->where('year',date('Y'))
                    ->first();
 
         if(count($deductions) > 0){
-        $max = $m->sum;
+        $intr = 0;
+        foreach($deductions as $deduction){
+           $intr = $intr + App\Pensioninterest::getTransactTotalInterest($deduction->financial_month_year);
+        }
+        $max = $m->sum+$intr;
         }else{
         $max = 0;  
         }
@@ -89,13 +101,12 @@
 
    
         $data4="";    
-
+        $interest = 0;
         foreach($deductions as $deduction){
-       
-           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".$deduction->sum."],";
+           $interest = $interest + App\Pensioninterest::getTransactTotalInterest($deduction->financial_month_year);
+           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+$interest)."],";
 
         }
-
 
         
     ?>

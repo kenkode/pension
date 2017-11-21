@@ -66,6 +66,7 @@
                     <div class="ibox-content">
 
                         <div class="table-responsive">
+                          <a class="btn btn-info btn-sm" href="{{ URL::to('statement/report')}}">View Statements</a>
                     <table class="table table-striped table-bordered table-hover statement_tbl" >
                     <thead>
                       <tr>           

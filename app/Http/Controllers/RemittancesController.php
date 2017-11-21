@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
+use DateTime;
 
 class RemittancesController extends Controller
 {
@@ -86,7 +87,8 @@ class RemittancesController extends Controller
 		}else{
 
 		$today = date('Y-m-d');
-		$remittancedate = date('Y-m-03');
+		$newdate = DateTime::createFromFormat('d-m-Y','03-'.Input::get('period'));
+		$remittancedate = $newdate->format('Y-m-d');
 
 		$remittance = new Remittance;
 

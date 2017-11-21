@@ -39,6 +39,15 @@ class Pensioninterest extends Model
        } 
     }
 
+    public static function getTransactTotalInterest($period){
+       $pensioninterest = Pensioninterest::where('period',$period)->sum('interest');
+       if(count($pensioninterest) == 0){
+       return 0.00;
+       }else{
+       return $pensioninterest;
+       } 
+    }
+
     public static function getTransactComment($id,$period){
        $pensioninterest = Pensioninterest::where('employee_id',$id)->where('period',$period)->first();
        if(count($pensioninterest) == 0){

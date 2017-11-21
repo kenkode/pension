@@ -32,6 +32,7 @@ use PHPExcel;
 use PHPExcel_Cell;
 use DateTime;
 use Response;
+use App\Pensioninterest;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 
 class ReportsController extends Controller {
@@ -5927,7 +5928,7 @@ class ReportsController extends Controller {
   public function employee_pensions()
   {
 
-    if ( !Entrust::can('view_deduction_report') ) // Checks the current user
+    if ( !Entrust::can('pension_report') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
         }else{
@@ -5936,6 +5937,13 @@ class ReportsController extends Controller {
     $departments = Department::all();
     return view('pdf.pensionSelect',compact('employees','branches','departments'));
   }
+  }
+
+  public function statement()
+  {  
+    $employee = Employee::where('personal_file_number',Auth::user()->name)->first();
+    $id = $employee->id;
+    return view('mystatement.statement',compact('id'));
   }
 
     public function pensions(){
@@ -5954,14 +5962,14 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employer_amount','month','year','transact_pensions.employee_id','transact_pensions.financial_month_year')
             ->get();    
 
      $total = DB::table('transact_pensions')
                   ->where('organization_id',Auth::user()->organization_id)
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
     }else{
       $data = DB::table('transact_pensions')
@@ -5969,7 +5977,7 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employer_amount','month','year','transact_pensions.employee_id','transact_pensions.financial_month_year')
             ->get();   
 
             //return $data; 
@@ -5978,7 +5986,7 @@ class ReportsController extends Controller {
                   ->where('organization_id',Auth::user()->organization_id)
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
     }
     $organization = Organization::find(Auth::user()->organization_id);
@@ -6094,6 +6102,7 @@ class ReportsController extends Controller {
             $row = 9;
              
              $cont = 0;
+             $total_interest = 0;
              for($i = 0; $i<count($data); $i++){
 
               $name = '';
@@ -6104,18 +6113,15 @@ class ReportsController extends Controller {
                $name=$data[$i]->first_name.' '.$data[$i]->middle_name.' '.$data[$i]->last_name;
              }
 
-             $interest = 0;
-             if($data[$i]->interest == '' || $data[$i]->interest == null){
-               $interest = 0;
-             }else{
-               $interest = $data[$i]->interest;
-             }
+             
             
              $sheet->row($row, array(
-             $data[$i]->year,date('F',strtotime(date("Y") ."-".$data[$i]->month."-01")),$data[$i]->personal_file_number,$name,$data[$i]->employee_amount,$data[$i]->employee_percentage,$data[$i]->employer_amount,$data[$i]->employer_percentage,$interest,($data[$i]->employee_amount+$data[$i]->employer_amount),$data[$i]->comments
+             $data[$i]->year,date('F',strtotime(date("Y") ."-".$data[$i]->month."-01")),$data[$i]->personal_file_number,$name,$data[$i]->employee_amount,$data[$i]->employee_percentage,$data[$i]->employer_amount,$data[$i]->employer_percentage,Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year),($data[$i]->employee_amount+$data[$i]->employer_amount+Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year)),Pensioninterest::getTransactComment($data[$i]->employee_id,$data[$i]->financial_month_year)
              ));
 
-             $cont = $cont + $data[$i]->employee_amount+$data[$i]->employer_amount;
+             $cont = $cont + $data[$i]->employee_amount+$data[$i]->employer_amount+Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year);
+
+             $total_interest = $total_interest + Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year);  
 
              $sheet->cell('E'.$row, function($cell) {
 
@@ -6146,9 +6152,11 @@ class ReportsController extends Controller {
               });
              $row++;
              
-             }       
+             }     
+             
+             
              $sheet->row($row, array(
-             '','','','Total',$total->total_employee,'',$total->total_employer,'',$total->total_interest,$cont
+             '','','','Total',$total->total_employee,'',$total->total_employer,'',$total_interest,$cont
              ));
             $sheet->row($row, function ($r) {
 
@@ -6198,7 +6206,7 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employer_amount','month','year','financial_month_year','employee_id')
             ->get();    
 
      $total = DB::table('transact_pensions')
@@ -6206,7 +6214,7 @@ class ReportsController extends Controller {
                   ->where('transact_pensions.employee_id' ,'=', Input::get('employeeid'))
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
 
 
@@ -6217,7 +6225,7 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employee_id','employer_amount','month','year','financial_month_year')
             ->get();
 
     $total = DB::table('transact_pensions')
@@ -6226,7 +6234,7 @@ class ReportsController extends Controller {
                   ->where('transact_pensions.employee_id' ,'=', Input::get('employeeid'))
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
     }
     $organization = Organization::find(Auth::user()->organization_id);
@@ -6342,10 +6350,10 @@ class ReportsController extends Controller {
 
             $cont = 0;
              
+             $total_interest = 0;
              for($i = 0; $i<count($data); $i++){
 
               $name = '';
-              $interest = 0;
 
               if($data[$i]->middle_name == '' || $data[$i]->middle_name == null){
                $name= $data[$i]->first_name.' '.$data[$i]->last_name;
@@ -6353,24 +6361,15 @@ class ReportsController extends Controller {
                $name=$data[$i]->first_name.' '.$data[$i]->middle_name.' '.$data[$i]->last_name;
              }
 
-             if($data[$i]->interest == '' || $data[$i]->interest == null){
-               $interest = 0;
-             }else{
-               $interest = $data[$i]->interest;
-             }
+             
             
              $sheet->row($row, array(
-             $data[$i]->year,date('F',strtotime(date("Y") ."-".$data[$i]->month."-01")),$data[$i]->employee_amount,$data[$i]->employee_percentage,$data[$i]->employer_amount,$data[$i]->employer_percentage,$interest,($data[$i]->employee_amount+$data[$i]->employer_amount),$data[$i]->comments
+             $data[$i]->year,date('F',strtotime(date("Y") ."-".$data[$i]->month."-01")),$data[$i]->personal_file_number,$name,$data[$i]->employee_amount,$data[$i]->employee_percentage,$data[$i]->employer_amount,$data[$i]->employer_percentage,Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year),($data[$i]->employee_amount+$data[$i]->employer_amount+Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year)),Pensioninterest::getTransactComment($data[$i]->employee_id,$data[$i]->financial_month_year)
              ));
 
-             $cont = $cont + $data[$i]->employee_amount+$data[$i]->employer_amount;
+             $cont = $cont + $data[$i]->employee_amount+$data[$i]->employer_amount+Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year);
 
-             $sheet->cell('C'.$row, function($cell) {
-
-               // manipulate the cell
-                $cell->setAlignment('right');
-
-              });
+             $total_interest = $total_interest + Pensioninterest::getTransactInterest($data[$i]->employee_id,$data[$i]->financial_month_year);  
 
              $sheet->cell('E'.$row, function($cell) {
 
@@ -6386,18 +6385,26 @@ class ReportsController extends Controller {
 
               });
 
-             $sheet->cell('H'.$row, function($cell) {
+             $sheet->cell('I'.$row, function($cell) {
 
                // manipulate the cell
                 $cell->setAlignment('right');
 
               });
-             
+
+             $sheet->cell('J'.$row, function($cell) {
+
+               // manipulate the cell
+                $cell->setAlignment('right');
+
+              });
              $row++;
              
-             }       
+             }     
+             
+             
              $sheet->row($row, array(
-             '','',$total->total_employee,'',$total->total_employer,'',$total->total_interest,$cont
+             '','','','Total',$total->total_employee,'',$total->total_employer,'',$total_interest,$cont
              ));
             $sheet->row($row, function ($r) {
 
@@ -6450,7 +6457,7 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employee_id','employer_amount','month','year','financial_month_year')
             ->get();   
 
             //return $data; 
@@ -6459,7 +6466,7 @@ class ReportsController extends Controller {
                   ->where('organization_id',Auth::user()->organization_id)
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
         }else{
           $pensions =DB::table('transact_pensions')
@@ -6467,7 +6474,7 @@ class ReportsController extends Controller {
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employee_id','employer_amount','month','year','financial_month_year')
             ->get();   
 
             //return $data; 
@@ -6476,7 +6483,7 @@ class ReportsController extends Controller {
                   ->where('organization_id',Auth::user()->organization_id)
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
         }
         $currencies = DB::table('currencies')
@@ -6527,7 +6534,7 @@ class ReportsController extends Controller {
             ->where('employee_id',Input::get("employeeid"))
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employee_id','employer_amount','month','year','financial_month_year')
             ->get();   
 
             //return $data; 
@@ -6537,7 +6544,7 @@ class ReportsController extends Controller {
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
                   ->where('employee_id',Input::get("employeeid"))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
         }else{
         $pensions =DB::table('transact_pensions')
@@ -6546,7 +6553,7 @@ class ReportsController extends Controller {
             ->where('employee_id',Input::get("employeeid"))
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
-            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','interest','employer_amount','month','year','comments')
+            ->select('personal_file_number','first_name','last_name','middle_name','employee_amount','employer_amount','employee_percentage','employer_percentage','employee_id','employer_amount','month','year','financial_month_year')
             ->get();   
 
             //return $data; 
@@ -6556,7 +6563,7 @@ class ReportsController extends Controller {
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
                   ->where('employee_id',Input::get("employeeid"))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first(); 
         }
         $currencies = DB::table('currencies')
@@ -6597,7 +6604,58 @@ class ReportsController extends Controller {
       $from = explode("-", Input::get('from'));
       $to   = explode("-", Input::get('to'));
       if(Input::get("employeeid") == "All"){
-        return Redirect::to('payrollReports/selectPension')->withDeleteMessage('Please select an employee!');
+       $pensions =DB::table('transact_pensions')
+            ->whereBetween('year' ,array($from[1],$to[1]))
+            ->whereBetween('month' ,array($from[0],$to[0]))
+            ->groupBy('month','year')
+            ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year,employee_id,financial_month_year')
+            ->get();   
+
+        $m=DB::table("transact_pensions")->groupBy('month','year')
+                   ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
+                   ->orderBy('sum')
+                   ->first();
+
+        $total = DB::table('transact_pensions')
+                  ->where('organization_id',Auth::user()->organization_id)
+                  ->whereBetween('year' ,array($from[1],$to[1]))
+                  ->whereBetween('month' ,array($from[0],$to[0]))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
+                  ->first();
+
+        $max = 0;
+
+        if(count($pensions) > 0){
+        $intr = 0;
+        foreach($pensions as $deduction){
+           $intr = $intr + Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+        }
+        $max = $m->sum+$intr;
+        }else{
+        $max = 0;  
+        }
+        $employee = "All";
+        $f = "";
+              $t = "";
+
+
+              if(strlen($from[0]) == 1){
+                $f = "0".$from[0];
+              }else{
+                $f = $from[0];
+              }
+
+              if(strlen($to[0]) == 1){
+                $t = "0".$to[0];
+              }else{
+                $t = $to[0];
+              }
+              
+              $month = $f."_".$from[1].$t."_".$to[1];
+              $period = $f."-".$from[1]." to ".$t."-".$to[1];
+
+        Audit::logaudit('Pension Graph', 'view', 'viewed pension contributions graph for all employees for period '.$period);
+        return view('pdf.graph',compact('max','pensions','employee','total','period'));
       }else if(Input::get("from") == "" || Input::get("to") == ""){
         return Redirect::to('payrollReports/selectPension')->withDeleteMessage('Please select period!');
       }else{
@@ -6606,7 +6664,7 @@ class ReportsController extends Controller {
             ->whereBetween('year' ,array($from[1],$to[1]))
             ->whereBetween('month' ,array($from[0],$to[0]))
             ->groupBy('month','year')
-            ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year')
+            ->selectRaw('sum(employee_amount+employer_amount) as sum, month,year,employee_id,financial_month_year')
             ->get();   
 
         $m=DB::table("transact_pensions")->groupBy('month','year')
@@ -6620,13 +6678,17 @@ class ReportsController extends Controller {
                   ->whereBetween('year' ,array($from[1],$to[1]))
                   ->whereBetween('month' ,array($from[0],$to[0]))
                   ->where('employee_id',Input::get("employeeid"))
-                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer,COALESCE(SUM(interest),0) as total_interest'))
+                  ->select(DB::raw('COALESCE(SUM(employee_amount),0) as total_employee,COALESCE(SUM(employer_amount),0) as total_employer'))
                   ->first();
 
         $max = 0;
 
         if(count($pensions) > 0){
-        $max = $m->sum;
+        $intr = 0;
+        foreach($pensions as $deduction){
+           $intr = $intr + Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+        }
+        $max = $m->sum+$intr;
         }else{
         $max = 0;  
         }

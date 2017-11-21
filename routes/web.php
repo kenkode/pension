@@ -69,7 +69,7 @@ Route::group( ['middleware' => 'auth' ], function()
   Route::get('pensions/delete/{id}', 'PensionsController@destroy');
   Route::get('pensions/edit/{id}', 'PensionsController@edit');
   Route::get('pensions/view/{id}', 'PensionsController@show');
-	Route::resource('statement', 'StatementController');
+	Route::get('statement', 'StatementController@index');
 	//Route::resource('education', 'EducationController');
 	Route::resource('calendar', 'CalendarController');
 	Route::resource('documents', 'DocumentsController');
@@ -685,6 +685,7 @@ Route::get('payrollReports/selectRelief', 'ReportsController@employee_reliefs');
 Route::post('payrollReports/reliefs', 'ReportsController@reliefs');
 Route::get('payrollReports/selectDeduction', 'ReportsController@employee_deductions');
 Route::post('payrollReports/deductions', 'ReportsController@deductions');
+Route::get('statement/report', 'ReportsController@statement');
 Route::get('payrollReports/selectPension', 'ReportsController@employee_pensions');
 Route::post('payrollReports/pensions', 'ReportsController@pensions');
 Route::get('payrollReports/selectnontaxableincome', 'ReportsController@employeenontaxableselect');

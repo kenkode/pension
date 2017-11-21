@@ -52,7 +52,7 @@
 
         
       <div class="row">
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="ibox float-e-margins">
                             <div class="ibox-title">
                                 
@@ -65,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="ibox float-e-margins">
                             <div class="ibox-title">
                                 <h5>Employee Contributions</h5>
@@ -77,18 +77,45 @@
                             </div>
                         </div>
                     </div>
-                    <!-- <div class="col-lg-3">
+
+        <?php $intr = 0;
+        if($employee == "All"){
+        foreach($pensions as $p){
+           $intr = $intr + App\Pensioninterest::getTransactTotalInterest($p->financial_month_year);
+
+        }
+        }else{ 
+        foreach($pensions as $p){
+           $intr = $intr + App\Pensioninterest::getTransactInterest($p->employee_id,$p->financial_month_year);
+
+        }
+        }
+        ?>
+
+                    <div class="col-lg-3">
                         <div class="ibox float-e-margins">
                             <div class="ibox-title">
-                                <h5> Total Contributions Not Remitted</h5>
+                                <h5>Interests</h5>
                             </div>
                             <div class="ibox-content">
-                                <h1 class="no-margins"> ksh {{number_format(0,2)}}</h1>
+                                <h1 class="no-margins">Ksh {{number_format($intr,2)}}</h1>
+                               
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="ibox float-e-margins">
+                            <div class="ibox-title">
+                                <h5> Total Contributions </h5>
+                            </div>
+                            <div class="ibox-content">
+                                <h1 class="no-margins"> ksh {{number_format(($total->total_employer+$total->total_employee+$intr),2)}}</h1>
                                
                                
                             </div>
                         </div>
-                    </div> -->
+                    </div>
                   
         </div>
         
@@ -99,7 +126,13 @@
                     <div class="col-lg-12">
                         <div class="ibox float-e-margins">
                             <div class="ibox-title">
-                                <h5>Pension Contributions for employee {{$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name}} between {{$period}}</h5>
+                                <h5>
+                                 @if($employee == "All")
+                                 Pension Contributions for all employees
+                                 @else
+                                 Pension Contributions for employee {{$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name}} between {{$period}}
+                                 @endif
+                             </h5>
                              
                                 
                             </div>
@@ -128,10 +161,10 @@
 <?php
 
 $data4="";    
-
+$interest = 0;
         foreach($pensions as $deduction){
-       
-           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".$deduction->sum."],";
+           $interest = $interest + App\Pensioninterest::getTransactInterest($deduction->employee_id,$deduction->financial_month_year);
+           $data4.="[gd(".$deduction->year.", ".$deduction->month.", 1), ".($deduction->sum+$interest)."],";
 
         }
 
