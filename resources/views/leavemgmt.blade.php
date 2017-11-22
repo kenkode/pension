@@ -70,7 +70,9 @@ use App\Leaveapplication;
             <td>{{Leaveapplication::getLeaveDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date)}}</td>
 
 <td>{{Leaveapplication::getBalanceDays($leaveapplication->employee, $leaveapplication->leavetype)}}</td>
+          
           <td>
+            @if($leaveapplication->is_supervisor_approved == 1)
            <a href="{{URL::to('leaveapplications/edit/'.$leaveapplication->id)}}">Amend</a> 
            @if(Leaveapplication::getBalanceDays($leaveapplication->employee, $leaveapplication->leavetype) >= Leaveapplication::getLeaveDays($leaveapplication->applied_end_date,$leaveapplication->applied_start_date))
            &nbsp; |
@@ -78,8 +80,12 @@ use App\Leaveapplication;
           @endif
           |&nbsp;<a href="{{URL::to('leaveapplications/reject/'.$leaveapplication->id)}}" onclick="return (confirm('Are you sure you want to reject this vacation?'))">Reject</a> &nbsp;|
           <a href="{{URL::to('leaveapplications/cancel/'.$leaveapplication->id)}}" onclick="return (confirm('Are you sure you want to cancel this vacation?'))">Cancel</a>
+          @elseif($leaveapplication->is_supervisor_approved == 2)
+          Rejected by supervisor | <a href="{{URL::to('leaveapplications/cancel/'.$leaveapplication->id)}}" onclick="return (confirm('Are you sure you want to cancel this vacation?'))">Cancel</a>
+          @elseif($leaveapplication->is_supervisor_approved == 0)
+          Awaiting Supervisor Approval
+          @endif
           </td>
-
            </tr>
            @endif
         @endforeach

@@ -1874,6 +1874,17 @@ $(document).ready(function() {
                         </div>
 
                         <div class="col-lg-4">
+                          <div class="form-group">
+                        <label for="username">Assign Supervisor</label>
+                        <select name="supervisor" id="supervisor" class="form-control select2">
+                            <option></option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}"> {{ $employee->first_name.' '.$employee->last_name }}</option>
+                            @endforeach
+
+                        </select>
+                
+                    </div>
                   <div class="checkbox">
                         <label>
                             <input id="ch" type="checkbox" checked name="active">

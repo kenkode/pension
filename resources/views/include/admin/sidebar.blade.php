@@ -446,6 +446,7 @@ $employee = App\Employee::where('personal_file_number',Auth::user()->name)->firs
 </li>
 <li><a href="{{ URL::to('css/balances') }}"><i class="fa fa-chevron-right fa-fw"></i> Vacation Balances</a>
 </li>
+<li><a href="{{ URL::to('css/subordinateleave') }}"><i class="glyphicon glyphicon-check fa-fw"></i> Approve Leave</a></li>
 </ul>
 </li>
 <li><a href="{{ URL::to('css/payslips') }}"><i class="fa fa-money fa-fw"></i> Payslips</a>

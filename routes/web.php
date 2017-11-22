@@ -29,6 +29,7 @@ use App\Pension;
 use Illuminate\Support\Facades\PHPExcel;
 use Maatwebsite\Excel\Facades\Excel as Excel;
 use Illuminate\Support\Facades\Input;
+use App\Supervisor;
 
 /*
 |--------------------------------------------------------------------------
@@ -1308,6 +1309,22 @@ Route::get('css/leave', function(){
 
   return view('css.leave', compact('employee', 'leaveapplications'));
 });
+
+Route::get('css/subordinateleave', function(){
+
+  $employeeid = DB::table('employee')->where('personal_file_number', '=', Auth::user()->name)->pluck('id')[0];
+   $c = Supervisor::where('supervisor_id', $employeeid)->count();
+    
+  $employee = Employee::findorfail($employeeid);
+
+   //$leaveapplications = DB::table('leaveapplications')->where('employee_id', '=', $employee->id)->get();
+
+  return View::make('css.approveleave', compact('c','leaveapplications'));
+});
+
+Route::get('employeeleave/view/{id}', 'LeaveapplicationsController@cssleaveapprove');
+Route::get('supervisorapproval/{id}', 'LeaveapplicationsController@supervisorapprove');
+Route::get('supervisorreject/{id}', 'LeaveapplicationsController@supervisorreject');
 
 
 Route::get('css/leaveapply', function(){

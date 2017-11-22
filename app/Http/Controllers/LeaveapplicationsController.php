@@ -10,10 +10,14 @@ use App\Audit;
 use Illuminate\Http\Request;
 use Redirect;
 use Entrust;
+use Mail;
+use App\Mail\Leave;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
+use App\Organization;
+use App\Supervisor;
 
 class LeaveapplicationsController extends Controller {
 
@@ -104,16 +108,67 @@ class LeaveapplicationsController extends Controller {
 		}*/
 
 
-		Leaveapplication::createLeaveApplication($data);
+		//Leaveapplication::createLeaveApplication($data);
 
-		if(Auth::user()->role == 'Employee'){
+		$organization = Organization::getUserOrganization();
+
+		$employee = Employee::find(array_get($data, 'employee_id'));
+
+		$leavetype = Leavetype::find(array_get($data, 'leavetype_id'));
+
+		$application = new Leaveapplication;
+
+		$application->applied_start_date = array_get($data, 'applied_start_date');
+		$application->applied_end_date = array_get($data, 'applied_end_date');
+		$application->status = 'applied';
+		$application->application_date = date('Y-m-d');
+		$application->employee()->associate($employee);
+		$application->leavetype()->associate($leavetype);
+		$application->organization()->associate($organization);
+		$application->is_supervisor_approved = 0;
+		if(array_get($data, 'weekends') == null){
+          $application->is_weekend = 0;
+		}else{
+		  $application->is_weekend = 1;	
+		}
+		if(array_get($data, 'holidays') == null){
+          $application->is_holiday = 0;
+		}else{
+		  $application->is_holiday = 1;	
+		}
+		
+		$application->save();
+
+        $supervisor = Supervisor::where('employee_id',$application->employee_id)->first();
+
+        if(count($supervisor) == 0){
+        return Redirect::to('leavemgmt')->with('notice', 'Please assign employee a supervisor');
+        }else{
+
+        $employee = Employee::where('id',$supervisor->employee_id)->first();
+
+        $employeesupervisor = Employee::where('id',$supervisor->supervisor_id)->first();
+
+		$name = $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name;
+
+
+		Mail::to($employeesupervisor->email_office)->send(new Leave($name,$application));
+
+     if( count(Mail::failures()) == 0 ) {
+
+     if(Auth::user()->role == 'Employee'){
             Audit::logaudit('Vacation Application', 'create', 'employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' created vacation application for vacation type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
 			return Redirect::to('css/leave')->withFlashMessage('Vacation application successfully applied ... Please wait for approval!');
 		} else {
             Audit::logaudit('Vacation Application', 'create', 'created vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$start_date.' to '.$end_date.' ('.Input::get("days").')');
-			return Redirect::to('leavemgmt')->withFlashMessage('Vacation application successfully created!');
+			return Redirect::to('leavemgmt')->withFlashMessage('Vacation application successfully created! Awaiting supervisor approval');
 		}
-		
+
+     }else{
+
+     return Redirect::to('leavemgmt')->with('notice', 'Leave application successfully created but there was a problem sending email to supervisor... Please notify the supervisor of the application');
+     }
+	}
 	}
 
 	/**
@@ -190,6 +245,18 @@ class LeaveapplicationsController extends Controller {
 		return Redirect::to('leavemgmt');
 	}
 
+	public function cssleaveapprove($id){
+
+		$leaveapplication = Leaveapplication::find($id);
+
+		
+
+		return view('css.employeeleave', compact('leaveapplication'));
+
+
+
+	}
+
 
 	public function approve($id){
 
@@ -226,6 +293,32 @@ class LeaveapplicationsController extends Controller {
         Audit::logaudit('Vacation Application', 'approve', 'approved vacation application for employee '.$employee->personal_file_number.' : '.$employee->first_name.' '.$employee->last_name.' vacation type '.$leavetype->name.' for period from '.$leaveapplication->approved_start_date.' to '.$leaveapplication->approved_end_date.' ('.$days.')');
 
 		return Redirect::to('leaveapprovals')->withFlashMessage('Vacation application successfully approved!');
+
+	}
+
+	public function supervisorapprove($id){
+
+	    $leaveapplication = Leaveapplication::findOrFail($id);
+
+	    $leaveapplication->is_supervisor_approved = 1;
+
+	    $leaveapplication->update();
+
+		return Redirect::to('css/subordinateleave')->withFlashMessage('Successfully Approved subordinate leave!');
+
+
+	}
+
+	public function supervisorreject($id){
+
+	    $leaveapplication = Leaveapplication::findOrFail($id);
+
+	    $leaveapplication->is_supervisor_approved = 2;
+
+	    $leaveapplication->update();
+
+		return Redirect::to('css/subordinateleave')->withFlashMessage('Successfully rejected subordinate leave!');
+
 
 	}
 

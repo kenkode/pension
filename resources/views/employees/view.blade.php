@@ -368,6 +368,18 @@ use Illuminate\Support\Facades\Input;
         @endif
         </tr>
 
+        <tr><td><strong>Supervisor:</strong></td>     
+        @if($c>0)
+        <?php
+        $sup = App\Supervisor::where('employee_id',$employee->id)->first();
+        $supervisor = App\Employee::where('id',$sup->supervisor_id)->first();
+        ?>
+        <td>{{$supervisor->first_name.' '.$supervisor->last_name}}</td>
+        @else
+        <td></td>
+        @endif
+        </tr>
+
 </table>
 
 

@@ -8,6 +8,8 @@ use DB;
 use App\Organization;
 use App\Leavetype;
 use App\Employee;
+use App\Supervisor;
+
 
 class Leaveapplication extends Model {
 
@@ -73,9 +75,11 @@ class Leaveapplication extends Model {
 		
 		$application->save();
 
-        /*$supervisor = Supervisor::where('employee_id',$application->employee_id)->first();
+        $supervisor = Supervisor::where('employee_id',$application->employee_id)->first();
 
         $employee = Employee::where('id',$supervisor->employee_id)->first();
+
+        $employeesupervisor = Employee::where('id',$supervisor->supervisor_id)->first();
 
 		$name = $employee->first_name.' '.$employee->middle_name.' '.$employee->last_name;
 
@@ -83,10 +87,21 @@ class Leaveapplication extends Model {
 		Mail::send( 'emails.leavecreate', array('application'=>$application, 'name'=>$name), function( $message ) use ($employee)
 		{
     		
-    		$message->to($employee->email_office )->subject( 'Leave Application' );
-		});*/
+    		$message->to($employeesupervisor->email_office )->subject( 'Leave Application' );
+		});
 
-	}
+		Mail::to($employeesupervisor->email_office)->send(new Leaveapplication($name,$application));
+
+     if( count(Mail::failures()) == 0 ) {
+
+   
+
+     }else{
+
+     return Redirect::back()->with('check', 'Employee has not been activated. Could not establish interenet connection. kindly check your mail settings');
+     }
+
+	 }
 
 
 

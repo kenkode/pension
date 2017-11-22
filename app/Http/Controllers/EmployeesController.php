@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use DB;
 use Illuminate\Support\Str;
+use App\Supervisor;
 
 class EmployeesController extends Controller {
 
@@ -223,9 +224,9 @@ class EmployeesController extends Controller {
 		//
     $organization = Organization::find(Auth::user()->organization_id);
 
-    $employees = count(Employee::where('organization_id',Auth::user()->organization_id)->get());
+    $emps = count(Employee::where('organization_id',Auth::user()->organization_id)->get());
 
-    if($organization->payroll_licensed <= $employees){
+    if($organization->payroll_licensed <= $emps){
        return view('employees.employeelimit');
     }else{
     $currency = Currency::whereNull('organization_id')->orWhere('organization_id',Auth::user()->organization_id)->first();
@@ -249,7 +250,9 @@ class EmployeesController extends Controller {
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
     }else{
-		return view('employees.create', compact('currency','citizenships','pfn','branches','departments','etypes','jgroups','banks','bbranches','educations'));
+    $employees = Employee::where('in_employment','Y')->get();
+  
+		return view('employees.create', compact('currency','citizenships','pfn','branches','departments','etypes','jgroups','banks','bbranches','educations','employees'));
   }
 	}
   }
@@ -495,6 +498,17 @@ class EmployeesController extends Controller {
        }
        }
 
+       if(Input::get('supervisor') != null || Input::get('supervisor') != ""){
+
+        $supervisor = new Supervisor;
+
+        $supervisor->supervisor_id = Input::get('supervisor');
+
+        $supervisor->employee_id = $employee->id;
+        
+        $supervisor->save();
+        }
+
 		return Redirect::route('employees.index')->withFlashMessage('Employee successfully created!');
 		 }
     catch (FormValidationException $e)
@@ -563,7 +577,10 @@ class EmployeesController extends Controller {
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
     }else{
-		return view('employees.edit', compact('currency','countk','countd','docs','kins','citizenships','contract','branches','educations','departments','etypes','jgroups','banks','bbranches','employee'));
+    $supervisor = Supervisor::where('employee_id',$id)->first();
+    $count = Supervisor::where('employee_id',$id)->count();
+    $subordinates = Employee::where('in_employment','Y')->get();
+		return view('employees.edit', compact('currency','countk','countd','docs','kins','citizenships','contract','branches','educations','departments','etypes','jgroups','banks','bbranches','employee','supervisor','count','subordinates'));
   }
 	}
 
@@ -945,6 +962,32 @@ class EmployeesController extends Controller {
      }
    }
 
+   $c = Supervisor::where('employee_id', $employee->id)->count();
+
+
+    if($c>0){
+
+    $supervisor = Supervisor::where('employee_id',$employee->id)->first();
+
+    $supervisor->supervisor_id = Input::get('supervisor');
+
+    $supervisor->employee_id = $employee->id;
+        
+        $supervisor->update();
+        }
+
+
+    else if(Input::get('supervisor') != null || Input::get('supervisor') != ""){
+
+    $supervisor = new Supervisor;
+
+    $supervisor->supervisor_id = Input::get('supervisor');
+
+    $supervisor->employee_id = $employee->id;
+        
+        $supervisor->save();
+        }
+
     //return Auth::user()->role;
 
 		 if(Auth::user()->role == 'Employee'){
@@ -1032,7 +1075,7 @@ class EmployeesController extends Controller {
 
         $documents = Document::where('employee_id', $id)->get();
 
-        
+      $c = Supervisor::where('employee_id', $id)->count();  
 
 		$organization = Organization::find(Auth::user()->organization_id);
 
@@ -1049,7 +1092,7 @@ class EmployeesController extends Controller {
 
     Audit::logaudit('Employee', 'view', 'viewed employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
 
-		return view('employees.view', compact('id','employee','appraisals','kins','documents','occurences','properties'));
+		return view('employees.view', compact('id','employee','appraisals','kins','documents','occurences','properties','c'));
   }
   }
 		
@@ -1069,13 +1112,13 @@ class EmployeesController extends Controller {
 
         $documents = Document::where('employee_id', $id)->get();
 
-        
+      $c = Supervisor::where('employee_id', $id)->count();  
 
     $organization = Organization::find(Auth::user()->organization_id);
 
     Audit::logaudit('Employee', 'view', 'employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name.' viewed their details');
 
-    return view('employees.viewdetails', compact('id','employee','appraisals','kins','documents','occurences','properties'));
+    return view('employees.viewdetails', compact('id','employee','appraisals','kins','documents','occurences','properties','c'));
     
   }
 
@@ -1098,13 +1141,13 @@ class EmployeesController extends Controller {
         //$count = Employeebenefit::where('jobgroup_id', $employee->job_group_id)->count();
 
 		$organization = Organization::find(Auth::user()->organization_id);
-
+    $c = Supervisor::where('employee_id', $id)->count();
     if ( !Entrust::can('view_deactive_employee') ) // Checks the current user
         {
         return Redirect::to('home')->with('notice', 'you do not have access to this resource. Contact your system admin');
     }else{
     Audit::logaudit('Employee', 'view', 'viewed employee '.$employee->personal_file_number.'-'.$employee->first_name.' '.$employee->last_name);
-		return view('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties'));
+		return view('employees.viewdeactive', compact('employee','appraisals','kins','documents','occurences','properties','c'));
   }
 		
 	}
@@ -1129,7 +1172,7 @@ class EmployeesController extends Controller {
     if($email != null){
 
 
-   Mail::to($employee->email_office)->send(new Portal($name,$name,$password));
+   Mail::to($employee->email_office)->send(new Portal($email,$name,$password));
 
    if( count(Mail::failures()) == 0 ) {
 
