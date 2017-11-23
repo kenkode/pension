@@ -8,12 +8,18 @@
     <hr>
 
     @if (Session::get('notice'))
-            <div class="alert alert-success">{{ Session::get('notice') }}</div>
+            <div class="alert alert-success alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>{{ Session::get('notice') }}</div>
         @endif
 
     @if (Session::has('delete_message'))
 
-      <div class="alert alert-danger">
+      <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       {{ Session::get('delete_message') }}
      </div>
     @endif

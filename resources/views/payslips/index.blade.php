@@ -32,7 +32,10 @@ use Illuminate\Support\Facades\Input;
     <div class="col-lg-5">
       @if (Session::has('errors'))
 
-      <div class="alert alert-danger">
+      <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       {{ Session::get('errors') }}
      </div>
     @endif

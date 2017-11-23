@@ -13,7 +13,10 @@
       <div class="wrapper wrapper-content">
 
         @if (Session::get('notice'))
-        <div class="alert alert-info">{{ Session::get('notice') }}</div>
+        <div class="alert alert-info alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>{{ Session::get('notice') }}</div>
         @endif
 
         @if(Controller::role()=='Human Resource')

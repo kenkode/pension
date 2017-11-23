@@ -14,7 +14,10 @@
 	<div class="col-lg-12">
 
     @if (Session::get('check'))
-            <div class="alert alert-info">{{ Session::get('check') }}</div>
+            <div class="alert alert-info alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>{{ Session::get('check') }}</div>
         @endif
 
     <div class="panel panel-default">

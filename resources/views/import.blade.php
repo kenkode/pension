@@ -11,7 +11,10 @@
 <div class="col-lg-12">
 
 	@if (Session::get('error'))
-            <div class="alert alert-danger">{{{ Session::get('error') }}}</div>
+            <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>{{{ Session::get('error') }}}</div>
         @endif
 
 <p>Bulk Import Savings</p>

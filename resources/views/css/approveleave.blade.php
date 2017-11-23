@@ -27,7 +27,10 @@
 </div>
 
 @if (Session::get('flash_message'))
-            <div class="alert alert-info">{{ Session::get('flash_message') }}</div>
+            <div class="alert alert-info alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>{{ Session::get('flash_message') }}</div>
         @endif
 <div class="row">
   

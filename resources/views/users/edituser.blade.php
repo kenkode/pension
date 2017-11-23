@@ -19,7 +19,10 @@ use Illuminate\Support\Facades\Input;
         <br>
 
         @if (Session::get('notice'))
-            <div class="alert alert-error alert-danger">{{ Session::get('notice') }}</div>
+            <div class="alert alert-error alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>{{ Session::get('notice') }}</div>
         @endif
 
       <form method="POST" action="{{{ URL::to('users/updateuser/'.$user->id) }}}" accept-charset="UTF-8">
