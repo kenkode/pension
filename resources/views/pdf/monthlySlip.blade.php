@@ -146,44 +146,38 @@ body {
         </tr>
         <tr><td>Basic Pay: </td><td align='right'>{{ Payroll::processedsalaries($emp->personal_file_number,$period) }}</td></tr>
 
-        @if(Payroll::processedearningnames($emp->id,$period) != null)
-        <tr><td>{{ Payroll::processedearningnames($emp->id,$period) }}: </td><td align='right'>{{ Payroll::processedearnings($emp->id,$period) }}</td></tr>
-        @else
-        @endif
+        @foreach(Payroll::processedearningnames($emp->id,$period) as $earning)
+        <tr><td>{{ $earning->earning_name }}: </td><td align='right'>{{ Payroll::processedearnings($emp->id,$earning->id,$period) }}</td></tr>
+        @endforeach
 
-        @if(Payroll::processedovertimenames($emp->id,$period) != null)
-        <tr><td>{{ Payroll::processedovertimenames($emp->id,$period) }}: </td><td align='right'>{{ Payroll::processedovertimes($emp->id,$period) }}</td></tr>
-        @else
-        @endif
+        @foreach(Payroll::processedovertimenames($emp->id,$period) as $overtime)
+        <tr><td>{{ $overtime->overtime_type }}: </td><td align='right'>{{ Payroll::processedovertimes($emp->id,$overtime->id,$period) }}</td></tr>
+        @endforeach
         
         <tr><td><strong>ALLOWANCES</strong><td></td></td>
         </tr>
-        @if(Payroll::processedallowancenames($emp->id,$period) != null)
-        <tr><td>{{ Payroll::processedallowancenames($emp->id,$period) }}: </td><td align='right'>{{ Payroll::processedallowances($emp->id,$period) }}</td></tr>
-        @else
-        @endif
+        @foreach(Payroll::processedallowancenames($emp->id,$period) as $alw)
+        <tr><td>{{ $alw->allowance_name }}: </td><td align='right'>{{ Payroll::processedallowances($emp->id,$alw->id,$period) }}</td></tr>
+        @endforeach
 
        <tr><td><strong>GROSS PAY: </strong></td><td align='right'><strong>{{ Payroll::processedgross($emp->personal_file_number,$period) }}</strong></td></tr>
     
-        @if(Payroll::processednontaxnames($emp->id,$period) != null)
-        <tr><td>{{ Payroll::processednontaxnames($emp->id,$period) }}: </td><td align='right'>{{ Payroll::processednontaxables($emp->id,$period) }}</td></tr>
-        @else
-        @endif
+        @foreach(Payroll::processednontaxnames($emp->id,$period) as $nontax)
+        <tr><td>{{ $nontax->nontaxable_name }}: </td><td align='right'>{{ Payroll::processednontaxables($emp->id,$nontax->id,$period) }}</td></tr>
+        @endforeach
 
-        @if(Payroll::processedreliefnames($emp->id,$period) != null)
-        <tr><td>{{ Payroll::processedreliefnames($emp->id,$period) }}: </td><td align='right'>{{ Payroll::processedreliefs($emp->id,$period) }}</td></tr>
-        @else
-        @endif
+        @foreach(Payroll::processedreliefnames($emp->id,$period) as $relief)
+        <tr><td>{{ $relief->relief_name }}: </td><td align='right'>{{ Payroll::processedreliefs($emp->id,$relief->id,$period) }}</td></tr>
+        @endforeach
 
        <tr><td><strong>DEDUCTIONS</strong><td></td></td>
        <tr><td>Paye: </td><td align='right'>{{ Payroll::processedpaye($emp->personal_file_number,$period) }}</td></tr>
         <tr><td>Nssf: </td><td align='right'>{{ Payroll::processedNssf($emp->personal_file_number,$period) }}</td></tr>
         <tr><td>Nhif: </td><td align='right'>{{ Payroll::processedNhif($emp->personal_file_number,$period) }}</td></tr>
    
-        @if(Payroll::processeddeductionnames($emp->id,$period)  != null)
-        <tr><td>{{ Payroll::processeddeductionnames($emp->id,$period) }}: </td><td align='right'>{{ Payroll::processedDeductions($emp->id,$period) }}</td></tr>
-        @else
-        @endif
+        @foreach(Payroll::processeddeductionnames($emp->id,$period)  as $deduction)
+        <tr><td>{{ $deduction->deduction_name }}: </td><td align='right'>{{ Payroll::processedDeductions($emp->id,$deduction->id,$period) }}</td></tr>
+        @endforeach
 
         <tr><td>Pension Contribution
             : </td><td align='right'>{{ Payroll::processedpensions($emp->personal_file_number,$period) }}</td></tr>

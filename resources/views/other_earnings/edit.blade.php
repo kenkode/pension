@@ -343,13 +343,13 @@ if($(this).val() == "Periodic"){
         </div>
        
 
-        <div class="form-group">
+        <!-- <div class="form-group">
                         <label for="username">Earning Date <span style="color:red">*</span></label>
                         <div class="right-inner-addon ">
                         <i class="glyphicon glyphicon-calendar"></i>
                         <input class="form-control earningdate" readonly="readonly" placeholder="" type="text" name="ddate" id="ddate" value="{{ $earning->earning_date }}">
                         </div>
-        </div>
+        </div> -->
 
         <script type="text/javascript">
 $(function(){ 

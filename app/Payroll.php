@@ -353,6 +353,27 @@ public static $rules = [
 
     }
 
+    /*public static function periodicearnings($id,$earning_id,$period){
+ 
+    $part = explode("-", $period);
+    $start = $part[1]."-".$part[0]."-01";
+    $end  = date('Y-m-t', strtotime($start));
+
+    $earn = 0.00;
+
+    $total_earn = DB::table('earnings')
+                     ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings'))
+                     ->where('employee_id',$id)
+                     ->where('earning_id', '=', $earning_id)
+                     ->where('formular','Periodic')
+                     ->first();
+                      
+    $earn = $total_earn->total_earnings;
+
+    return round($earn,2);
+
+    }*/
+
     public static function earnings($id,$earning_id,$period){
  
     $part = explode("-", $period);
@@ -365,16 +386,19 @@ public static $rules = [
                      ->join('employee', 'earnings.employee_id', '=', 'employee.id')
                      ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
                      ->where('employee.organization_id',Auth::user()->organization_id)
+                     
                      ->where(function ($query) use ($id,$earning_id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('earning_id', '=', $earning_id)
                              ->where('formular', '=', 'Recurring')
+                             ->where('formular','!=','Periodic')
                              ->where('first_day_month','<=',$start);
                        })
                       ->orWhere(function ($query) use ($id,$earning_id,$start) {
                         $query->where('employee_id', '=', $id)
                               ->where('earning_id', '=', $earning_id)
                               ->where('instalments', '>', 0)
+                              ->where('formular','!=','Periodic')
                               ->where('first_day_month','<=',$start)
                               ->where('last_day_month','>=',$start);
                         })->get();
@@ -386,9 +410,111 @@ public static $rules = [
     $earn = 0.00;
     }
     }
-    
-    return round($earn,2);
 
+    
+    return round($earn+Static::periodicearning($id,$earning_id,$period),2);
+
+    }
+
+    public static function periodicearning($id,$earning_id,$period){
+    
+    $part = explode('-', $period);
+    //return $part[0];
+
+    $earning = DB::table("earnings")->where("earning_id",$earning_id)->where("employee_id",$id)->where('formular','periodic')->first();
+    if(count($earning) == 0){
+      return 0.00;
+    }else{
+      $date       = $earning->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      if($bonusmonth == $checkmonth){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+      }else if($earning->periodic == 3){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 3;
+        $cmonth1 = $checkmonth;
+        $bmonth1 = $bonusmonth + 6;
+        $cmonth2 = $checkmonth;
+        $bmonth2 = $bonusmonth + 9;
+        if($cmonth == $bmonth || $cmonth1 == $bmonth1 || $cmonth2 == $bmonth2){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',3)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+        }
+      }else if($earning->periodic == 6){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 6;
+        if($cmonth == $bmonth){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',6)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+        }
+      }else if($earning->periodic == 12){
+        
+        if($bonusmonth == $checkmonth){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',12)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+        }
+      }
+      }
     }
 
     public static function totalearnings($earning_id,$period,$type){
@@ -442,12 +568,14 @@ public static $rules = [
                      ->where(function ($query) use ($earning_id,$start,$jgroup){
                        $query->where('earning_id', '=', $earning_id)
                              ->where('formular', '=', 'Recurring')
+                             ->where('formular', '!=', 'Periodic')
                              ->where('job_group_id','!=',$jgroup->id)
                              ->where('first_day_month','<=',$start);
                        })
                       ->orWhere(function ($query) use ($earning_id,$start,$jgroup) {
                         $query->where('earning_id', '=', $earning_id)
                               ->where('instalments', '>', 0)
+                              ->where('formular', '!=', 'Periodic')
                               ->where('job_group_id','!=',$jgroup->id)
                               ->where('first_day_month','<=',$start)
                               ->where('last_day_month','>=',$start);
@@ -462,8 +590,257 @@ public static $rules = [
     }  
     }
     
-    return round($earn,2);
+    return round($earn + Static::periodictotalearnings1($earning_id,$period,$type) + Static::periodictotalearnings3($earning_id,$period,$type) + Static::periodictotalearnings6($earning_id,$period,$type) + Static::periodictotalearnings12($earning_id,$period,$type),2);
 
+    }
+
+    public static function periodictotalearnings1($earning_id,$period,$type){
+ 
+    $part = explode('-', $period);
+    //return $part[0];
+
+    $earning = DB::table("earnings")->where("earning_id",$earning_id)->where('formular','periodic')->first();
+    if(count($earning) == 0){
+      return 0.00;
+    }else{
+      $date       = $earning->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      $earn = 0.00;
+
+      if($bonusmonth == $checkmonth){
+        
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $earn + $total_earn->total_earnings;
+        }
+
+      }
+      return round($earn,2);
+      }
+
+    }
+
+    public static function periodictotalearnings3($earning_id,$period,$type){
+ 
+    $part = explode('-', $period);
+    //return $part[0];
+
+    $earning = DB::table("earnings")->where("earning_id",$earning_id)->where('formular','periodic')->where('periodic',3)->first();
+    if(count($earning) == 0){
+      return 0.00;
+    }else{
+      $date       = $earning->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      $earn = 0.00;
+
+      if($earning->periodic == 3){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 3;
+        $cmonth1 = $checkmonth;
+        $bmonth1 = $bonusmonth + 6;
+        $cmonth2 = $checkmonth;
+        $bmonth2 = $bonusmonth + 9;
+        if($cmonth == $bmonth || $cmonth1 == $bmonth1 || $cmonth2 == $bmonth2){
+        
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',3)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $earn + $total_earn->total_earnings;
+        }
+
+        }
+      }
+      return round($earn,2);
+      }
+
+    }
+
+    public static function periodictotalearnings6($earning_id,$period,$type){
+ 
+    $part = explode('-', $period);
+    //return $part[0];
+
+    $earning = DB::table("earnings")->where("earning_id",$earning_id)->where('formular','periodic')->where('periodic',6)->first();
+    if(count($earning) == 0){
+      return 0.00;
+    }else{
+      $date       = $earning->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      $earn = 0.00;
+if($earning->periodic == 6){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 6;
+        if($cmonth == $bmonth){
+        
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',6)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $earn + $total_earn->total_earnings;
+        }
+
+        }
+      }
+      return round($earn,2);
+      }
+
+    }
+
+    public static function periodictotalearnings12($earning_id,$period,$type){
+ 
+    $part = explode('-', $period);
+    //return $part[0];
+
+    $earning = DB::table("earnings")->where("earning_id",$earning_id)->where('formular','periodic')->where('periodic',12)->first();
+    if(count($earning) == 0){
+      return 0.00;
+    }else{
+      $date       = $earning->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      $earn = 0.00;
+
+      if($earning->periodic == 12){
+        
+        if($bonusmonth == $checkmonth){
+        
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('earning_id', '=', $earning_id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',12)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $earn + $total_earn->total_earnings;
+        }
+
+        }
+      }
+      return round($earn,2);
+      }
+
+    }
+
+    public static function periodicearningall($id,$period){
+    
+    $part = explode('-', $period);
+    //return $part[0];
+
+    $earning = DB::table("earnings")->where("employee_id",$id)->where('formular','periodic')->first();
+    if(count($earning) == 0){
+      return 0.00;
+    }else{
+      $date       = $earning->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      if($bonusmonth == $checkmonth){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('formular','Periodic')->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+      }else if($earning->periodic == 3){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 3;
+        $cmonth1 = $checkmonth;
+        $bmonth1 = $bonusmonth + 6;
+        $cmonth2 = $checkmonth;
+        $bmonth2 = $bonusmonth + 9;
+        if($cmonth == $bmonth || $cmonth1 == $bmonth1 || $cmonth2 == $bmonth2){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',3)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+        }
+      }else if($earning->periodic == 6){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 6;
+        if($cmonth == $bmonth){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',6)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+        }
+      }else if($earning->periodic == 12){
+        
+        if($bonusmonth == $checkmonth){
+        $earn = 0.00;
+
+        $total_earns = DB::table('earnings')
+                         ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+                         ->select(DB::raw('COALESCE(sum(earnings_amount),0.00) as total_earnings,instalments'))
+                         ->where('employee.organization_id',Auth::user()->organization_id)
+                         ->where('employee_id', '=', $id)
+                         ->where('formular','Periodic')
+                         ->where('periodic',12)
+                         ->get();
+                          
+        foreach($total_earns as $total_earn){
+        $earn = $total_earn->total_earnings;
+        }
+
+        return round($earn,2);
+        }
+      }
+      }
     }
 
     public static function earningall($id,$period){
@@ -481,11 +858,13 @@ public static $rules = [
                      ->where(function ($query) use ($id,$start){
                        $query->where('employee_id', '=', $id)
                              ->where('formular', '=', 'Recurring')
+                             ->where('formular', '!=', 'Periodic')
                              ->where('first_day_month','<=',$start);
                        })
                       ->orWhere(function ($query) use ($id,$start) {
                         $query->where('employee_id', '=', $id)
                               ->where('instalments', '>', 0)
+                              ->where('formular', '!=', 'Periodic')
                               ->where('first_day_month','<=',$start)
                               ->where('last_day_month','>=',$start);
                         })->get();
@@ -498,7 +877,7 @@ public static $rules = [
     }
     }
     
-    return round($earn,2);
+    return round($earn+Static::periodicearningall($id,$period),2);
 
     }
     
@@ -1333,22 +1712,22 @@ public static $rules = [
     $rel = '';
     
     $total_rels = DB::table('transact_reliefs')
-                     ->select('employee_id','relief_name')
+                     ->select('employee_id','relief_name','transact_reliefs.id')
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
-                     ->groupBy('employee_id')
+                     ->groupBy('relief_name')
                      ->get();
 
     foreach($total_rels as $total_rel){
     $rel = $total_rel->relief_name;
     }
     
-    return $rel;
+    return $total_rels;
 
     }
 
-    public static function processedreliefs($id,$period){
+    public static function processedreliefs($id,$rid,$period){
 
     $rel = 0.00;
     
@@ -1357,7 +1736,7 @@ public static $rules = [
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
-                     ->groupBy('employee_id')
+                     ->where('transact_reliefs.id', '=', $rid)
                      ->get();
 
     foreach($total_rels as $total_rel){
@@ -1373,22 +1752,22 @@ public static $rules = [
     $earn = '';
     
     $total_earns = DB::table('transact_earnings')
-        ->select('employee_id','earning_name')
+        ->select('employee_id','earning_name','transact_earnings.id')
         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', $period)
         ->where('employee_id' ,'=', $id)
-        ->groupBy('employee_id')
+        ->groupBy('earning_name')
         ->get();
 
     foreach($total_earns as $total_earn){
     $earn = $total_earn->earning_name;
     }
     
-    return $earn;
+    return $total_earns;
 
     }
 
-    public static function processedearnings($id,$period){
+    public static function processedearnings($id,$earnid,$period){
 
     $earn = 0.00;
     
@@ -1397,7 +1776,7 @@ public static $rules = [
         ->where('organization_id',Auth::user()->organization_id)
         ->where('financial_month_year' ,'=', $period)
         ->where('employee_id' ,'=', $id)
-        ->groupBy('employee_id')
+        ->where('transact_earnings.id' ,'=', $earnid)
         ->get();
 
     foreach($total_earns as $total_earn){
@@ -1413,22 +1792,22 @@ public static $rules = [
     $otime = '';
     
     $total_overtimes = DB::table('transact_overtimes')
-                     ->select('employee_id','overtime_type')
+                     ->select('employee_id','overtime_type','transact_overtimes.id')
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id' ,'=', $id)
-                     ->groupBy('employee_id')
+                     ->groupBy('overtime_type')
                      ->get();
 
     foreach($total_overtimes as $total_overtime){
     $otime = $total_overtime->overtime_type;
     }
     
-    return $otime;
+    return $total_overtimes;
 
     }
 
-   public static function processedovertimes($id,$period){
+   public static function processedovertimes($id,$oid,$period){
 
     $otime = 0.00;
     
@@ -1437,7 +1816,7 @@ public static $rules = [
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id' ,'=', $id)
-                     ->groupBy('employee_id')
+                     ->where('transact_overtimes.id' ,'=', $oid)
                      ->get();
 
     foreach($total_overtimes as $total_overtime){
@@ -1471,7 +1850,7 @@ public static $rules = [
     $tallw = '';
     
     $total_tallws = DB::table('transact_allowances')
-                     ->select('employee_id','allowance_name')
+                     ->select('employee_id','allowance_name','transact_allowances.id')
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
@@ -1482,11 +1861,11 @@ public static $rules = [
     $tallw = $total_tallw->allowance_name;
     }
     
-    return $tallw;
+    return $total_tallws;
 
     }
 
-    public static function processedallowances($id,$period){
+    public static function processedallowances($id,$alw_id,$period){
 
     $tallw = 0.00;
     
@@ -1495,6 +1874,7 @@ public static $rules = [
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
+                     ->where('transact_allowances.id', '=', $alw_id)
                      ->groupBy('allowance_name')
                      ->get();
 
@@ -1511,7 +1891,7 @@ public static $rules = [
     $tnontax= '';
     
     $total_nontaxes = DB::table('transact_nontaxables')
-                     ->select('employee_id','nontaxable_name')
+                     ->select('employee_id','nontaxable_name','transact_nontaxables.id')
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
@@ -1522,11 +1902,11 @@ public static $rules = [
     $tnontax = $total_nontax->nontaxable_name;
     }
     
-    return $tnontax;
+    return $total_nontaxes;
 
     }
 
-    public static function processednontaxables($id,$period){
+    public static function processednontaxables($id,$nontaxid,$period){
 
     $tnontax= 0.00;
     
@@ -1535,6 +1915,7 @@ public static $rules = [
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
+                     ->where('transact_nontaxables.id', '=', $nontaxid)
                      ->groupBy('nontaxable_name')
                      ->get();
 
@@ -1589,7 +1970,7 @@ public static $rules = [
     $deductions = '';
     
     $total_deds= DB::table('transact_deductions')
-                     ->select('employee_id','deduction_name')
+                     ->select('employee_id','deduction_name','transact_deductions.id')
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
@@ -1600,11 +1981,11 @@ public static $rules = [
     $deductions = $total_ded->deduction_name;
     }
     
-    return $deductions;
+    return $total_deds;
 
     }
 
-    public static function processedDeductions($id,$period){
+    public static function processedDeductions($id,$did,$period){
 
     $deductions = 0.00;
     
@@ -1613,7 +1994,7 @@ public static $rules = [
                      ->where('organization_id',Auth::user()->organization_id)
                      ->where('financial_month_year' ,'=', $period)
                      ->where('employee_id', '=', $id)
-                    ->groupBy('deduction_name')
+                     ->where('transact_deductions.id', '=', $did)
                      ->get();
 
     foreach($total_deds as $total_ded){

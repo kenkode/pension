@@ -245,6 +245,7 @@ th{
           <td align="right">{{ asMoney((double)$employee->basic_pay) }}</td>
        
           @foreach($earnings as $earning)
+          
           <td align="right">{{ asMoney((double)Payroll::earnings($employee->id,$earning->id,$period)) }}</td>
           @endforeach
           <?php

@@ -1651,11 +1651,13 @@ $display .="
             ->where('employee.organization_id',Auth::user()->organization_id)
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
+                             ->where('formular', '!=', 'Periodic')
                              ->where('job_group_id','!=',$jgroup->id)
                              ->where('first_day_month','<=',$start);
                        })
             ->orWhere(function ($query) use ($start,$jgroup) {
                         $query->where('first_day_month','<=',$start)
+                              ->where('formular', '!=', 'Periodic')
                               ->where('job_group_id','!=',$jgroup->id)
                               ->where('last_day_month','>=',$start);
                         })
@@ -1670,14 +1672,35 @@ $display .="
             ->where('in_employment','Y')
             ->where(function ($query) use ($start,$jgroup){
                        $query->where('formular', '=', 'Recurring')
+                             ->where('formular', '!=', 'Periodic')
                              ->where('job_group_id','!=',$jgroup->id)
                              ->where('first_day_month','<=',$start);
                        })
            ->orWhere(function ($query) use ($start,$jgroup) {
                         $query->where('first_day_month','<=',$start)
+                              ->where('formular', '!=', 'Periodic')
                               ->where('job_group_id','!=',$jgroup->id)
                               ->where('last_day_month','>=',$start);
                         })
+            ->select('earnings.employee_id','earnings.id as id','earning_name','earnings_amount','formular','instalments')
+            ->count();
+
+
+        $periodicearns = DB::table('earnings')
+            ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+            ->join('earningsettings', 'earnings.earning_id', '=', 'earningsettings.id')
+            ->where('in_employment','Y')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->where('formular', '=', 'Periodic')         
+            ->select('earnings.employee_id','earnings.id as id','earning_name','earnings_amount','formular','instalments','earning_date','periodic')
+            ->get();
+
+        $pct = DB::table('earnings')
+            ->join('employee', 'earnings.employee_id', '=', 'employee.id')
+            ->join('earningsettings', 'earnings.earning_id', '=', 'earningsettings.id')
+            ->where('employee.organization_id',Auth::user()->organization_id)
+            ->where('in_employment','Y')
+            ->where('formular', '=', 'Periodic')
             ->select('earnings.employee_id','earnings.id as id','earning_name','earnings_amount','formular','instalments')
             ->count();
 
@@ -1706,6 +1729,77 @@ $display .="
              ->where('instalments','>',0)
              ->decrement('instalments');
 
+        }
+
+        if($pct>0){
+
+      foreach($periodicearns as $earn){
+        
+      $date       = $earn->earning_date;
+      $bonusmonth = date("m", strtotime($date));
+      $checkmonth = $part[0];
+      if($bonusmonth == $checkmonth){
+        
+        DB::table('transact_earnings')->insert(
+        ['employee_id' => $earn->employee_id, 
+        'earning_id' => $earn->id,
+        'organization_id' => Auth::user()->organization_id,
+        'earning_name' => $earn->earning_name,
+        'earning_amount' => $earn->earnings_amount,
+        'financial_month_year'=>Input::get('period'),
+        'process_type'=>Input::get('type')
+        ]
+        );
+      }else if($earn->periodic == 3){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 3;
+        $cmonth1 = $checkmonth;
+        $bmonth1 = $bonusmonth + 6;
+        $cmonth2 = $checkmonth;
+        $bmonth2 = $bonusmonth + 9;
+        if($cmonth == $bmonth || $cmonth1 == $bmonth1 || $cmonth2 == $bmonth2){
+        DB::table('transact_earnings')->insert(
+        ['employee_id' => $earn->employee_id, 
+        'earning_id' => $earn->id,
+        'organization_id' => Auth::user()->organization_id,
+        'earning_name' => $earn->earning_name,
+        'earning_amount' => $earn->earnings_amount,
+        'financial_month_year'=>Input::get('period'),
+        'process_type'=>Input::get('type')
+        ]
+        );
+        }
+      }else if($earn->periodic == 6){
+        $cmonth  = $checkmonth;
+        $bmonth  = $bonusmonth + 6;
+        if($cmonth == $bmonth){
+        DB::table('transact_earnings')->insert(
+        ['employee_id' => $earn->employee_id, 
+        'earning_id' => $earn->id,
+        'organization_id' => Auth::user()->organization_id,
+        'earning_name' => $earn->earning_name,
+        'earning_amount' => $earn->earnings_amount,
+        'financial_month_year'=>Input::get('period'),
+        'process_type'=>Input::get('type')
+        ]
+        );
+        }
+      }else if($earn->periodic == 12){
+        
+        if($bonusmonth == $checkmonth){
+        DB::table('transact_earnings')->insert(
+        ['employee_id' => $earn->employee_id, 
+        'earning_id' => $earn->id,
+        'organization_id' => Auth::user()->organization_id,
+        'earning_name' => $earn->earning_name,
+        'earning_amount' => $earn->earnings_amount,
+        'financial_month_year'=>Input::get('period'),
+        'process_type'=>Input::get('type')
+        ]
+        );
+        }
+        }
+        }   
         }
 
         $overtimes = DB::table('overtimes')

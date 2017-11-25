@@ -1953,6 +1953,7 @@ class ReportsController extends Controller {
 
       if(Input::get('format') == "excel"){
         if(Input::get('employeeid') == 'All'){
+        return Redirect::back()->withDeleteMessage("Please select PDF format for all employees selection!");
         $period = Input::get("period");
         $type = Input::get("type");
         $jgroup = Jobgroup::where(function($query){
@@ -2870,20 +2871,6 @@ class ReportsController extends Controller {
              $sheet->row($c, array(
               'PENSION CONTRIBUTION:',$pension->employee_amount
               ));
-
-             $sheet->row($c, function($cell) {
-
-               // manipulate the cell
-                $cell->setFontWeight('bold');
-
-              });
-
-              $sheet->cell('B'.$c, function($cell) {
-
-               // manipulate the cell
-                $cell->setAlignment('right');
-
-              }); 
 
               $sheet->row($c+1, array(
               'TOTAL DEDUCTIONS:',$data->total_deductions
