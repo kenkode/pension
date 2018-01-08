@@ -606,18 +606,30 @@ public function asMoney($value){
     $nhif1 = Payroll::nhifcalc($gross); 
 
     $taxable = $gross-$nssf1;
-    
-    if($taxable>=11180 && $taxable<21715){
-    $paye1 = (1118+($taxable-11180)*15/100)-1280;
-    }else if($taxable>=21715 && $taxable<32249){
-    $paye1 = (2698.03+($taxable-21715)*20/100)-1280;
-    }else if($taxable>=32249 && $taxable<42783){
-    $paye1 = (4804.73+($taxable-32249)*25/100)-1280;
-    }else if($taxable>=42783){
-    $paye1 = (7438.11+($taxable-42783)*30/100)-1280;
+
+    if($taxable>=13686 && $taxable<23884){
+    $paye1 = (1229.8+($taxable-12298)*15/100)-1408.00;
+    }else if($taxable>=23884 && $taxable<35470){
+    $paye1 = ((1229.8+((11586)*0.15))+($taxable-23884)*20/100)-1408.00;
+    }else if($taxable>=35470 && $taxable<47059){
+    $paye1 = ((1229.8+(11586*0.15)+((11586)*0.2))+($taxable-35470)*25/100)-1408.00;
+    }else if($taxable>=47059){
+    $paye1 = ((1229.8+(11586*0.15)+(11586*0.2)+((11586)*0.25))+($taxable-47059)*30/100)-1408.00;
     }else{
     $paye1 = 0.00;
     }
+    
+    /*if($taxable>=11180 && $taxable<21715){
+    $paye1 = (1118+($taxable-11180)*15/100)-1408.00;
+    }else if($taxable>=21715 && $taxable<32249){
+    $paye1 = (2698.03+($taxable-21715)*20/100)-1408.00;
+    }else if($taxable>=32249 && $taxable<42783){
+    $paye1 = (4804.73+($taxable-32249)*25/100)-1408.00;
+    }else if($taxable>=42783){
+    $paye1 = (7438.11+($taxable-42783)*30/100)-1408.00;
+    }else{
+    $paye1 = 0.00;
+    }*/
     $total = $net-$paye1-$nssf1-$nhif1;  
     $gross=($z-$total)+$net;
     $net=$total;
@@ -896,8 +908,8 @@ $display .="
          $daily  = number_format(Payroll::overtimes($employee->id,'Hourly',$fperiod),2);
          $gross = number_format(Payroll::gross($employee->id,$fperiod),2);
          $tax = number_format(Payroll::totaltax($employee->id,$fperiod),2);
-         if($employee->income_tax_applicable == 1 && (double)Payroll::gross($employee->id,$fperiod)>=11180 && $employee->income_tax_relief_applicable == 1){
-          $taxrelief = number_format('1280',2);
+         if($employee->income_tax_applicable == 1 && (double)Payroll::gross($employee->id,$fperiod)>=13686 && $employee->income_tax_relief_applicable == 1){
+          $taxrelief = number_format('1408.00',2);
           }else{
           $taxrelief = number_format('0.00',2);
           }
@@ -913,8 +925,8 @@ $display .="
           $totaldaily = $totaldaily + (double)Payroll::overtimes($employee->id,'Daily',$fperiod);
           $totalgross = $totalgross + (double)Payroll::gross($employee->id,$fperiod);
           $totaltax = $totaltax + (double)Payroll::totaltax($employee->id,$fperiod);
-          if($employee->income_tax_applicable == 1 && (double)Payroll::gross($employee->id,$fperiod)>=11180 && $employee->income_tax_relief_applicable == 1){
-           $totaltaxrelief = $totaltaxrelief + 1280;
+          if($employee->income_tax_applicable == 1 && (double)Payroll::gross($employee->id,$fperiod)>=13686 && $employee->income_tax_relief_applicable == 1){
+           $totaltaxrelief = $totaltaxrelief + 1408.00;
           }
            $totalpaye = $totalpaye + (double)Payroll::tax($employee->id,$fperiod);
            $totalnssf = $totalnssf + (double)Payroll::nssf($employee->id,$fperiod);
@@ -1063,7 +1075,7 @@ $display .="
         $payroll->earning_amount = Payroll::total_benefits($employee->id,Input::get('period'));
         $payroll->taxable_income = Payroll::gross($employee->id,Input::get('period'));
         $payroll->paye = Payroll::tax($employee->id,Input::get('period'));
-        $payroll->relief = 1280;
+        $payroll->relief = 1408.00;
         $payroll->nssf_amount = Payroll::nssf($employee->id,Input::get('period'));
         $payroll->nhif_amount = Payroll::nhif($employee->id,Input::get('period'));
         $payroll->other_deductions = Payroll::deductionall($employee->id,Input::get('period'))+Payroll::totalpension(Input::get('period'));

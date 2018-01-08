@@ -1104,33 +1104,33 @@ if($earning->periodic == 6){
     if($emp->income_tax_applicable=='0'){
     $paye=0.00;
     }else if($emp->income_tax_applicable=='1' && $emp->income_tax_relief_applicable=='1'){
-    if($taxable>=11180 && $taxable<21715){
-    $paye = 1118+($taxable-11180)*15/100;
-    $paye = $paye-1280.00-static::reliefall($id,$period);
-    }else if($taxable>=21715 && $taxable<32249){
-    $paye = 2698.03+($taxable-21715)*20/100;
-    $paye = $paye-1280.00-static::reliefall($id,$period);
-    }else if($taxable>=32249 && $taxable<42783){
-    $paye = 4804.73+($taxable-32249)*25/100;
-    $paye = $paye-1280.00-static::reliefall($id,$period);
-    }else if($taxable>=42783){
-    $paye = 7438.11+($taxable-42783)*30/100;
-    $paye = $paye-1280.00-static::reliefall($id,$period);
+    if($taxable>=13686 && $taxable<23884){
+    $paye = 1229.8+($taxable-12298)*15/100;
+    $paye = $paye-1408.00-static::reliefall($id,$period);
+    }else if($taxable>=23884 && $taxable<35470){
+    $paye = (1229.8+((11586)*0.15))+($taxable-23884)*20/100;
+    $paye = $paye-1408.00-static::reliefall($id,$period);
+    }else if($taxable>=35470 && $taxable<47059){
+    $paye = (1229.8+(11586*0.15)+((11586)*0.2))+($taxable-35470)*25/100;
+    $paye = $paye-1408.00-static::reliefall($id,$period);
+    }else if($taxable>=47059){
+    $paye = (1229.8+(11586*0.15)+(11586*0.2)+((11586)*0.25))+($taxable-47059)*30/100;
+    $paye = $paye-1408.00-static::reliefall($id,$period);
     }else{
     $paye = 0.00;
     }
     }else if($emp->income_tax_applicable=='1' && $emp->income_tax_relief_applicable=='0'){
-    if($taxable>=11180 && $taxable<21715){
-    $paye = 1118+($taxable-11180)*15/100;
+    if($taxable>=13686 && $taxable<23884){
+    $paye = 1229.8+($taxable-12298)*15/100;
     $paye = $paye-static::reliefall($id,$period);
-    }else if($taxable>=21715 && $taxable<32249){
-    $paye = 2698.03+($taxable-21715)*20/100;
+    }else if($taxable>=23884 && $taxable<35470){
+    $paye = (1229.8+((11586)*0.15))+($taxable-23884)*20/100;
     $paye = $paye-static::reliefall($id,$period);
-    }else if($taxable>=32249 && $taxable<42783){
-    $paye = 4804.73+($taxable-32249)*25/100;
+    }else if($taxable>=35470 && $taxable<47059){
+    $paye = (1229.8+(11586*0.15)+((11586)*0.2))+($taxable-35470)*25/100;
     $paye = $paye-static::reliefall($id,$period);
-    }else if($taxable>=42783){
-    $paye = 7438.11+($taxable-42783)*30/100;
+    }else if($taxable>=47059){
+    $paye = (1229.8+(11586*0.15)+(11586*0.2)+((11586)*0.25))+($taxable-47059)*30/100;
     $paye = $paye-static::reliefall($id,$period);
     }else{
     $paye = 0.00;
@@ -1146,7 +1146,7 @@ if($earning->periodic == 6){
    }
 
 
-       public static function totaltax($id,$period){
+  public static function totaltax($id,$period){
     $paye = 0.00;
     $total_pay = static::gross($id,$period);
     $total_nssf = static::nssf($id,$period);
@@ -1156,33 +1156,33 @@ if($earning->periodic == 6){
     if($emp->income_tax_applicable=='0'){
     $paye=0.00;
     }else if($emp->income_tax_applicable=='1' && $emp->income_tax_relief_applicable=='1'){
-    if($taxable>=11180 && $taxable<21715){
-    $paye = 1118+($taxable-11180)*15/100;
+    if($taxable>=13686 && $taxable<23884){
+    $paye = 1229.8+($taxable-12298)*15/100;
     $paye = $paye;
-    }else if($taxable>=21715 && $taxable<32249){
-    $paye = 2698.03+($taxable-21715)*20/100;
+    }else if($taxable>=23884 && $taxable<35470){
+    $paye = (1229.8+((11586)*0.15))+($taxable-23884)*20/100;
     $paye = $paye;
-    }else if($taxable>=32249 && $taxable<42783){
-    $paye = 4804.73+($taxable-32249)*25/100;
+    }else if($taxable>=35470 && $taxable<47059){
+    $paye = (1229.8+(11586*0.15)+((11586)*0.2))+($taxable-35470)*25/100;
     $paye = $paye;
-    }else if($taxable>=42783){
-    $paye = 7438.11+($taxable-42783)*30/100;
+    }else if($taxable>=47059){
+    $paye = (1229.8+(11586*0.15)+(11586*0.2)+((11586)*0.25))+($taxable-47059)*30/100;
     $paye = $paye;
     }else{
     $paye = 0.00;
     }
     }else if($emp->income_tax_applicable=='1' && $emp->income_tax_relief_applicable=='0'){
-    if($taxable>=11180 && $taxable<21715){
-    $paye = 1118+($taxable-11180)*15/100;
+    if($taxable>=13686 && $taxable<23884){
+    $paye = 1229.8+($taxable-12298)*15/100;
     $paye = $paye;
-    }else if($taxable>=21715 && $taxable<32249){
-    $paye = 2698.03+($taxable-21715)*20/100;
+    }else if($taxable>=23884 && $taxable<35470){
+    $paye = (1229.8+((11586)*0.15))+($taxable-23884)*20/100;
     $paye = $paye;
-    }else if($taxable>=32249 && $taxable<42783){
-    $paye = 4804.73+($taxable-32249)*25/100;
+    }else if($taxable>=35470 && $taxable<47059){
+    $paye = (1229.8+(11586*0.15)+((11586)*0.2))+($taxable-35470)*25/100;
     $paye = $paye;
-    }else if($taxable>=42783){
-    $paye = 7438.11+($taxable-42783)*30/100;
+    }else if($taxable>=47059){
+    $paye = (1229.8+(11586*0.15)+(11586*0.2)+((11586)*0.25))+($taxable-47059)*30/100;
     $paye = $paye;
     }else{
     $paye = 0.00;
@@ -2052,8 +2052,20 @@ if($earning->periodic == 6){
     $total_pay = $a;
     $total_nssf = static::nssfcalc($gross);
     $taxable = $total_pay-$total_nssf;
+
+    if($taxable>=13686 && $taxable<23884){
+    $paye = (1229.8+($taxable-12298)*15/100)-1408.00;
+    }else if($taxable>=23884 && $taxable<35470){
+    $paye = ((1229.8+((11586)*0.15))+($taxable-23884)*20/100)-1408.00;
+    }else if($taxable>=35470 && $taxable<47059){
+    $paye = ((1229.8+(11586*0.15)+((11586)*0.2))+($taxable-35470)*25/100)-1408.00;
+    }else if($taxable>=47059){
+    $paye = ((1229.8+(11586*0.15)+(11586*0.2)+((11586)*0.25))+($taxable-47059)*30/100)-1408.00;
+    }else{
+    $paye = 0.00;
+    }
     
-    if($taxable>=11180 && $taxable<21715){
+    /*if($taxable>=13686 && $taxable<23884){
     $paye = (1118+($taxable-11180)*15/100)-1280;
     }else if($taxable>=21715 && $taxable<32249){
     $paye = (2698.03+($taxable-21715)*20/100)-1280;
@@ -2063,7 +2075,7 @@ if($earning->periodic == 6){
     $paye = (7438.11+($taxable-42783)*30/100)-1280;
     }else{
     $paye = 0.00;
-    }
+    }*/
     return round($paye,2);
    }
 
@@ -2696,9 +2708,9 @@ if($earning->periodic == 6){
 
       $relief   = 0.00;
       if(DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->count()>0){
-        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')[0]+1280.00;
+        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')[0]+1408.00;
       }else{
-        $relief = 1280.00;
+        $relief = 1408.00;
       }
 
       return $relief;
@@ -2711,9 +2723,9 @@ if($earning->periodic == 6){
 
       $relief   = 0.00;
       if(DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->count()>0){
-        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')[0]+1280.00;
+        $relief = DB::table('transact_reliefs')->where('employee_id',$id)->where('financial_month_year',$period)->pluck('relief_amount')[0]+1408.00;
       }else{
-        $relief = 1280.00;
+        $relief = 1408.00;
       }
 
       return $relief;
